@@ -1,0 +1,239 @@
+.ray-editor {
+   border: 1px solid black;
+   border-radius: 4px;
+   height: 500px;
+   overflow: auto;
+}
+
+.ray-editor p,
+.ray-editor h1,
+.ray-editor h2,
+.ray-editor h3,
+.ray-editor h4,
+.ray-editor h5,
+.ray-editor h6 {
+   margin: 0;
+   padding: 0;
+   outline: none;
+}
+
+.ray-content-editor {
+   padding: 10px;
+}
+
+.ray-toolbar {
+   padding: 10px;
+   border-bottom: 1px solid black;
+   position: sticky;
+   top: 0;
+   background-color: white;
+}
+
+.ray-content-editor:focus-within {
+   outline: none;
+}
+
+.ray-editor code {
+   background-color: #f4f4f4;
+   color: #d6336c;
+   font-family: monospace;
+   font-size: 0.95em;
+   padding: 0.2em 0.4em;
+   border-radius: 4px;
+   white-space: pre-wrap;
+}
+
+.ray-code-block {
+   background-color: #282c34;
+   color: #f8f8f2;
+   font-family: 'Courier New', Courier, monospace;
+   border-radius: 6px;
+   margin: 1em 0;
+   padding: 1em;
+   overflow-x: auto;
+   position: relative;
+}
+
+/* Code block inner content */
+.ray-code-content {
+   white-space: pre;
+   outline: none;
+}
+
+/* Optional: subtle scrollbar */
+.ray-code-block::-webkit-scrollbar {
+   height: 6px;
+}
+
+.ray-code-block::-webkit-scrollbar-thumb {
+   background: #444;
+   border-radius: 3px;
+}
+
+.ray-code-content {
+   outline: none;
+   white-space: pre-wrap;
+   font-size: 14px;
+   min-height: 1em;
+}
+
+#ray-editor-watermark {
+   text-align: right;
+   font-size: 0.9rem;
+   color: #999;
+   font-style: italic;
+}
+
+#ray-editor-watermark a {
+   color: #555;
+   text-decoration: none;
+   border-bottom: 1px dashed #aaa;
+}
+
+#ray-editor-watermark a:hover {
+   color: #000;
+}
+
+.upload-placeholder {
+   font-style: italic;
+   background: #f5f5f5;
+   padding: 8px;
+   margin: 10px 0;
+   border: 1px dashed #bbb;
+   color: #555;
+}
+
+.ray-btn svg {
+   width: 18px;
+   height: 18px;
+   stroke: currentColor;
+   display: block;
+   margin: auto;
+}
+
+.ray-toolbar {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 8px;
+   padding: 8px;
+   background: #f9f9f9;
+   border: 1px solid #ddd;
+   margin-bottom: 5px;
+}
+
+.ray-toolbar select {
+   padding: 6px 10px;
+   border: 1px solid #ccc;
+   border-radius: 6px;
+   font-size: 14px;
+}
+
+.ray-btn {
+   background: #fff;
+   border: 1px solid #ccc;
+   border-radius: 6px;
+   padding: 6px 10px;
+   font-size: 14px;
+   cursor: pointer;
+   transition: all 0.2s ease;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   min-width: 36px;
+   min-height: 36px;
+   line-height: 1;
+}
+
+.ray-btn:hover {
+   background-color: #f0f0f0;
+}
+
+.ray-btn.active {
+   background-color: #CDF6E4;
+   border-color: #4a90e2;
+   color: #1a73e8;
+}
+
+.ray-btn b,
+.ray-btn i,
+.ray-btn u,
+.ray-btn s {
+   font-weight: bold;
+   font-style: normal;
+   text-decoration: none;
+}
+
+.ray-btn {
+   position: relative;
+}
+
+.ray-btn::after {
+   content: attr(data-tooltip);
+   position: absolute;
+   transform: translateX(-50%);
+   background-color: #333;
+   color: white;
+   padding: 6px 8px;
+   border-radius: 4px;
+   white-space: nowrap;
+   font-size: 12px;
+   opacity: 0;
+   pointer-events: none;
+   transition: opacity 0.2s ease-in-out;
+   z-index: 10;
+   bottom: auto;
+   top: 120%;
+}
+
+.ray-btn:hover::after {
+   opacity: 1;
+}
+
+.ray-emoji-picker {
+   background: #fff;
+   border: 1px solid #ccc;
+   width: 300px;
+   max-height: 250px;
+   overflow-y: auto;
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+   border-radius: 6px;
+   font-family: sans-serif;
+   padding: 10px;
+   padding-top: 0;
+}
+
+.emoji-header {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   padding-bottom: 10px;
+   font-weight: bold;
+   position: sticky;
+   top: 0;
+   background-color: white;
+   border-bottom: 1px solid black;
+   padding-top: 10px;
+}
+
+.emoji-group {
+   margin-bottom: 10px;
+}
+
+.emoji-title {
+   font-size: 14px;
+   margin-bottom: 4px;
+}
+
+.emoji-list {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 6px;
+}
+
+.emoji-btn {
+   font-size: 20px;
+   padding: 4px;
+   border: none;
+   background: none;
+   cursor: pointer;
+}
