@@ -111,7 +111,40 @@ export function initEditor(containerId, config = {}) {
          action: () => {
             toggleEmojiPicker(toolbar, editor);
          }
-      }
+      },
+      backgroundColor: {
+         keyname: 'backgroundColor',
+         label: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-paintbrush-icon lucide-paintbrush"><path d="m14.622 17.897-10.68-2.913"/><path d="M18.376 2.622a1 1 0 1 1 3.002 3.002L17.36 9.643a.5.5 0 0 0 0 .707l.944.944a2.41 2.41 0 0 1 0 3.408l-.944.944a.5.5 0 0 1-.707 0L8.354 7.348a.5.5 0 0 1 0-.707l.944-.944a2.41 2.41 0 0 1 3.408 0l.944.944a.5.5 0 0 0 .707 0z"/><path d="M9 8c-1.804 2.71-3.97 3.46-6.583 3.948a.507.507 0 0 0-.302.819l7.32 8.883a1 1 0 0 0 1.185.204C12.735 20.405 16 16.792 16 15"/></svg>',  // Background color icon
+         action: () => {
+            const input = document.createElement("input");
+            input.type = "color";
+            input.value = "#ffffff"; // Default background color
+            input.oninput = () => {
+               const color = input.value;
+               document.execCommand("backColor", false, color);
+            };
+            input.click();
+         }
+      },
+      textColor: {
+         keyname: 'textColor',
+         label: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-brush-icon lucide-brush"><path d="m11 10 3 3"/><path d="M6.5 21A3.5 3.5 0 1 0 3 17.5a2.62 2.62 0 0 1-.708 1.792A1 1 0 0 0 3 21z"/><path d="M9.969 17.031 21.378 5.624a1 1 0 0 0-3.002-3.002L6.967 14.031"/></svg>',
+         action: () => {
+            // Create the color input
+            const input = document.createElement("input");
+            input.type = "color";
+            input.value = "#000000"; // Default color
+
+            // When color is selected, apply it to the selected text
+            input.oninput = () => {
+               const color = input.value;
+               document.execCommand("foreColor", false, color);
+            };
+
+            // Trigger click to open color picker dialog
+            input.click();
+         }
+      },
    };
 
    // Create Tool bar for editor
@@ -142,7 +175,35 @@ export function initEditor(containerId, config = {}) {
          // Append the select dropdown to the toolbar
          toolbar.appendChild(headingSelect);
          headingSelect.addEventListener('click', applyHeading);
-      } else if (config[key]) {
+      } else if (key === "align" && config[key]) {
+         // Create the select element for text alignment
+         const alignmentSelect = document.createElement('select');
+         alignmentSelect.id = 'alignment-select';
+
+         // Define alignment options
+         const alignments = [
+         { value: 'left', label: 'Left' },
+         { value: 'center', label: 'Center' },
+         { value: 'right', label: 'Right' },
+         ];
+
+         // Create option elements for each alignment
+         alignments.forEach((align) => {
+         const option = document.createElement('option');
+         option.value = align.value;
+         option.textContent = align.label;
+         alignmentSelect.appendChild(option);
+         });
+
+         // Append the select dropdown to the toolbar
+         toolbar.appendChild(alignmentSelect);
+
+         // Function to apply selected alignment
+         alignmentSelect.addEventListener('change', function () {
+         document.execCommand(`justify${this.value === 'left' ? 'Left' : this.value.charAt(0).toUpperCase() + this.value.slice(1)}`);
+         });
+
+      }else if (config[key]) {
 
          // Standard buttons
          const btn = document.createElement("button");
@@ -407,41 +468,41 @@ function toggleEmojiPicker(toolbar, editor) {
 function positionEmojiPicker(emojiPicker, editor) {
    const coords = getCaretCoordinates();
    if (!coords) return;
- 
+
    const editorRect = editor.getBoundingClientRect();
    const pickerWidth = emojiPicker.offsetWidth;
    const pickerHeight = emojiPicker.offsetHeight;
    const viewportWidth = window.innerWidth;
    const viewportHeight = window.innerHeight;
- 
+
    // Base position
    let left = coords.left;
    let top = coords.top;
- 
+
    // Check right boundary
    if (left + pickerWidth > editorRect.right - window.scrollX) {
-     left = coords.left - pickerWidth;
+      left = coords.left - pickerWidth;
    }
-   
+
    // Check left boundary
    left = Math.max(left, editorRect.left - window.scrollX);
-   
+
    // Check bottom boundary
    if (top + pickerHeight > editorRect.bottom - window.scrollY) {
-     top = coords.top - pickerHeight - 20;
+      top = coords.top - pickerHeight - 20;
    }
-   
+
    // Check top boundary
    top = Math.max(top, editorRect.top - window.scrollY);
-   
+
    // Ensure within viewport
    left = Math.min(left, viewportWidth - pickerWidth);
    top = Math.min(top, viewportHeight - pickerHeight);
- 
+
    emojiPicker.style.left = `${left}px`;
    emojiPicker.style.top = `${top}px`;
- }
- 
+}
+
 function getCaretCoordinates() {
    const selection = window.getSelection();
    if (!selection.rangeCount) return null;
@@ -856,6 +917,10 @@ function updateToolbar() {
       resetToolbar();
       document.getElementById('ray-btn-codeInline').classList.add('active');
    }
+   if (isInTag(parent, 'font')) {
+      resetToolbar();
+      document.getElementById('ray-btn-textColor').classList.add('active');
+   }
    // Check for heading tags or paragraph tags and highlight the respective dropdown option
    const headings = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p']; // Include h1 to h6, and p for default
    let activeTag = 'p'; // Default to paragraph (p)
@@ -866,7 +931,6 @@ function updateToolbar() {
          activeTag = tag;
       }
    });
-
    // Update the heading select dropdown based on the active tag
    document.getElementById('heading-select').value = activeTag;
 }
@@ -887,6 +951,8 @@ function isInTag(el, tagName) {
 }
 
 function isInStyle(el, styleProp, value) {
+   console.log(el, styleProp, value);
+   
    while (el && el !== document) {
       if (window.getComputedStyle(el)[styleProp] === value) return true;
       el = el.parentNode;
