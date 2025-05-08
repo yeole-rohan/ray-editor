@@ -1,4 +1,4 @@
-# ✍️ raye-editor a Rich WYSIWYG Editor
+# ✍️ ray-editor a Rich WYSIWYG Editor
 
 A lightweight, customizable rich-text content editor built with pure JavaScript — offering an intuitive writing experience, inline code formatting, syntax-highlighted code blocks, and native emoji support with a categorized emoji picker.
 
