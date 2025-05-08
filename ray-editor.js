@@ -103,7 +103,7 @@ export function initEditor(containerId, config = {}) {
       fileUpload: {
          keyname: "file",
          label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-icon lucide-file"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>`,
-         action: () => triggerFileUpload(config)
+         action: () => triggerFileUpload(config, container)
       },
       emoji: {
          keyname: 'emoji',
@@ -542,7 +542,7 @@ function insertEmoji(emoji) {
 }
 
 
-function triggerFileUpload(config) {
+function triggerFileUpload(config, container) {
    const input = document.createElement('input');
    input.type = 'file';
    input.accept = '*/*';
@@ -563,7 +563,7 @@ function triggerFileUpload(config) {
          return;
       }
 
-      handleFileUpload(file, config);
+      handleFileUpload(file, config, container);
    });
 
    document.body.appendChild(input);
@@ -571,7 +571,7 @@ function triggerFileUpload(config) {
    document.body.removeChild(input);
 }
 
-function handleFileUpload(file, config) {
+function handleFileUpload(file, config, container) {
    const uploadUrl = config.fileUpload?.fileUploadUrl;
    const mapResponse = config.fileUpload?.onUploadResponse || ((res) => res.url);
 
@@ -583,7 +583,7 @@ function handleFileUpload(file, config) {
    const formData = new FormData();
    formData.append('file', file);
 
-   const placeholder = insertUploadPlaceholder(file.name);
+   const placeholder = insertUploadPlaceholder(file.name, container);
 
    fetch(uploadUrl, {
       method: 'POST',
@@ -636,7 +636,7 @@ function triggerImageUpload(config) {
          return;
       }
 
-      handleImageUpload(image, config);
+      handleImageUpload(image, config, container);
    });
 
    document.body.appendChild(input);
@@ -644,7 +644,7 @@ function triggerImageUpload(config) {
    document.body.removeChild(input);
 }
 
-function handleImageUpload(image, config) {
+function handleImageUpload(image, config, container) {
    const uploadUrl = config.imageUpload?.imageUploadUrl;
    const mapResponse = config.imageUpload?.onUploadResponse || (res => res.url);
 
@@ -656,7 +656,7 @@ function handleImageUpload(image, config) {
    const formData = new FormData();
    formData.append('file', image);
 
-   const placeholder = insertUploadPlaceholder(image.name);
+   const placeholder = insertUploadPlaceholder(image.name, container);
 
    fetch(uploadUrl, {
       method: 'POST',
@@ -692,11 +692,11 @@ function showUploadErrorWithRemove(placeholder, imagename) {
    placeholder.appendChild(removeBtn);
 }
 
-function insertUploadPlaceholder(filename) {
+function insertUploadPlaceholder(filename, container) {
    const placeholder = document.createElement('div');
    placeholder.className = 'upload-placeholder';
    placeholder.textContent = `Uploading ${filename}...`;
-   document.getElementById('content').appendChild(placeholder);
+   document.getElementById(container).appendChild(placeholder);
    return placeholder;
 }
 
