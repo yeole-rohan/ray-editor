@@ -4,6 +4,10 @@ A lightweight, customizable rich-text content editor built with **pure JavaScrip
 
 ---
 
+![image](https://github.com/user-attachments/assets/291f8d9a-c9a0-4f63-a059-ef6bceb7b0d5)
+
+---
+
 ## 🚀 Why Use This Editor?
 
 Unlike many online editors with bloat, trackers, or complex dependencies, `ray-editor` is:
