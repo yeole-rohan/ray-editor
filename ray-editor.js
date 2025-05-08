@@ -182,17 +182,17 @@ export function initEditor(containerId, config = {}) {
 
          // Define alignment options
          const alignments = [
-         { value: 'left', label: 'Left' },
-         { value: 'center', label: 'Center' },
-         { value: 'right', label: 'Right' },
+            { value: 'left', label: 'Left' },
+            { value: 'center', label: 'Center' },
+            { value: 'right', label: 'Right' },
          ];
 
          // Create option elements for each alignment
          alignments.forEach((align) => {
-         const option = document.createElement('option');
-         option.value = align.value;
-         option.textContent = align.label;
-         alignmentSelect.appendChild(option);
+            const option = document.createElement('option');
+            option.value = align.value;
+            option.textContent = align.label;
+            alignmentSelect.appendChild(option);
          });
 
          // Append the select dropdown to the toolbar
@@ -200,10 +200,10 @@ export function initEditor(containerId, config = {}) {
 
          // Function to apply selected alignment
          alignmentSelect.addEventListener('change', function () {
-         document.execCommand(`justify${this.value === 'left' ? 'Left' : this.value.charAt(0).toUpperCase() + this.value.slice(1)}`);
+            document.execCommand(`justify${this.value === 'left' ? 'Left' : this.value.charAt(0).toUpperCase() + this.value.slice(1)}`);
          });
 
-      }else if (config[key]) {
+      } else if (config[key]) {
 
          // Standard buttons
          const btn = document.createElement("button");
@@ -573,7 +573,6 @@ function triggerFileUpload(config, container) {
 
 function handleFileUpload(file, config, container) {
    const uploadUrl = config.fileUpload?.fileUploadUrl;
-   const mapResponse = config.fileUpload?.onUploadResponse || ((res) => res.url);
 
    if (!uploadUrl) {
       console.error('No file upload URL configured.');
@@ -594,7 +593,7 @@ function handleFileUpload(file, config, container) {
          return res.json();
       })
       .then(data => {
-         const fileUrl = mapResponse(data);
+         const fileUrl = data.url;
          if (!fileUrl) throw new Error('No file URL returned.');
          replacePlaceholderWithFileLink(placeholder, file.name, fileUrl);
       })
@@ -621,7 +620,6 @@ function triggerImageUpload(config, container) {
    input.type = 'file';
    input.accept = 'image/*';
    input.style.display = 'none';
-
    input.addEventListener('change', () => {
       const image = input.files[0];
       if (!image) return;
@@ -631,11 +629,11 @@ function triggerImageUpload(config, container) {
          return;
       }
 
+
       if (image.size > 5 * 1024 * 1024) { // 5MB limit
          alert('Image size must be under 5MB.');
          return;
       }
-
       handleImageUpload(image, config, container);
    });
 
@@ -646,7 +644,6 @@ function triggerImageUpload(config, container) {
 
 function handleImageUpload(image, config, container) {
    const uploadUrl = config.imageUpload?.imageUploadUrl;
-   const mapResponse = config.imageUpload?.onUploadResponse || (res => res.url);
 
    if (!uploadUrl) {
       console.error('Upload URL is not configured.');
@@ -667,9 +664,11 @@ function handleImageUpload(image, config, container) {
          return res.json();
       })
       .then(data => {
-         const imageUrl = mapResponse(data);
+         console.log(data);
+
+         const imageUrl = data.url;
          if (!imageUrl) throw new Error('No image URL returned from server.');
-         replacePlaceholderWithImage(placeholder, imageUrl);
+         replacePlaceholderWithImage(placeholder, imageUrl, image.name);
       })
       .catch(err => {
          console.error('Image upload failed:', err);
@@ -696,18 +695,150 @@ function insertUploadPlaceholder(filename, container) {
    const placeholder = document.createElement('div');
    placeholder.className = 'upload-placeholder';
    placeholder.textContent = `Uploading ${filename}...`;
-   document.getElementById(container).appendChild(placeholder);
+   document.querySelector('.ray-content-editor').appendChild(placeholder);
    return placeholder;
 }
 
-function replacePlaceholderWithImage(placeholder, imageUrl) {
+function replacePlaceholderWithImage(placeholder, imageUrl, imageName) {
    const img = document.createElement('img');
    img.src = imageUrl;
-   img.alt = 'Uploaded Image';
-   img.style.maxWidth = '100%';
+   img.alt = imageName;
+   img.title = imageName;
+   // Set width and height once the image is fully loaded
+   img.onload = () => {
+      // Create resizable image and get both wrapper and editable line
+      const { wrapper, editableLine } = makeImageResizable(img);
 
-   placeholder.replaceWith(img);
+      // Replace placeholder with the resizable image wrapper
+      placeholder.replaceWith(wrapper);
+
+      // Insert the editable line AFTER the image wrapper
+      wrapper.after(editableLine);
+
+      // focus cursor in new line
+      const range = document.createRange();
+      const sel = window.getSelection();
+      range.setStart(newLine, 0);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+   }
 }
+
+function makeImageResizable(img) {
+   const wrapper = document.createElement('div');
+   wrapper.style.position = 'relative';
+   wrapper.style.display = 'inline-block';
+   wrapper.contentEditable = false;
+
+   // Style image for better UX
+   img.style.maxWidth = '100%';
+   img.style.display = 'block';
+   img.style.cursor = 'move';
+   img.style.borderRadius = '4px';
+   img.style.transition = 'box-shadow 0.2s ease';
+   wrapper.appendChild(img);
+
+   // Resize handle (visual indicator for dragging)
+   const handle = document.createElement('div');
+   handle.style.position = 'absolute';
+   handle.style.width = '10px';
+   handle.style.height = '10px';
+   handle.style.right = '0';
+   handle.style.bottom = '0';
+   handle.style.cursor = 'se-resize';
+   handle.style.background = 'hsl(220, 100%, 60%)';
+   handle.style.border = '1px solid white';
+   handle.style.borderRadius = '2px';
+   handle.style.opacity = '0'; // Start hidden
+   handle.style.transition = 'opacity 0.2s ease';
+   wrapper.appendChild(handle);
+
+    // Close Button (Top-Right)
+  const closeBtn = document.createElement('div');
+  closeBtn.innerHTML = '×';
+  closeBtn.style.position = 'absolute';
+  closeBtn.style.top = '0';
+  closeBtn.style.right = '0';
+  closeBtn.style.cursor = 'pointer';
+  closeBtn.style.background = 'hsla(0, 0%, 0%, 0.7)';
+  closeBtn.style.color = 'white';
+  closeBtn.style.width = '20px';
+  closeBtn.style.height = '20px';
+  closeBtn.style.borderRadius = '0 0 0 4px';
+  closeBtn.style.display = 'flex';
+  closeBtn.style.justifyContent = 'center';
+  closeBtn.style.alignItems = 'center';
+  closeBtn.style.opacity = '0';
+  closeBtn.style.transition = 'opacity 0.2s ease';
+  // Show/hide close button on hover/focus
+  wrapper.addEventListener('mouseenter', () => closeBtn.style.opacity = '1');
+  wrapper.addEventListener('mouseleave', () => closeBtn.style.opacity = '0');
+
+  // Delete on click
+  closeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    wrapper.remove(); // Remove entire resizable wrapper + image
+  });
+
+  wrapper.appendChild(closeBtn);
+   // Add subtle border when image is active
+   wrapper.addEventListener('click', (e) => {
+      e.stopPropagation();
+      img.style.boxShadow = '0 0 0 2px hsl(220, 100%, 60%)'; // Blue focus ring
+      handle.style.opacity = '1'; // Show handle
+
+      // Hide handle when clicking elsewhere
+      setTimeout(() => {
+         const clickOutsideHandler = () => {
+            handle.style.opacity = '0';
+            img.style.boxShadow = 'none';
+            document.removeEventListener('click', clickOutsideHandler);
+         };
+         document.addEventListener('click', clickOutsideHandler);
+      }, 0);
+   });
+
+   // **Insert editable new line AFTER the wrapper (not inside it)**
+   const newLine = document.createElement('p');
+   newLine.innerHTML = '<br>';
+   // Resize logic (with aspect ratio lock)
+   let startX, startY, startWidth, startHeight;
+   // **Modified resizing logic (constrains aspect ratio)**
+   handle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      startX = e.clientX;
+      startY = e.clientY;
+      startWidth = img.clientWidth;
+      startHeight = img.clientHeight;
+      img.style.boxShadow = '0 0 0 2px hsl(120, 100%, 25%)'; // Green during resize
+
+      const doDrag = (e) => {
+         const newWidth = startWidth + (e.clientX - startX);
+         const newHeight = startHeight + (e.clientY - startY);
+         img.style.width = `${Math.max(50, newWidth)}px`; // Min 50px
+         img.style.height = `${Math.max(50, newHeight)}px`;
+      };
+
+      function stopDrag() {
+         img.style.boxShadow = '0 0 0 2px hsl(220, 100%, 60%)'; // Revert to blue
+         document.removeEventListener('mousemove', doDrag);
+         document.removeEventListener('mouseup', stopDrag);
+      }
+
+      document.addEventListener('mousemove', doDrag);
+      document.addEventListener('mouseup', stopDrag);
+   });
+
+   // **Return BOTH the wrapper AND the new line for proper insertion**
+   return {
+      wrapper,
+      editableLine: newLine,
+   };
+}
+
+
 
 function insertInlineCode() {
    const selection = window.getSelection();
@@ -947,7 +1078,7 @@ function isInTag(el, tagName) {
 }
 
 function isInStyle(el, styleProp, value) {
-   
+
    while (el && el !== document) {
       if (window.getComputedStyle(el)[styleProp] === value) return true;
       el = el.parentNode;
