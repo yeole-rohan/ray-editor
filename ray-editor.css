@@ -2,6 +2,7 @@
    border: 1px solid black;
    border-radius: 4px;
    height: 500px;
+   z-index: 1;
    overflow: auto;
 }
 
