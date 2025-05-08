@@ -86,11 +86,9 @@ Use the `initEditor` function from the script and configure your desired tools.
       emoji: true,
       imageUpload: {
         imageUploadUrl: '/img-upload-path/', // Required
-        onUploadResponse: (response) => response.imageUrl // Optional mapper
       },
       fileUpload: {
         fileUploadUrl: '/file-upload-path/', // Required
-        onUploadResponse: (response) => response.imageUrl // Optional mapper
       }
     });
   });
