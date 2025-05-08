@@ -241,7 +241,6 @@ export function initEditor(containerId, config = {}) {
       editor.addEventListener(evt, (e) => {
          const position = getCursorPosition(editor);
          updateToolbar();
-         console.log('Cursor position:', position);
 
          const sel = window.getSelection();
          if (!sel.rangeCount) return;
@@ -454,7 +453,6 @@ function toggleEmojiPicker(toolbar, editor) {
       group.appendChild(list);
       emojiPicker.appendChild(group);
    });
-   console.log(rect.left, rect.bottom);
 
    // When showing the emoji picker
    emojiPicker.style.position = 'absolute';
@@ -637,7 +635,6 @@ function triggerImageUpload(config) {
          alert('Image size must be under 5MB.');
          return;
       }
-      console.log(config, 'here');
 
       handleImageUpload(image, config);
    });
@@ -650,7 +647,6 @@ function triggerImageUpload(config) {
 function handleImageUpload(image, config) {
    const uploadUrl = config.imageUpload?.imageUploadUrl;
    const mapResponse = config.imageUpload?.onUploadResponse || (res => res.url);
-   console.log(uploadUrl);
 
    if (!uploadUrl) {
       console.error('Upload URL is not configured.');
@@ -951,7 +947,6 @@ function isInTag(el, tagName) {
 }
 
 function isInStyle(el, styleProp, value) {
-   console.log(el, styleProp, value);
    
    while (el && el !== document) {
       if (window.getComputedStyle(el)[styleProp] === value) return true;
