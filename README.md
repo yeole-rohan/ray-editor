@@ -1,8 +1,4 @@
-# ray-content-editor
-This is a lightweight, extensible, and user-friendly content editor built with pure JavaScript. It supports rich text editing, inline code, code blocks with syntax styling, tooltips, and a fully integrated emoji picker.
-
-
-# ✍️ Rich Content Editor
+# ✍️ raye-editor a Rich WYSIWYG Editor
 
 A lightweight, customizable rich-text content editor built with pure JavaScript — offering an intuitive writing experience, inline code formatting, syntax-highlighted code blocks, and native emoji support with a categorized emoji picker.
 
