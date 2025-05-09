@@ -10,7 +10,7 @@ Here's the updated **README.md** with the image you provided added under the **F
 
 ## 🖼️ Preview
 
-![image](https://github.com/user-attachments/assets/291f8d9a-c9a0-4f63-a059-ef6bceb7b0d5)
+![image](https://github.com/user-attachments/assets/ac32f466-467f-4aff-a036-18e42927bd95)
 
 ---
 
