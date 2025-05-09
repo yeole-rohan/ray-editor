@@ -12,6 +12,7 @@ class RayEditor {
       this.createToolbar();
       this.createEditorArea();
       this.bindEvents();
+      this.addWatermark()
    }
    createToolbar() {
       this.toolbar = document.createElement('div');
@@ -34,7 +35,16 @@ class RayEditor {
          `;
       this.container.appendChild(this.editorArea);
    }
+   addWatermark() {
 
+      if (!this.editorArea) return;
+      const watermark = document.createElement('div');
+      watermark.id = 'ray-editor-watermark';
+      watermark.innerHTML = `Made with ❤️ by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a>`;
+      // Insert after the editor
+      this.editorArea.parentNode.insertBefore(watermark, this.editorArea.nextSibling);
+   
+   }
    generateToolbarButtons(buttonConfigs) {
       // for (const key in this.options) {
       Object.keys(buttonConfigs).forEach((key) => {
