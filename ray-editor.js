@@ -40,7 +40,6 @@ class RayEditor {
       Object.keys(buttonConfigs).forEach((key) => {
          // Check if this key is enabled in userOptions
          if (!this.options[key]) return;
-         console.log(this.options[key].imageUploadUrl, this.options[key].imageMaxSize, this.options[key].fileUploadUrl, this.options[key].fileMaxSize);
 
          if (this.options[key].imageUploadUrl && this.options[key].imageMaxSize) {
             this.imageUploadUrl = this.options[key].imageUploadUrl
@@ -53,9 +52,7 @@ class RayEditor {
          const config = buttonConfigs[key];
          if (config.dropdown && config.options) {
             this.createDropdown(config);
-         } else {
-            console.log(config);
-            
+         } else {            
             this.createButton(config);
          }
       });
@@ -110,10 +107,7 @@ class RayEditor {
             this.applyTextColor()
          } else if (config.keyname === 'imageUpload') {
             this.triggerImageUpload()
-            console.log("click");
          } else if (config.keyname === 'fileUpload') {
-            console.log("click");
-
             this.triggerFileUpload()
          }
       });
@@ -410,8 +404,6 @@ class RayEditor {
             return res.json();
          })
          .then(data => {
-            console.log(data);
-
             const imageUrl = data.url;
             if (!imageUrl) throw new Error('No image URL returned from server.');
             this.replacePlaceholderWithImage(placeholder, imageUrl, image.name);
