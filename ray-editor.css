@@ -1,28 +1,28 @@
-.ray-editor {
+.ray-editor-content {
    border: 1px solid black;
    border-radius: 4px;
-   height: 500px;
    z-index: 1;
+   position: relative;
    overflow: auto;
 }
 
-.ray-editor p,
-.ray-editor h1,
-.ray-editor h2,
-.ray-editor h3,
-.ray-editor h4,
-.ray-editor h5,
-.ray-editor h6 {
+.ray-editor-content p,
+.ray-editor-content h1,
+.ray-editor-content h2,
+.ray-editor-content h3,
+.ray-editor-content h4,
+.ray-editor-content h5,
+.ray-editor-content h6 {
    margin: 0;
    padding: 0;
    outline: none;
 }
 
-.ray-content-editor {
+.ray-editor-content {
    padding: 10px;
 }
 
-.ray-toolbar {
+.ray-editor-toolbar {
    padding: 10px;
    border-bottom: 1px solid black;
    position: sticky;
@@ -34,7 +34,7 @@
    outline: none;
 }
 
-.ray-editor code {
+.ray-editor-content code {
    background-color: #f4f4f4;
    color: #d6336c;
    font-family: monospace;
@@ -112,7 +112,7 @@
    margin: auto;
 }
 
-.ray-toolbar {
+.ray-editor-toolbar {
    display: flex;
    flex-wrap: wrap;
    gap: 8px;
@@ -122,7 +122,7 @@
    margin-bottom: 5px;
 }
 
-.ray-toolbar select {
+.ray-editor-toolbar select {
    padding: 6px 10px;
    border: 1px solid #ccc;
    border-radius: 6px;
