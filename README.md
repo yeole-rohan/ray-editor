@@ -151,5 +151,3 @@ document.addEventListener('DOMContentLoaded', () => {
 * **CDN**: [jsDelivr - rayeditor](https://www.jsdelivr.com/package/npm/rayeditor)
 
 ---
-
-Would you like a downloadable `README.md` file generated from this?
