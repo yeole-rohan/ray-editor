@@ -1,7 +1,3 @@
-Here's the updated **README.md** with the image you provided added under the **Features** section for visual representation:
-
----
-
 # ✨ RayEditor — Lightweight Rich Text Editor
 
 **RayEditor** is a modern, customizable, and lightweight WYSIWYG content editor built with pure JavaScript. It offers a seamless writing experience with support for rich text formatting, code blocks, media uploads, and more. Perfect for blogs, CMS platforms, documentation tools, and any web application requiring rich content editing.
