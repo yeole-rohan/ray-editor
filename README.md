@@ -78,10 +78,10 @@
 
 ```html
 <!-- RayEditor CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rayeditor@latest/ray-editor.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yeole-rohan/ray-editor@main/ray-editor.css">
 
 <!-- RayEditor JS -->
-<script src="https://cdn.jsdelivr.net/npm/rayeditor@latest/ray-editor.js"></script>
+<script src='https://cdn.jsdelivr.net/gh/yeole-rohan/ray-editor@main/ray-editor.js'></script>
 ```
 
 ### 2. Add an Editor Container
@@ -94,7 +94,7 @@
 
 ```javascript
 document.addEventListener('DOMContentLoaded', () => {
-   const editor = new RayEditor('content', {
+   const editor = new RayEditor('editorContainer', {
       bold: true,
       italic: true,
       underline: true,
@@ -112,20 +112,35 @@ document.addEventListener('DOMContentLoaded', () => {
       codeBlock: true,
       codeInline: true,
       imageUpload: {
-         imageUploadUrl: '/img-upload-path/',
+         imageUploadUrl: '/upload-blog-file/',
          imageMaxSize: 20 * 1024 * 1024 // 20MB
       },
       fileUpload: {
-         fileUploadUrl: '/file-upload-path/',
+         fileUploadUrl: '/upload-file/',
          fileMaxSize: 20 * 1024 * 1024 // 20MB
       },
       textColor: true,
       backgroundColor: true,
-      link: true,
-      textAlignment: true,
-      table: true
+      link:true,
+      table:true,
+      textAlignment:true
    });
 });
+```
+
+## ```'/upload-file/'``` should return json with following
+
+```
+{
+  "url":"path of uploaded file or image"
+}
+```
+E.g 
+
+```
+{
+  "url" : "https://rohanyeole.com/static/file/somename.pn"
+}
 ```
 
 ---
