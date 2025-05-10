@@ -44,6 +44,92 @@
    white-space: pre-wrap;
 }
 
+.ray-link {
+   text-decoration: underline;
+   color: hsl(220, 100%, 50%);
+   background-color: hsl(220, 100%, 96%);
+   border-radius: 2px;
+   padding: 0 2px;
+}
+
+/* Modal backdrop */
+.ray-editor-link-modal {
+   position: fixed;
+   top: 0;
+   left: 0;
+   width: 100vw;
+   height: 100vh;
+   background: rgba(0, 0, 0, 0.4);
+   /* semi-transparent background */
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   z-index: 1000;
+}
+
+/* Modal content box */
+.ray-editor-link-modal .modal-content {
+   background: white;
+   padding: 20px 24px;
+   border-radius: 8px;
+   max-width: 400px;
+   width: 90%;
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+   font-family: sans-serif;
+   animation: fadeInScale 0.2s ease-in-out;
+}
+
+/* Simple animation */
+@keyframes fadeInScale {
+   0% {
+      opacity: 0;
+      transform: scale(0.95);
+   }
+
+   100% {
+      opacity: 1;
+      transform: scale(1);
+   }
+}
+
+/* Modal form styling */
+.ray-editor-link-modal label {
+   display: block;
+   margin: 10px 0 5px;
+   font-weight: 500;
+}
+
+.ray-editor-link-modal input[type="text"],
+.ray-editor-link-modal select {
+   width: 100%;
+   padding: 8px;
+   margin-bottom: 10px;
+   box-sizing: border-box;
+   border: 1px solid #ccc;
+   border-radius: 4px;
+}
+
+/* Modal buttons */
+.ray-editor-link-modal button {
+   padding: 8px 12px;
+   margin-top: 8px;
+   margin-right: 8px;
+   border: none;
+   border-radius: 4px;
+   cursor: pointer;
+   font-weight: 500;
+}
+
+#insert-link {
+   background-color: hsl(220, 100%, 56%);
+   color: white;
+}
+
+#cancel-link {
+   background-color: #eee;
+   color: #333;
+}
+
 .ray-code-block {
    background-color: #282c34;
    color: #f8f8f2;
@@ -53,6 +139,24 @@
    padding: 1em;
    overflow-x: auto;
    position: relative;
+}
+
+.ray-editor-link-edit-remove {
+   position: absolute;
+   background: white;
+   border: 1px solid #ccc;
+   padding: 6px 8px;
+   border-radius: 4px;
+   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+   z-index: 1001;
+   display: flex;
+   gap: 8px;
+}
+
+.ray-editor-link-edit-remove button {
+   padding: 4px 6px;
+   font-size: 0.85rem;
+   cursor: pointer;
 }
 
 /* Code block inner content */
