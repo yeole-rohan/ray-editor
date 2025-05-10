@@ -3,6 +3,8 @@
    border-radius: 4px;
    z-index: 1;
    position: relative;
+   padding: 10px;
+   background-color: white;
    overflow: auto;
 }
 
@@ -18,14 +20,11 @@
    outline: none;
 }
 
-.ray-editor-content {
-   padding: 10px;
-}
-
 .ray-editor-toolbar {
    padding: 10px;
    border-bottom: 1px solid black;
    position: sticky;
+   z-index:2;
    top: 0;
    background-color: white;
 }
