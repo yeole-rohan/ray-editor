@@ -9,6 +9,8 @@
 
 ---
 
+[Check out Live Preview](https://rohanyeole.com/ray-editor/)
+
 ## 🚀 Features
 
 ### ✍️ Text Formatting
