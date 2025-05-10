@@ -9,16 +9,16 @@ class RayEditor {
       this.init();
    }
    init() {
-      this.createToolbar();
-      this.createEditorArea();
-      this.bindEvents();
-      this.addWatermark()
+      this.#createToolbar();
+      this.#createEditorArea();
+      this.#bindEvents();
+      this.#addWatermark()
    }
-   createToolbar() {
+   #createToolbar() {
       this.toolbar = document.createElement('div');
       this.toolbar.className = 'ray-editor-toolbar';
       this.container.appendChild(this.toolbar);
-      this.generateToolbarButtons(buttonConfigs);
+      this.#generateToolbarButtons(buttonConfigs);
    }
    // Method to get the content from the editor
    getRayEditorContent() {
@@ -30,22 +30,23 @@ class RayEditor {
       let content = this.editorArea.innerHTML;
       return content;
    }
-   createEditorArea() {
+   setRayEditorContent(html) {
+      if (!this.editorArea) {
+         console.error('Editor element not found');
+         return null;
+      }
+      // Set the inner HTML content of the editor
+      this.editorArea.innerHTML = html
+   }
+   #createEditorArea() {
       this.editorArea = document.createElement('div');
       this.editorArea.className = 'ray-editor-content';
       this.editorArea.contentEditable = true;
       this.editorArea.spellcheck = true;
       this.editorArea.innerHTML = '<p><br></p>';
-      this.editorArea.innerHTML = `
-         <p><b>This is bold text</b></p>
-         <p><i>This is italic text</i></p>
-         <p><u>This is underlined text</u></p>
-         <p><strike>This is strikethrough text</strike></p>
-         <p>This is normal text with no styles.</p>
-         `;
       this.container.appendChild(this.editorArea);
    }
-   addWatermark() {
+   #addWatermark() {
 
       if (!this.editorArea) return;
       const watermark = document.createElement('div');
@@ -55,7 +56,7 @@ class RayEditor {
       this.editorArea.parentNode.insertBefore(watermark, this.editorArea.nextSibling);
 
    }
-   generateToolbarButtons(buttonConfigs) {
+   #generateToolbarButtons(buttonConfigs) {
       // for (const key in this.options) {
       Object.keys(buttonConfigs).forEach((key) => {
          // Check if this key is enabled in userOptions
@@ -71,13 +72,13 @@ class RayEditor {
          }
          const config = buttonConfigs[key];
          if (config.dropdown && config.options) {
-            this.createDropdown(config);
+            this.#createDropdown(config);
          } else {
-            this.createButton(config);
+            this.#createButton(config);
          }
       });
    }
-   createDropdown(config) {
+   #createDropdown(config) {
       const select = document.createElement('select');
       select.className = `ray-dropdown ray-dropdown-${config.keyname}`;
       select.title = config.keyname.charAt(0).toUpperCase() + config.keyname.slice(1);
@@ -93,13 +94,13 @@ class RayEditor {
          const selected = config.options[select.selectedOptions[0].textContent.toLowerCase().replace(/\s/g, '')];
 
          if (selected?.cmd) {
-            this.execCommand(selected.cmd, selected.value);
+            this.#execCommand(selected.cmd, selected.value);
          }
       });
 
       this.toolbar.appendChild(select);
    }
-   createButton(config) {
+   #createButton(config) {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.id = `ray-btn-${config.keyname}`;
@@ -111,41 +112,41 @@ class RayEditor {
 
       btn.addEventListener('click', () => {
          if (config.cmd) {
-            this.execCommand(config.cmd, config.value || null);
+            this.#execCommand(config.cmd, config.value || null);
          } else if (config.keyname === 'uppercase') {
-            this.transformSelectedText('upper');
+            this.#transformSelectedText('upper');
          } else if (config.keyname === 'lowercase') {
-            this.transformSelectedText('lower');
+            this.#transformSelectedText('lower');
          } else if (config.keyname === 'toggleCase') {
-            this.toggleTextCase();
+            this.#toggleTextCase();
          } else if (config.keyname === 'codeBlock') {
-            this.insertCodeBlock()
+            this.#insertCodeBlock()
          } else if (config.keyname === 'codeInline') {
-            this.insertInlineCode()
+            this.#insertInlineCode()
          } else if (config.keyname === 'backgroundColor') {
-            this.applyBackgroundColor()
+            this.#applyBackgroundColor()
          } else if (config.keyname === 'textColor') {
-            this.applyTextColor()
+            this.#applyTextColor()
          } else if (config.keyname === 'imageUpload') {
-            this.triggerImageUpload()
+            this.#triggerImageUpload()
          } else if (config.keyname === 'fileUpload') {
-            this.triggerFileUpload()
+            this.#triggerFileUpload()
          } else if (config.keyname === 'link') {
-            this.openLinkModal()
+            this.#openLinkModal()
          } else if (config.keyname === 'removeFormat') {
-            this.execCommand('removeFormat')
+            this.#execCommand('removeFormat')
          } else if (config.keyname === 'table') {
-            this.openTableModal();
+            this.#openTableModal();
          }
       });
 
       this.toolbar.appendChild(btn);
    }
-   execCommand(command, value = null) {
+   #execCommand(command, value = null) {
       document.execCommand(command, false, value);
       this.editorArea.focus();
    }
-   bindEvents() {
+   #bindEvents() {
       const events = ['keyup', 'mouseup', 'keydown', 'paste', 'click'];
       events.forEach(evt => {
          this.editorArea.addEventListener(evt, (e) => {
@@ -154,20 +155,20 @@ class RayEditor {
 
             const node = sel.anchorNode;
             const elementNode = node.nodeType === 3 ? node.parentElement : node;
-            this.updateToolbar()
+            this.#updateToolbar()
             if (evt === 'keydown') {
-               this.handleCodeBlockExit(e, elementNode);
-               this.handleInlineCodeExit(e, sel, elementNode);
+               this.#handleCodeBlockExit(e, elementNode);
+               this.#handleInlineCodeExit(e, sel, elementNode);
             }
 
             if (evt === 'paste') {
-               this.handleYoutubeEmbed(e);
+               this.#handleYoutubeEmbed(e);
             }
             if (evt === 'click') {
                const anchor = e.target.closest('a');
                if (anchor && this.editorArea.contains(anchor)) {
                   e.preventDefault();
-                  this.showLinkPopup(anchor);
+                  this.#showLinkPopup(anchor);
                }
             }
             // Check if the clicked element is not a table or not inside a table
@@ -183,7 +184,7 @@ class RayEditor {
          });
       });
    }
-   showLinkPopup(anchor) {
+   #showLinkPopup(anchor) {
       // Remove existing popup if any
       const existingPopup = document.querySelector('.ray-editor-link-edit-remove');
       if (existingPopup) existingPopup.remove();
@@ -204,12 +205,12 @@ class RayEditor {
 
       // Handle edit and remove actions
       popup.querySelector('.edit-link').addEventListener('click', () => {
-         this.openLinkModal(anchor);
+         this.#openLinkModal(anchor);
          popup.remove();
       });
 
       popup.querySelector('.remove-link').addEventListener('click', () => {
-         this.removeLink(anchor);
+         this.#removeLink(anchor);
          popup.remove();
       });
 
@@ -222,7 +223,7 @@ class RayEditor {
       });
    }
 
-   handleCodeBlockExit(e, elementNode) {
+   #handleCodeBlockExit(e, elementNode) {
       if (e.key !== 'Enter' || e.shiftKey) return;
 
       const codeContent = elementNode.closest('.ray-code-content');
@@ -254,7 +255,7 @@ class RayEditor {
          setTimeout(() => delete codeContent.dataset.lastEmptyEnter, 500);
       }
    }
-   handleInlineCodeExit(e, sel, elementNode) {
+   #handleInlineCodeExit(e, sel, elementNode) {
       if (e.key !== 'ArrowRight') return;
 
       const inlineCode = elementNode.closest('code');
@@ -277,7 +278,7 @@ class RayEditor {
          sel.addRange(newRange);
       }
    }
-   handleYoutubeEmbed(e) {
+   #handleYoutubeEmbed(e) {
       const clipboard = e.clipboardData || window.clipboardData;
       const pastedText = clipboard.getData('text');
 
@@ -301,7 +302,7 @@ class RayEditor {
       range.deleteContents();
       range.insertNode(iframe);
    }
-   applyTextTransformation(transformFn) {
+   #applyTextTransformation(transformFn) {
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
 
@@ -320,19 +321,19 @@ class RayEditor {
       selection.removeAllRanges();
       selection.addRange(range);
    }
-   transformSelectedText(mode) {
-      this.applyTextTransformation((text) =>
+   #transformSelectedText(mode) {
+      this.#applyTextTransformation((text) =>
          mode === 'upper' ? text.toUpperCase() : text.toLowerCase()
       );
    }
-   toggleTextCase() {
-      this.applyTextTransformation((text) =>
+   #toggleTextCase() {
+      this.#applyTextTransformation((text) =>
          [...text].map(char =>
             char === char.toUpperCase() ? char.toLowerCase() : char.toUpperCase()
          ).join('')
       );
    }
-   insertCodeBlock() {
+   #insertCodeBlock() {
       const selection = window.getSelection();
       if (!selection.rangeCount) return;
 
@@ -363,14 +364,14 @@ class RayEditor {
          sel.addRange(newRange);
       }, 0);
    }
-   insertInlineCode() {
+   #insertInlineCode() {
       const selection = window.getSelection();
       if (!selection.rangeCount || selection.isCollapsed) return;
 
       const range = selection.getRangeAt(0);
       const selectedText = range.toString();
 
-      const parentCode = this.getSelectedElementInTag('code');
+      const parentCode = this.#getSelectedElementInTag('code');
 
       if (parentCode) {
          // Already in code → unwrap it
@@ -394,7 +395,7 @@ class RayEditor {
          selection.addRange(newRange);
       }
    }
-   getSelectedElementInTag(tagName) {
+   #getSelectedElementInTag(tagName) {
       const sel = window.getSelection();
       if (!sel.rangeCount) return null;
       let node = sel.anchorNode;
@@ -406,7 +407,7 @@ class RayEditor {
       }
       return null;
    }
-   applyTextColor() {
+   #applyTextColor() {
       const input = document.createElement("input");
       input.type = "color";
       input.value = "#000000";
@@ -416,13 +417,13 @@ class RayEditor {
 
       input.oninput = () => {
          const color = input.value;
-         this.execCommand("foreColor", color)
+         this.#execCommand("foreColor", color)
          input.remove(); // Clean up
       };
 
       input.click();
    }
-   applyBackgroundColor() {
+   #applyBackgroundColor() {
       const input = document.createElement("input");
       input.type = "color";
       input.value = "#ffffff";
@@ -432,13 +433,13 @@ class RayEditor {
 
       input.oninput = () => {
          const color = input.value;
-         this.execCommand("backColor", color)
+         this.#execCommand("backColor", color)
          input.remove();
       };
 
       input.click();
    }
-   triggerImageUpload() {
+   #triggerImageUpload() {
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
@@ -459,14 +460,14 @@ class RayEditor {
             alert(`Image size must be under ${this.maxImageSize / (1024 * 1024)}MB.`);
             return;
          }
-         this.handleImageUpload(image);
+         this.#handleImageUpload(image);
       });
 
       document.body.appendChild(input);
       input.click();
       document.body.removeChild(input);
    }
-   handleImageUpload(image) {
+   #handleImageUpload(image) {
 
       if (!this.imageUploadUrl) {
          console.error('Upload URL is not configured.');
@@ -476,7 +477,7 @@ class RayEditor {
       const formData = new FormData();
       formData.append('file', image);
 
-      const placeholder = this.insertUploadPlaceholder(image.name);
+      const placeholder = this.#insertUploadPlaceholder(image.name);
 
       fetch(this.imageUploadUrl, {
          method: 'POST',
@@ -489,21 +490,21 @@ class RayEditor {
          .then(data => {
             const imageUrl = data.url;
             if (!imageUrl) throw new Error('No image URL returned from server.');
-            this.replacePlaceholderWithImage(placeholder, imageUrl, image.name);
+            this.#replacePlaceholderWithImage(placeholder, imageUrl, image.name);
          })
          .catch(err => {
             console.error('Image upload failed:', err);
-            this.showUploadErrorWithRemove(placeholder, image.name);
+            this.#showUploadErrorWithRemove(placeholder, image.name);
          });
    }
-   insertUploadPlaceholder(filename) {
+   #insertUploadPlaceholder(filename) {
       const placeholder = document.createElement('div');
       placeholder.className = 'upload-placeholder';
       placeholder.textContent = `Uploading ${filename}...`;
       this.editorArea.appendChild(placeholder);
       return placeholder;
    }
-   replacePlaceholderWithImage(placeholder, imageUrl, imageName) {
+   #replacePlaceholderWithImage(placeholder, imageUrl, imageName) {
       const img = document.createElement('img');
       img.src = imageUrl;
       img.alt = imageName;
@@ -511,7 +512,7 @@ class RayEditor {
       // Set width and height once the image is fully loaded
       img.onload = () => {
          // Create resizable image and get both wrapper and editable line
-         const { wrapper, editableLine } = this.makeImageResizable(img);
+         const { wrapper, editableLine } = this.#makeImageResizable(img);
 
          // Replace placeholder with the resizable image wrapper
          placeholder.replaceWith(wrapper);
@@ -528,7 +529,7 @@ class RayEditor {
          sel.addRange(range);
       }
    }
-   showUploadErrorWithRemove(placeholder, imagename) {
+   #showUploadErrorWithRemove(placeholder, imagename) {
       placeholder.innerHTML = `❌ Failed to upload "${imagename}"`;
 
       const removeBtn = document.createElement('button');
@@ -542,7 +543,7 @@ class RayEditor {
       removeBtn.onclick = () => placeholder.remove();
       placeholder.appendChild(removeBtn);
    }
-   makeImageResizable(img) {
+   #makeImageResizable(img) {
       const wrapper = document.createElement('div');
       wrapper.style.position = 'relative';
       wrapper.style.display = 'inline-block';
@@ -654,7 +655,7 @@ class RayEditor {
          editableLine: newLine,
       };
    }
-   triggerFileUpload() {
+   #triggerFileUpload() {
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = '*/*';
@@ -679,7 +680,7 @@ class RayEditor {
             return;
          }
 
-         this.handleFileUpload(file);
+         this.#handleFileUpload(file);
       });
 
       document.body.appendChild(input);
@@ -687,7 +688,7 @@ class RayEditor {
       document.body.removeChild(input);
    }
 
-   handleFileUpload(file) {
+   #handleFileUpload(file) {
 
       if (!this.fileUploadUrl) {
          console.error('No file upload URL configured.');
@@ -697,7 +698,7 @@ class RayEditor {
       const formData = new FormData();
       formData.append('file', file);
 
-      const placeholder = this.insertUploadPlaceholder(file.name);
+      const placeholder = this.#insertUploadPlaceholder(file.name);
 
       fetch(this.fileUploadUrl, {
          method: 'POST',
@@ -710,15 +711,15 @@ class RayEditor {
          .then(data => {
             const fileUrl = data.url;
             if (!fileUrl) throw new Error('No file URL returned.');
-            this.replacePlaceholderWithFileLink(placeholder, file.name, fileUrl);
+            this.#replacePlaceholderWithFileLink(placeholder, file.name, fileUrl);
          })
          .catch(err => {
             console.error('File upload failed:', err);
-            this.showUploadErrorWithRemove(placeholder, file.name);
+            this.#showUploadErrorWithRemove(placeholder, file.name);
          });
    }
 
-   replacePlaceholderWithFileLink(placeholder, filename, url) {
+   #replacePlaceholderWithFileLink(placeholder, filename, url) {
       const link = document.createElement('a');
       link.href = url;
       link.target = '_blank';
@@ -730,7 +731,7 @@ class RayEditor {
       placeholder.replaceWith(link);
    }
    // save the current selection
-   saveSelection() {
+   #saveSelection() {
       if (window.getSelection) {
          const sel = window.getSelection();
          if (sel.rangeCount > 0) {
@@ -741,7 +742,7 @@ class RayEditor {
    }
 
    // to restore a saved selection
-   restoreSelection(range) {
+   #restoreSelection(range) {
       if (range && window.getSelection) {
          const sel = window.getSelection();
          sel.removeAllRanges();
@@ -750,8 +751,8 @@ class RayEditor {
    }
 
    // to open the link insertion modal
-   openLinkModal(anchor = null) {
-      const savedRange = this.saveSelection();
+   #openLinkModal(anchor = null) {
+      const savedRange = this.#saveSelection();
 
       // Create modal elements
       const modal = document.createElement('div');
@@ -792,7 +793,7 @@ class RayEditor {
          const target = document.getElementById('link-target').value;
          const rel = document.getElementById('link-rel').value;
 
-         this.restoreSelection(savedRange);
+         this.#restoreSelection(savedRange);
 
          if (url) {
             if (anchor) {
@@ -802,7 +803,7 @@ class RayEditor {
                anchor.setAttribute('rel', rel);
             } else {
                // Create new link
-               this.applyLinkToSelection({ href: url, target, rel });
+               this.#applyLinkToSelection({ href: url, target, rel });
             }
          }
 
@@ -814,8 +815,8 @@ class RayEditor {
          document.body.removeChild(modal);
       });
    }
-   openTableModal() {
-      const savedRange = this.saveSelection();
+   #openTableModal() {
+      const savedRange = this.#saveSelection();
 
       const modal = document.createElement('div');
       modal.className = 'ray-editor-table-modal';
@@ -833,8 +834,8 @@ class RayEditor {
          const rows = parseInt(document.getElementById('ray-editor-table-modal-rows').value);
          const cols = parseInt(document.getElementById('ray-editor-table-modal-cols').value);
 
-         this.restoreSelection(savedRange);
-         this.insertTable(rows, cols);
+         this.#restoreSelection(savedRange);
+         this.#insertTable(rows, cols);
          modal.remove();
       });
 
@@ -843,7 +844,7 @@ class RayEditor {
       });
    }
 
-   insertTable(rows, cols) {
+   #insertTable(rows, cols) {
       const table = document.createElement('table');
       table.className = 'ray-editor-table';
 
@@ -864,7 +865,7 @@ class RayEditor {
          e.preventDefault();
          const td = e.target.closest('td');
          if (!td) return;
-         this.showTableContextMenu(td, e.pageX, e.pageY);
+         this.#showTableContextMenu(td, e.pageX, e.pageY);
       });
       table.addEventListener('click', (e) => {
          // Remove highlight from any previously selected table
@@ -885,7 +886,7 @@ class RayEditor {
       sel.removeAllRanges();
       sel.addRange(newRange);
    }
-   showTableContextMenu(td, x, y) {
+   #showTableContextMenu(td, x, y) {
       // Remove existing menu if any
       const existing = document.getElementById('table-context-menu');
       if (existing) existing.remove();
@@ -955,15 +956,15 @@ class RayEditor {
    }
 
 
-   applyLinkToSelection({ href, target, rel }) {
+   #applyLinkToSelection({ href, target, rel }) {
       const selection = window.getSelection();
       if (!selection.rangeCount || selection.isCollapsed) return;
 
       const range = selection.getRangeAt(0);
 
       // Prevent linking across multiple blocks
-      const startBlock = this.getBlockAncestor(range.startContainer);
-      const endBlock = this.getBlockAncestor(range.endContainer);
+      const startBlock = this.#getBlockAncestor(range.startContainer);
+      const endBlock = this.#getBlockAncestor(range.endContainer);
       if (startBlock !== endBlock) {
          alert('Please select text within a single paragraph or inline block.');
          return;
@@ -984,7 +985,7 @@ class RayEditor {
          alert('Invalid selection. Try selecting clean inline text.');
       }
    }
-   getBlockAncestor(node) {
+   #getBlockAncestor(node) {
       while (node && node.nodeType === 3) node = node.parentNode;
       while (node && node !== document.body) {
          const style = window.getComputedStyle(node);
@@ -995,14 +996,14 @@ class RayEditor {
       }
       return null;
    }
-   removeLink(anchor) {
+   #removeLink(anchor) {
       const parent = anchor.parentNode;
       while (anchor.firstChild) {
          parent.insertBefore(anchor.firstChild, anchor);
       }
       parent.removeChild(anchor);
    }
-   updateToolbar() {
+   #updateToolbar() {
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
 
@@ -1010,7 +1011,7 @@ class RayEditor {
       const parent = range.startContainer.parentNode;
 
       // Reset all toolbar states once
-      this.resetToolbar();
+      this.#resetToolbar();
 
       const checks = [
          { tag: 'b', style: ['font-weight', 'bold'], btn: 'ray-btn-bold' },
@@ -1026,8 +1027,8 @@ class RayEditor {
       ];
 
       for (const { tag, style, btn } of checks) {
-         const matchTag = this.isInTag(parent, tag);
-         const matchStyle = style ? this.isInStyle(parent, style[0], style[1]) : false;
+         const matchTag = this.#isInTag(parent, tag);
+         const matchStyle = style ? this.#isInStyle(parent, style[0], style[1]) : false;
          if (matchTag || matchStyle) {
             document.getElementById(btn)?.classList.add('active');
          }
@@ -1040,7 +1041,7 @@ class RayEditor {
 
       // Handle heading dropdown
       const headings = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'];
-      const matchedHeading = headings.find(tag => this.isInTag(parent, tag)) || 'p';
+      const matchedHeading = headings.find(tag => this.#isInTag(parent, tag)) || 'p';
       const headingSelect = document.querySelector('.ray-dropdown-heading');
       if (headingSelect) headingSelect.value = `<${matchedHeading}>`;
 
@@ -1051,14 +1052,14 @@ class RayEditor {
       if (alignmentSelect) alignmentSelect.value = `${matchedAlignment}`;
    }
 
-   isInStyle(el, styleProp, value) {
+   #isInStyle(el, styleProp, value) {
       while (el && el !== document) {
          if (window.getComputedStyle(el)[styleProp] === value) return true;
          el = el.parentNode;
       }
       return false;
    }
-   isInTag(el, tagName) {
+   #isInTag(el, tagName) {
       while (el && el !== document) {
          if (el.tagName && el.tagName.toLowerCase() === tagName) return true;
          el = el.parentNode;
@@ -1066,7 +1067,7 @@ class RayEditor {
       return false;
    }
    // Common function to reset the toolbar
-   resetToolbar() {
+   #resetToolbar() {
       document.querySelectorAll('.ray-editor-toolbar button').forEach(btn => {
          btn.classList.remove('active');
       });
