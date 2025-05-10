@@ -81,6 +81,7 @@ class RayEditor {
 
       select.addEventListener('change', () => {
          const selected = config.options[select.selectedOptions[0].textContent.toLowerCase().replace(/\s/g, '')];
+
          if (selected?.cmd) {
             this.execCommand(selected.cmd, selected.value);
          }
@@ -123,6 +124,8 @@ class RayEditor {
             this.openLinkModal()
          } else if (config.keyname === 'removeFormat') {
             this.execCommand('removeFormat')
+         } else if (config.keyname === 'table') {
+            this.openTableModal();
          }
       });
 
@@ -156,6 +159,16 @@ class RayEditor {
                   e.preventDefault();
                   this.showLinkPopup(anchor);
                }
+            }
+            // Check if the clicked element is not a table or not inside a table
+            const table = e.target.closest('table');
+            
+            // If the click is outside any table, remove highlight from all tables
+            if (!table) {
+               // Remove highlight from all tables
+               document.querySelectorAll('table').forEach(t => {
+                  t.classList.remove('ray-editor-table-highlighted');
+               });
             }
          });
       });
@@ -791,7 +804,147 @@ class RayEditor {
          document.body.removeChild(modal);
       });
    }
+   openTableModal() {
+      const savedRange = this.saveSelection();
 
+      const modal = document.createElement('div');
+      modal.className = 'ray-editor-table-modal';
+      modal.innerHTML = `
+         <div class="ray-editor-table-modal-content">
+            <label>Rows: <input type="number" id="ray-editor-table-modal-rows" min="1" value="2" /></label>
+            <label>Columns: <input type="number" id="ray-editor-table-modal-cols" min="1" value="2" /></label>
+            <button id="ray-editor-insert-table">Insert Table</button>
+            <button id="ray-editor-cancel-table">Cancel</button>
+         </div>
+      `;
+      document.body.appendChild(modal);
+
+      document.getElementById('ray-editor-insert-table').addEventListener('click', () => {
+         const rows = parseInt(document.getElementById('ray-editor-table-modal-rows').value);
+         const cols = parseInt(document.getElementById('ray-editor-table-modal-cols').value);
+
+         this.restoreSelection(savedRange);
+         this.insertTable(rows, cols);
+         modal.remove();
+      });
+
+      document.getElementById('ray-editor-cancel-table').addEventListener('click', () => {
+         modal.remove();
+      });
+   }
+
+   insertTable(rows, cols) {
+      const table = document.createElement('table');
+      table.className = 'ray-editor-table';
+
+      for (let i = 0; i < rows; i++) {
+         const tr = document.createElement('tr');
+         for (let j = 0; j < cols; j++) {
+            const td = document.createElement('td');
+            td.innerHTML = '&nbsp;';
+            tr.appendChild(td);
+         }
+         table.appendChild(tr);
+      }
+
+      const range = window.getSelection().getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(table);
+      table.addEventListener('contextmenu', (e) => {
+         e.preventDefault();
+         const td = e.target.closest('td');
+         if (!td) return;
+         this.showTableContextMenu(td, e.pageX, e.pageY);
+      });
+      table.addEventListener('click', (e) => {
+         // Remove highlight from any previously selected table
+         document.querySelectorAll('table').forEach(t => t.classList.remove('ray-editor-table-highlighted'));
+   
+         // Add highlight to the selected table
+         table.classList.add('ray-editor-table-highlighted');
+      });
+      // Move caret after the table
+      const newLine = document.createElement('p');
+      newLine.innerHTML = '<br>';
+      table.after(newLine);
+
+      const sel = window.getSelection();
+      const newRange = document.createRange();
+      newRange.setStart(newLine, 0);
+      newRange.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(newRange);
+   }
+   showTableContextMenu(td, x, y) {
+      // Remove existing menu if any
+      const existing = document.getElementById('table-context-menu');
+      if (existing) existing.remove();
+   
+      const menu = document.createElement('div');
+      menu.id = 'table-context-menu';
+      menu.className = 'ray-table-context-menu';
+      menu.style.left = `${x}px`;
+      menu.style.top = `${y}px`;
+   
+      // Adding descriptive tooltips to explain actions
+      menu.innerHTML = `
+         <button data-action="add-row" title="Add a new row below the current row">Add Row</button>
+         <button data-action="delete-row" title="Delete the current row. Note: You can't delete the last row.">Delete Row</button>
+         <button data-action="add-col" title="Add a new column to the right of the selected column">Add Column</button>
+         <button data-action="delete-col" title="Delete the current column. Note: You can't delete the last column.">Delete Column</button>
+         <button data-action="remove-table" title="Remove the entire table from the content">Remove Table</button>
+      `;
+   
+      document.body.appendChild(menu);
+   
+      const tr = td.parentElement;
+      const table = td.closest('table');
+      const cellIndex = Array.from(td.parentNode.children).indexOf(td);
+   
+      // Action handling for context menu
+      menu.addEventListener('click', (e) => {
+         const action = e.target.dataset.action;
+         if (!action) return;
+   
+         switch (action) {
+            case 'add-row':
+               // Add a new row below the current row
+               const newRow = tr.cloneNode(true);
+               newRow.querySelectorAll('td').forEach(cell => cell.innerHTML = '&nbsp;');
+               tr.after(newRow);
+               break;
+            case 'delete-row':
+               // Remove the current row if it's not the only row in the table
+               if (table.rows.length > 1) tr.remove();
+               break;
+            case 'add-col':
+               // Add a new column to the right of the selected column
+               Array.from(table.rows).forEach(row => {
+                  const cell = row.insertCell(cellIndex + 1);
+                  cell.innerHTML = '&nbsp;';
+               });
+               break;
+            case 'delete-col':
+               // Remove the current column if it's not the last column
+               const colCount = table.rows[0].cells.length;
+               if (colCount > 1) {
+                  Array.from(table.rows).forEach(row => row.deleteCell(cellIndex));
+               }
+               break;
+            case 'remove-table':
+               // Remove the entire table
+               table.remove();
+               break;
+         }
+   
+         menu.remove();
+      });
+   
+      // Close menu if clicked outside
+      document.addEventListener('click', () => menu.remove(), { once: true });
+   }
+   
+   
    applyLinkToSelection({ href, target, rel }) {
       const selection = window.getSelection();
       if (!selection.rangeCount || selection.isCollapsed) return;
@@ -880,6 +1033,12 @@ class RayEditor {
       const matchedHeading = headings.find(tag => this.isInTag(parent, tag)) || 'p';
       const headingSelect = document.querySelector('.ray-dropdown-heading');
       if (headingSelect) headingSelect.value = `<${matchedHeading}>`;
+
+      // alignment dropdown
+      let matchedAlignment = parent.getAttribute('align') || 'left';
+
+      const alignmentSelect = document.querySelector('.ray-dropdown-textAlignment');
+      if (alignmentSelect) alignmentSelect.value = `${matchedAlignment}`;
    }
 
    isInStyle(el, styleProp, value) {
@@ -1010,6 +1169,19 @@ const buttonConfigs = {
    removeFormat: {
       keyname: "removeFormat",
       label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-remove-formatting-icon lucide-remove-formatting"><path d="M4 7V4h16v3"/><path d="M5 20h6"/><path d="M13 4 8 20"/><path d="m15 15 5 5"/><path d="m20 15-5 5"/></svg>`,
-   }
+   },
+   textAlignment: {
+      dropdown: true,
+      keyname: 'textAlignment',
+      options: {
+         left: { label: 'Left', cmd: 'justifyLeft', value: 'left' },
+         right: { label: 'Right', cmd: 'justifyRight', value: 'right' },
+         center: { label: 'Center', cmd: 'justifyCenter', value: 'center' },
+      }
+   },
+   table: {
+      keyname: "table",
+      label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-table-icon lucide-table"><path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>`,
+   },
 }
 
