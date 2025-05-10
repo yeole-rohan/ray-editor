@@ -94,7 +94,7 @@
 
 ```javascript
 document.addEventListener('DOMContentLoaded', () => {
-   const editor = new RayEditor('editorContainer', {
+   const editor = new RayEditor('content', {
       bold: true,
       italic: true,
       underline: true,
@@ -139,7 +139,7 @@ E.g
 
 ```
 {
-  "url" : "https://rohanyeole.com/static/file/somename.pn"
+  "url" : "https://rohanyeole.com/static/file/somename.png"
 }
 ```
 
