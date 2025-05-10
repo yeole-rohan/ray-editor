@@ -87,7 +87,7 @@
 ### 2. Add an Editor Container
 
 ```html
-<div id="content" class="ray-content-editor"></div>
+<div id="content"></div>
 ```
 
 ### 3. Initialize RayEditor
@@ -170,7 +170,7 @@ E.g
 
 ## 🔗 Resources
 
-* **GitHub**: [yeole-rohan/ray-content-editor](https://github.com/yeole-rohan/ray-content-editor)
+* **GitHub**: [yeole-rohan/ray-editor](https://github.com/yeole-rohan/ray-editor)
 * **CDN**: [jsDelivr - rayeditor](https://www.jsdelivr.com/package/npm/rayeditor)
 
 ---
