@@ -63,6 +63,16 @@
 
 ---
 
+### Tables
+
+* Add Row: Add a new row below the selected row.
+* Delete Row: Remove the selected row.
+* Add Column: Add a new column to the right of the selected cell.
+* Delete Column: Remove the selected column.
+* Remove Table: Delete the entire table.
+
+---
+
 ## 🛠️ Setup Guide
 
 ### 1. Include RayEditor via CDN
@@ -111,7 +121,10 @@ document.addEventListener('DOMContentLoaded', () => {
          fileMaxSize: 20 * 1024 * 1024 // 20MB
       },
       textColor: true,
-      backgroundColor: true
+      backgroundColor: true,
+      link: true,
+      textAlignment: true,
+      table: true
    });
 });
 ```
