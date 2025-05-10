@@ -20,6 +20,16 @@ class RayEditor {
       this.container.appendChild(this.toolbar);
       this.generateToolbarButtons(buttonConfigs);
    }
+   // Method to get the content from the editor
+   getRayEditorContent() {
+      if (!this.editorArea) {
+         console.error('Editor element not found');
+         return null;
+      }
+      // Get the inner HTML content of the editor
+      let content = this.editorArea.innerHTML;
+      return content;
+   }
    createEditorArea() {
       this.editorArea = document.createElement('div');
       this.editorArea.className = 'ray-editor-content';
@@ -162,7 +172,7 @@ class RayEditor {
             }
             // Check if the clicked element is not a table or not inside a table
             const table = e.target.closest('table');
-            
+
             // If the click is outside any table, remove highlight from all tables
             if (!table) {
                // Remove highlight from all tables
@@ -859,7 +869,7 @@ class RayEditor {
       table.addEventListener('click', (e) => {
          // Remove highlight from any previously selected table
          document.querySelectorAll('table').forEach(t => t.classList.remove('ray-editor-table-highlighted'));
-   
+
          // Add highlight to the selected table
          table.classList.add('ray-editor-table-highlighted');
       });
@@ -879,13 +889,13 @@ class RayEditor {
       // Remove existing menu if any
       const existing = document.getElementById('table-context-menu');
       if (existing) existing.remove();
-   
+
       const menu = document.createElement('div');
       menu.id = 'table-context-menu';
       menu.className = 'ray-table-context-menu';
       menu.style.left = `${x}px`;
       menu.style.top = `${y}px`;
-   
+
       // Adding descriptive tooltips to explain actions
       menu.innerHTML = `
          <button data-action="add-row" title="Add a new row below the current row">Add Row</button>
@@ -894,18 +904,18 @@ class RayEditor {
          <button data-action="delete-col" title="Delete the current column. Note: You can't delete the last column.">Delete Column</button>
          <button data-action="remove-table" title="Remove the entire table from the content">Remove Table</button>
       `;
-   
+
       document.body.appendChild(menu);
-   
+
       const tr = td.parentElement;
       const table = td.closest('table');
       const cellIndex = Array.from(td.parentNode.children).indexOf(td);
-   
+
       // Action handling for context menu
       menu.addEventListener('click', (e) => {
          const action = e.target.dataset.action;
          if (!action) return;
-   
+
          switch (action) {
             case 'add-row':
                // Add a new row below the current row
@@ -936,15 +946,15 @@ class RayEditor {
                table.remove();
                break;
          }
-   
+
          menu.remove();
       });
-   
+
       // Close menu if clicked outside
       document.addEventListener('click', () => menu.remove(), { once: true });
    }
-   
-   
+
+
    applyLinkToSelection({ href, target, rel }) {
       const selection = window.getSelection();
       if (!selection.rangeCount || selection.isCollapsed) return;
