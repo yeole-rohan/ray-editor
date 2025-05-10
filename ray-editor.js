@@ -43,7 +43,7 @@ class RayEditor {
       watermark.innerHTML = `Made with ❤️ by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a>`;
       // Insert after the editor
       this.editorArea.parentNode.insertBefore(watermark, this.editorArea.nextSibling);
-   
+
    }
    generateToolbarButtons(buttonConfigs) {
       // for (const key in this.options) {
@@ -62,7 +62,7 @@ class RayEditor {
          const config = buttonConfigs[key];
          if (config.dropdown && config.options) {
             this.createDropdown(config);
-         } else {            
+         } else {
             this.createButton(config);
          }
       });
@@ -119,6 +119,10 @@ class RayEditor {
             this.triggerImageUpload()
          } else if (config.keyname === 'fileUpload') {
             this.triggerFileUpload()
+         } else if (config.keyname === 'link') {
+            this.openLinkModal()
+         } else if (config.keyname === 'removeFormat') {
+            this.execCommand('removeFormat')
          }
       });
 
@@ -129,7 +133,7 @@ class RayEditor {
       this.editorArea.focus();
    }
    bindEvents() {
-      const events = ['keyup', 'mouseup', 'keydown', 'paste'];
+      const events = ['keyup', 'mouseup', 'keydown', 'paste', 'click'];
       events.forEach(evt => {
          this.editorArea.addEventListener(evt, (e) => {
             const sel = window.getSelection();
@@ -137,7 +141,7 @@ class RayEditor {
 
             const node = sel.anchorNode;
             const elementNode = node.nodeType === 3 ? node.parentElement : node;
-
+            this.updateToolbar()
             if (evt === 'keydown') {
                this.handleCodeBlockExit(e, elementNode);
                this.handleInlineCodeExit(e, sel, elementNode);
@@ -146,9 +150,55 @@ class RayEditor {
             if (evt === 'paste') {
                this.handleYoutubeEmbed(e);
             }
+            if (evt === 'click') {
+               const anchor = e.target.closest('a');
+               if (anchor && this.editorArea.contains(anchor)) {
+                  e.preventDefault();
+                  this.showLinkPopup(anchor);
+               }
+            }
          });
       });
    }
+   showLinkPopup(anchor) {
+      // Remove existing popup if any
+      const existingPopup = document.querySelector('.ray-editor-link-edit-remove');
+      if (existingPopup) existingPopup.remove();
+
+      // Create popup element
+      const popup = document.createElement('div');
+      popup.className = 'ray-editor-link-edit-remove';
+      popup.innerHTML = `
+        <button class="edit-link">Edit</button>
+        <button class="remove-link">Remove</button>
+      `;
+      document.body.appendChild(popup);
+
+      // Position the popup near the anchor
+      const rect = anchor.getBoundingClientRect();
+      popup.style.top = `${rect.bottom + window.scrollY}px`;
+      popup.style.left = `${rect.left + window.scrollX}px`;
+
+      // Handle edit and remove actions
+      popup.querySelector('.edit-link').addEventListener('click', () => {
+         this.openLinkModal(anchor);
+         popup.remove();
+      });
+
+      popup.querySelector('.remove-link').addEventListener('click', () => {
+         this.removeLink(anchor);
+         popup.remove();
+      });
+
+      // Remove popup when clicking outside
+      document.addEventListener('click', function onDocClick(e) {
+         if (!popup.contains(e.target) && e.target !== anchor) {
+            popup.remove();
+            document.removeEventListener('click', onDocClick);
+         }
+      });
+   }
+
    handleCodeBlockExit(e, elementNode) {
       if (e.key !== 'Enter' || e.shiftKey) return;
 
@@ -656,6 +706,202 @@ class RayEditor {
 
       placeholder.replaceWith(link);
    }
+   // save the current selection
+   saveSelection() {
+      if (window.getSelection) {
+         const sel = window.getSelection();
+         if (sel.rangeCount > 0) {
+            return sel.getRangeAt(0);
+         }
+      }
+      return null;
+   }
+
+   // to restore a saved selection
+   restoreSelection(range) {
+      if (range && window.getSelection) {
+         const sel = window.getSelection();
+         sel.removeAllRanges();
+         sel.addRange(range);
+      }
+   }
+
+   // to open the link insertion modal
+   openLinkModal(anchor = null) {
+      const savedRange = this.saveSelection();
+
+      // Create modal elements
+      const modal = document.createElement('div');
+      modal.className = 'ray-editor-link-modal';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <label>URL: <input type="text" id="link-url" /></label>
+          <label>Target:
+            <select id="link-target">
+              <option value="_self">Same Tab</option>
+              <option value="_blank">New Tab</option>
+            </select>
+          </label>
+          <label>Rel:
+            <select id="link-rel">
+              <option value="">Follow</option>
+              <option value="nofollow">No Follow</option>
+            </select>
+          </label>
+          <div class="modal-actions">
+            <button id="insert-link">Insert Link</button>
+            <button id="cancel-link">Cancel</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      // Pre-fill fields if editing existing link
+      if (anchor) {
+         document.getElementById('link-url').value = anchor.getAttribute('href') || '';
+         document.getElementById('link-target').value = anchor.getAttribute('target') || '_self';
+         document.getElementById('link-rel').value = anchor.getAttribute('rel') || '';
+      }
+
+      // Handle insert link
+      document.getElementById('insert-link').addEventListener('click', () => {
+         const url = document.getElementById('link-url').value.trim();
+         const target = document.getElementById('link-target').value;
+         const rel = document.getElementById('link-rel').value;
+
+         this.restoreSelection(savedRange);
+
+         if (url) {
+            if (anchor) {
+               // Update existing link
+               anchor.setAttribute('href', url);
+               anchor.setAttribute('target', target);
+               anchor.setAttribute('rel', rel);
+            } else {
+               // Create new link
+               this.applyLinkToSelection({ href: url, target, rel });
+            }
+         }
+
+         document.body.removeChild(modal);
+      });
+
+      // Handle cancel
+      document.getElementById('cancel-link').addEventListener('click', () => {
+         document.body.removeChild(modal);
+      });
+   }
+
+   applyLinkToSelection({ href, target, rel }) {
+      const selection = window.getSelection();
+      if (!selection.rangeCount || selection.isCollapsed) return;
+
+      const range = selection.getRangeAt(0);
+
+      // Prevent linking across multiple blocks
+      const startBlock = this.getBlockAncestor(range.startContainer);
+      const endBlock = this.getBlockAncestor(range.endContainer);
+      if (startBlock !== endBlock) {
+         alert('Please select text within a single paragraph or inline block.');
+         return;
+      }
+
+      // Create <a> and wrap
+      const anchor = document.createElement('a');
+      anchor.href = href;
+      anchor.target = target || '_self';
+      if (rel) anchor.rel = rel;
+      anchor.className = 'ray-link';
+
+      try {
+         range.surroundContents(anchor);
+         selection.removeAllRanges();
+         selection.addRange(range);
+      } catch (err) {
+         alert('Invalid selection. Try selecting clean inline text.');
+      }
+   }
+   getBlockAncestor(node) {
+      while (node && node.nodeType === 3) node = node.parentNode;
+      while (node && node !== document.body) {
+         const style = window.getComputedStyle(node);
+         if (style.display === 'block' || style.display === 'flex' || style.display === 'grid') {
+            return node;
+         }
+         node = node.parentNode;
+      }
+      return null;
+   }
+   removeLink(anchor) {
+      const parent = anchor.parentNode;
+      while (anchor.firstChild) {
+         parent.insertBefore(anchor.firstChild, anchor);
+      }
+      parent.removeChild(anchor);
+   }
+   updateToolbar() {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+
+      const range = selection.getRangeAt(0);
+      const parent = range.startContainer.parentNode;
+
+      // Reset all toolbar states once
+      this.resetToolbar();
+
+      const checks = [
+         { tag: 'b', style: ['font-weight', 'bold'], btn: 'ray-btn-bold' },
+         { tag: 'i', style: ['font-style', 'italic'], btn: 'ray-btn-italic' },
+         { tag: 'u', style: ['text-decoration', 'underline'], btn: 'ray-btn-underline' },
+         { tag: 'strike', style: ['text-decoration', 'line-through'], btn: 'ray-btn-strikeThrough' },
+         { tag: 'sub', style: null, btn: 'ray-btn-subscript' },
+         { tag: 'sup', style: null, btn: 'ray-btn-superscript' },
+         { tag: 'li', style: null, btn: 'ray-btn-orderedList' },
+         { tag: 'ol', style: null, btn: 'ray-btn-unorderedList' },
+         { tag: 'font', style: null, btn: 'ray-btn-textColor' },
+         { tag: 'code', style: null, btn: 'ray-btn-codeInline' }
+      ];
+
+      for (const { tag, style, btn } of checks) {
+         const matchTag = this.isInTag(parent, tag);
+         const matchStyle = style ? this.isInStyle(parent, style[0], style[1]) : false;
+         if (matchTag || matchStyle) {
+            document.getElementById(btn)?.classList.add('active');
+         }
+      }
+
+      // Handle custom code block detection
+      if (parent.closest('.ray-code-block')) {
+         document.getElementById('ray-btn-codeBlock')?.classList.add('active');
+      }
+
+      // Handle heading dropdown
+      const headings = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'];
+      const matchedHeading = headings.find(tag => this.isInTag(parent, tag)) || 'p';
+      const headingSelect = document.querySelector('.ray-dropdown-heading');
+      if (headingSelect) headingSelect.value = `<${matchedHeading}>`;
+   }
+
+   isInStyle(el, styleProp, value) {
+      while (el && el !== document) {
+         if (window.getComputedStyle(el)[styleProp] === value) return true;
+         el = el.parentNode;
+      }
+      return false;
+   }
+   isInTag(el, tagName) {
+      while (el && el !== document) {
+         if (el.tagName && el.tagName.toLowerCase() === tagName) return true;
+         el = el.parentNode;
+      }
+      return false;
+   }
+   // Common function to reset the toolbar
+   resetToolbar() {
+      document.querySelectorAll('.ray-editor-toolbar button').forEach(btn => {
+         btn.classList.remove('active');
+      });
+   }
 }
 const buttonConfigs = {
    bold: {
@@ -756,6 +1002,14 @@ const buttonConfigs = {
    fileUpload: {
       keyname: "fileUpload",
       label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-icon lucide-file"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>`,
+   },
+   link: {
+      keyname: "link",
+      label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link-icon lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+   },
+   removeFormat: {
+      keyname: "removeFormat",
+      label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-remove-formatting-icon lucide-remove-formatting"><path d="M4 7V4h16v3"/><path d="M5 20h6"/><path d="M13 4 8 20"/><path d="m15 15 5 5"/><path d="m20 15-5 5"/></svg>`,
    }
 }
 
