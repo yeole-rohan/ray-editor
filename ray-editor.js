@@ -334,36 +334,44 @@ class RayEditor {
       );
    }
    #insertCodeBlock() {
-      const selection = window.getSelection();
-      if (!selection.rangeCount) return;
+   const selection = window.getSelection();
+   if (!selection.rangeCount) return;
 
-      const range = selection.getRangeAt(0);
+   const range = selection.getRangeAt(0);
 
-      // Create wrapper div
-      const wrapper = document.createElement('div');
-      wrapper.className = 'ray-code-block';
+   // Create wrapper div
+   const wrapper = document.createElement('div');
+   wrapper.className = 'ray-code-block';
 
-      // Create editable inner div
-      const codeContent = document.createElement('div');
-      codeContent.className = 'ray-code-content';
-      codeContent.setAttribute('contenteditable', 'true');
-      codeContent.innerHTML = '<br>';
-      // Compose and insert
-      wrapper.appendChild(codeContent);
+   // Create <pre><code> structure
+   const pre = document.createElement('pre');
+   pre.className = 'ray-code-content';
+   pre.setAttribute('contenteditable', 'true');
+   pre.setAttribute('spellcheck', 'false')
 
-      range.deleteContents();
-      range.insertNode(wrapper);
+   const code = document.createElement('code');
+   code.innerHTML = '<br>'; // Placeholder so it’s not empty
 
-      // Place cursor inside code content
-      setTimeout(() => {
-         const newRange = document.createRange();
-         newRange.selectNodeContents(codeContent);
-         newRange.collapse(true);
-         const sel = window.getSelection();
-         sel.removeAllRanges();
-         sel.addRange(newRange);
-      }, 0);
-   }
+   // Assemble
+   pre.appendChild(code);
+   wrapper.appendChild(pre);
+
+   // Insert into DOM
+   range.deleteContents();
+   range.insertNode(wrapper);
+
+   // Place cursor inside <code>
+   setTimeout(() => {
+      const newRange = document.createRange();
+      newRange.selectNodeContents(code);
+      newRange.collapse(true);
+
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(newRange);
+   }, 0);
+}
+
    #insertInlineCode() {
       const selection = window.getSelection();
       if (!selection.rangeCount || selection.isCollapsed) return;
