@@ -34,13 +34,26 @@
 }
 
 .ray-editor-content code {
-   background-color: #f4f4f4;
-   color: #d6336c;
+   color: red;
    font-family: monospace;
    font-size: 0.95em;
    padding: 0.2em 0.4em;
    border-radius: 4px;
    white-space: pre-wrap;
+   outline: none;
+}
+.ray-code-block {
+  background-color: #1e1e1e;
+  color: #dcdcdc;
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 1em;
+  font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+}
+
+.ray-code-block pre code {
+  color: #fff;
 }
 
 .ray-link {
