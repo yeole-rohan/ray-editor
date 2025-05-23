@@ -171,12 +171,6 @@
    cursor: pointer;
 }
 
-/* Code block inner content */
-.ray-code-content {
-   white-space: pre;
-   outline: none;
-}
-
 /* Optional: subtle scrollbar */
 .ray-code-block::-webkit-scrollbar {
    height: 6px;
@@ -192,6 +186,7 @@
    white-space: pre-wrap;
    font-size: 14px;
    min-height: 1em;
+   margin-bottom: 0;
 }
 
 #ray-editor-watermark {
