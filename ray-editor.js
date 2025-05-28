@@ -336,6 +336,7 @@ class RayEditor {
    #insertCodeBlock() {
    const selection = window.getSelection();
    if (!selection.rangeCount) return;
+   if (!this.editorArea.contains(selection.anchorNode)) return; //check that codeblock is within the editor region.
 
    const range = selection.getRangeAt(0);
 
