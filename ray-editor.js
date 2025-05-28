@@ -26,18 +26,94 @@ class RayEditor {
          console.error('Editor element not found');
          return null;
       }
-      // Get the inner HTML content of the editor
-      let content = this.editorArea.innerHTML;
-      return content;
+
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = this.editorArea.innerHTML;
+
+      const tagsToClean = ['p', 'a', 'span', 'b', 'i', 'u', 'strong', 'em'];
+      // Helper to check if an element is inside a code block
+      const isInsideCodeBlock = el => {
+         return el.closest('pre, code, .ray-code-block') !== null;
+      };
+      // Helper function to remove <p> inside <ul>, <ol>, or <li> and keep the text content
+      const removePInsideList = () => {
+         const listItems = tempDiv.querySelectorAll('ul li, ol li');
+         listItems.forEach(li => {
+            if (isInsideCodeBlock(li)) return;
+            const p = li.querySelector('p');
+            if (p) {
+               // Move text content of <p> to the <li> and remove the <p>
+               li.innerHTML = li.innerHTML.replace(p.outerHTML, p.textContent);
+            }
+         });
+      };
+
+      // Call the function to handle <p> inside <ul>, <ol>, <li>
+      removePInsideList();
+
+      // Recursive cleaner: removes <br> and empty inline children, then checks text
+      const isEffectivelyEmpty = el => {
+         if (isInsideCodeBlock(el)) return;
+
+         // Remove empty inline children
+         tagsToClean.forEach(tag => {
+            el.querySelectorAll(tag).forEach(child => {
+               if (isInsideCodeBlock(child)) return;
+               if (!child.textContent.trim() && child.children.length === 0) {
+                  child.remove();
+               }
+            });
+         });
+
+         // Finally, check if this element is still empty
+         return !el.textContent.trim() && el.children.length === 0;
+      };
+
+      // Walk backwards so we can safely remove elements without disrupting traversal
+      const allTargets = Array.from(tempDiv.querySelectorAll(tagsToClean.join(','))).reverse();
+      allTargets.forEach(el => {
+         if (isInsideCodeBlock(el)) return;
+         if (isEffectivelyEmpty(el)) {
+            el.remove();
+         }
+      });
+      // Select all div elements without a class and replace them with <p> tags
+      const divsWithoutClass = tempDiv.querySelectorAll('div:not([class])');
+
+      divsWithoutClass.forEach(div => {
+         if (isInsideCodeBlock(div)) return;
+         const p = document.createElement('p');
+         p.innerHTML = div.innerHTML;  // Copy content to <p>
+         div.parentNode.replaceChild(p, div);  // Replace <div> with <p>
+      });
+      tempDiv.querySelectorAll('.ray-code-content').forEach(pre => {
+         pre.setAttribute('contenteditable', 'false');
+      });
+
+      return tempDiv.innerHTML;
    }
+
    setRayEditorContent(html) {
       if (!this.editorArea) {
          console.error('Editor element not found');
          return null;
       }
-      // Set the inner HTML content of the editor
-      this.editorArea.innerHTML = html
+
+      // Parse string HTML into a temporary DOM
+      const temp = document.createElement('div');
+      temp.innerHTML = html;
+
+      // Modify code blocks
+      temp.querySelectorAll('.ray-code-content').forEach(pre => {
+         pre.setAttribute('contenteditable', 'true');
+         pre.setAttribute('spellcheck', 'false');
+      });
+
+      // Set the updated HTML content into the editor
+      this.editorArea.innerHTML = temp.innerHTML;
+      temp.remove()
    }
+
    #createEditorArea() {
       this.editorArea = document.createElement('div');
       this.editorArea.className = 'ray-editor-content';
@@ -334,44 +410,43 @@ class RayEditor {
       );
    }
    #insertCodeBlock() {
-   const selection = window.getSelection();
-   if (!selection.rangeCount) return;
-   if (!this.editorArea.contains(selection.anchorNode)) return; //check that codeblock is within the editor region.
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return;
 
-   const range = selection.getRangeAt(0);
+      const range = selection.getRangeAt(0);
 
-   // Create wrapper div
-   const wrapper = document.createElement('div');
-   wrapper.className = 'ray-code-block';
+      // Create wrapper div
+      const wrapper = document.createElement('div');
+      wrapper.className = 'ray-code-block';
 
-   // Create <pre><code> structure
-   const pre = document.createElement('pre');
-   pre.className = 'ray-code-content';
-   pre.setAttribute('contenteditable', 'true');
-   pre.setAttribute('spellcheck', 'false')
+      // Create <pre><code> structure
+      const pre = document.createElement('pre');
+      pre.className = 'ray-code-content';
+      pre.setAttribute('contenteditable', 'true');
+      pre.setAttribute('spellcheck', 'false')
 
-   const code = document.createElement('code');
-   code.innerHTML = '<br>'; // Placeholder so it’s not empty
+      const code = document.createElement('code');
+      code.innerHTML = '<br>';
 
-   // Assemble
-   pre.appendChild(code);
-   wrapper.appendChild(pre);
+      // Assemble
+      pre.appendChild(code);
+      wrapper.appendChild(pre);
 
-   // Insert into DOM
-   range.deleteContents();
-   range.insertNode(wrapper);
+      // Insert into DOM
+      range.deleteContents();
+      range.insertNode(wrapper);
 
-   // Place cursor inside <code>
-   setTimeout(() => {
-      const newRange = document.createRange();
-      newRange.selectNodeContents(code);
-      newRange.collapse(true);
+      // Place cursor inside <code>
+      setTimeout(() => {
+         const newRange = document.createRange();
+         newRange.selectNodeContents(code);
+         newRange.collapse(true);
 
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(newRange);
-   }, 0);
-}
+         const sel = window.getSelection();
+         sel.removeAllRanges();
+         sel.addRange(newRange);
+      }, 0);
+   }
 
    #insertInlineCode() {
       const selection = window.getSelection();
@@ -521,18 +596,17 @@ class RayEditor {
       // Set width and height once the image is fully loaded
       img.onload = () => {
          // Create resizable image and get both wrapper and editable line
-         const { wrapper, editableLine } = this.#makeImageResizable(img);
-
-         // Replace placeholder with the resizable image wrapper
-         placeholder.replaceWith(wrapper);
-
-         // Insert the editable line AFTER the image wrapper
-         wrapper.after(editableLine);
-
-         // focus cursor in new line
-         const range = document.createRange();
+         const { wrapper } = this.#makeImageResizable(img);
          const sel = window.getSelection();
-         range.setStart(newLine, 0);
+         if (!sel || sel.rangeCount === 0) return;
+
+         const range = sel.getRangeAt(0);
+         // Replace range with the resizable image wrapper
+         placeholder.remove()
+         range.insertNode(wrapper);
+
+         // Move the cursor *after* the inserted wrapper
+         range.setStartAfter(wrapper);
          range.collapse(true);
          sel.removeAllRanges();
          sel.addRange(range);
@@ -626,9 +700,6 @@ class RayEditor {
          }, 0);
       });
 
-      // **Insert editable new line AFTER the wrapper (not inside it)**
-      const newLine = document.createElement('p');
-      newLine.innerHTML = '<br>';
       // Resize logic (with aspect ratio lock)
       let startX, startY, startWidth, startHeight;
       // **Modified resizing logic (constrains aspect ratio)**
@@ -661,7 +732,6 @@ class RayEditor {
       // **Return BOTH the wrapper AND the new line for proper insertion**
       return {
          wrapper,
-         editableLine: newLine,
       };
    }
    #triggerFileUpload() {
@@ -737,7 +807,26 @@ class RayEditor {
       link.style.textDecoration = 'underline';
       link.style.color = '#0366d6';
 
-      placeholder.replaceWith(link);
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+
+      const range = sel.getRangeAt(0);
+      range.deleteContents(); // Optional: clear selected content
+
+      // Insert the link
+      range.insertNode(link);
+
+      // Move the cursor after the inserted link
+      range.setStartAfter(link);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+
+      // insert a space or newline after the link
+      const spacer = document.createTextNode(' ');
+      link.after(spacer);
+
+      placeholder.remove()
    }
    // save the current selection
    #saveSelection() {
@@ -1204,4 +1293,3 @@ const buttonConfigs = {
       label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-table-icon lucide-table"><path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>`,
    },
 }
-
