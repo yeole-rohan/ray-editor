@@ -124,7 +124,7 @@ class RayEditor {
    }
    #addWatermark() {
 
-      if (!this.editorArea) return;
+      if (!this.editorArea || this.options.hideWatermark) return;
       const watermark = document.createElement('div');
       watermark.id = 'ray-editor-watermark';
       watermark.innerHTML = `Made with ❤️ by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a>`;
