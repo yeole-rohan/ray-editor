@@ -168,6 +168,8 @@ E.g
 
   * `enableMentions`: Default: false - Enables the @mention functionality.
   * `mentionUrl`: The relative or absolute path you want to link to. The @tagged value will be appended to the end of the url defined. Ex. `mentionUrl:"/user/" = "/user/{username}"
+  * `mentionElement`: Default: span - The element that will replace any text beginning with @. 
+    * `Options`: a | span
 
 ---
 
