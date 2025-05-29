@@ -74,6 +74,13 @@
 
 ---
 
+### Mentions
+
+* When enabled, type @ and any alphanumeric character (and underscores _ ) to create a tag that can then be used by your own code to make interactible. 
+* Or configure the `mentionElement: "a"` option and the `mentionUrl:""` to have the mention link to a specific page.
+
+---
+
 ## 🛠️ Setup Guide
 
 ### 1. Include RayEditor via CDN
