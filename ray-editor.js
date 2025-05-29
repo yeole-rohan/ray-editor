@@ -36,7 +36,7 @@ class RayEditor {
          return null;
       }
       // Set the inner HTML content of the editor
-      this.editorArea.innerHTML = html
+      this.editorArea.innerHTML = html;
    }
    #createEditorArea() {
       this.editorArea = document.createElement('div');
@@ -159,6 +159,17 @@ class RayEditor {
             if (evt === 'keydown') {
                this.#handleCodeBlockExit(e, elementNode);
                this.#handleInlineCodeExit(e, sel, elementNode);
+            }
+            if (evt === 'keyup'){
+               const mentionRegex = /(?:^|\s)(@\w+)/;
+               const text = elementNode.textContent;
+               const match = mentionRegex.exec(text);
+               if (match) {
+                  const mention = match[1];
+                  if (e.key == ' ' || e.key == 'Enter') {
+                     this.#handleMention(mention);
+                  }
+               }
             }
 
             if (evt === 'paste') {
@@ -336,7 +347,7 @@ class RayEditor {
    #insertCodeBlock() {
    const selection = window.getSelection();
    if (!selection.rangeCount) return;
-   if (!this.editorArea.contains(selection.anchorNode)) return; //check that codeblock is within the editor region.
+   if (!this.editorArea.contains(selection.anchorNode)) return;
 
    const range = selection.getRangeAt(0);
 
@@ -1080,6 +1091,34 @@ class RayEditor {
       document.querySelectorAll('.ray-editor-toolbar button').forEach(btn => {
          btn.classList.remove('active');
       });
+   }
+
+   #handleMention(e) {
+      if(!this.options.enableMentions) return;
+      
+      const mentionNode = document.createElement('span');
+      mentionNode.className = 'mention ray-mention';
+      mentionNode.contentEditable = 'false';
+      mentionNode.textContent = '@';
+      mentionNode.href = '#'; // Placeholder href
+      mentionNode.setAttribute('data-mention', e); // Placeholder for user ID
+      
+      let content = this.editorArea.innerHTML;
+      content = content.replace(/@(\w+)/g, (match, username) => {
+         const mention = mentionNode.cloneNode(true);
+         mention.textContent = `@${username}`;
+         mention.dataset.username = username; // Store the username
+         return mention.outerHTML;
+      }
+      );
+      this.editorArea.innerHTML = content;
+      const range = document.createRange();
+      const sel = window.getSelection();
+      range.selectNodeContents(this.editorArea);
+      range.collapse(false); 
+      sel.removeAllRanges();
+      sel.addRange(range);
+      this.editorArea.focus();
    }
 }
 const buttonConfigs = {
