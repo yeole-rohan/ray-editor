@@ -2,7 +2,6 @@ class RayEditor {
    constructor(containerId, options = {}) {
       this.container = document.getElementById(containerId);
       this.options = options;
-      console.log('RayEditor initialized with options:', this.options);
       this.toolbar = null;
       this.editorArea = null;
       this.imageUploadUrl = null
