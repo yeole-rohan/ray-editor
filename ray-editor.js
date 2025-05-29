@@ -1183,15 +1183,31 @@ class RayEditor {
       });
    }
 
-   #handleMention(e) {
+   #handleMention(username) {
       if(!this.options.enableMentions) return;
-      
-      const mentionNode = document.createElement('span');
+      let mentionElement = 'span';
+      if(this.options.mentionElement) {
+         if(!this.options.mentionElement === 'span' && !this.options.mentionElement === 'a') return;
+            mentionElement = this.options.mentionElement === 'a' ? 'a' : 'span';
+      }
+      let cleanUsername = username.replace(/[^a-zA-Z0-9_]/g, '');
+      const mentionNode = document.createElement(mentionElement);
       mentionNode.className = 'mention ray-mention';
       mentionNode.contentEditable = 'false';
       mentionNode.textContent = '@';
-      mentionNode.href = '#'; // Placeholder href
-      mentionNode.setAttribute('data-mention', e); // Placeholder for username
+      if (mentionElement === 'a') {
+         if(!this.options.mentionUrl) {
+            console.warn('Mention URL is not configured. Please configure "mentionUrl" when initializing the editor.');
+            mentionNode.href = '#';
+         }else{
+            //strip @ from e
+            let username = e.replace('@', '');
+            mentionNode.href = this.options.mentionUrl + username;
+            mentionNode.target = '_blank'; 
+         }
+
+      }
+      mentionNode.setAttribute('data-mention', username);
       
       let content = this.editorArea.innerHTML;
       content = content.replace(/@(\w+)/g, (match, username) => {
