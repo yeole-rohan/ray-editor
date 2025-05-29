@@ -359,3 +359,10 @@ table.ray-editor-table-highlighted{
    border: 2px solid #007BFF; /* Blue border for highlighting */
    box-shadow: 0 0 10px rgba(0, 123, 255, 0); /* Subtle blue glow */
 }
+.ray-mention {
+   text-decoration: underline;
+   font-weight: bold;
+}
+.ray-mention:hover {
+   cursor: pointer;
+}
