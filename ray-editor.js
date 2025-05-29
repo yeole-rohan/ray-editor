@@ -2,6 +2,7 @@ class RayEditor {
    constructor(containerId, options = {}) {
       this.container = document.getElementById(containerId);
       this.options = options;
+      console.log('RayEditor initialized with options:', this.options);
       this.toolbar = null;
       this.editorArea = null;
       this.imageUploadUrl = null
@@ -1184,11 +1185,11 @@ class RayEditor {
    }
 
    #handleMention(username) {
-      if(!this.options.enableMentions) return;
+      if(!this.options.mentions.enableMentions) return;
       let mentionElement = 'span';
-      if(this.options.mentionElement) {
-         if(!this.options.mentionElement === 'span' && !this.options.mentionElement === 'a') return;
-            mentionElement = this.options.mentionElement === 'a' ? 'a' : 'span';
+      if(this.options.mentions.mentionElement) {
+         if(!this.options.mentions.mentionElement === 'span' && !this.options.mentions.mentionElement === 'a') return;
+            mentionElement = this.options.mentions.mentionElement === 'a' ? 'a' : 'span';
       }
       let cleanUsername = username.replace(/[^a-zA-Z0-9_]/g, '');
       const mentionNode = document.createElement(mentionElement);
@@ -1196,13 +1197,11 @@ class RayEditor {
       mentionNode.contentEditable = 'false';
       mentionNode.textContent = '@';
       if (mentionElement === 'a') {
-         if(!this.options.mentionUrl) {
+         if(!this.options.mentions.mentionUrl || this.options.mentions.mentionUrl.trim() === '') {
             console.warn('Mention URL is not configured. Please configure "mentionUrl" when initializing the editor.');
             mentionNode.href = '#';
          }else{
-            //strip @ from e
-            let username = e.replace('@', '');
-            mentionNode.href = this.options.mentionUrl + username;
+            mentionNode.href = this.options.mentions.mentionUrl + cleanUsername;
             mentionNode.target = '_blank'; 
          }
 
@@ -1211,12 +1210,27 @@ class RayEditor {
       
       let content = this.editorArea.innerHTML;
       content = content.replace(/@(\w+)/g, (match, username) => {
-         const mention = mentionNode.cloneNode(true);
-         mention.textContent = `@${username}`;
-         mention.dataset.username = username; // Store the username
+         let cleanUsername = username.replace(/[^a-zA-Z0-9_]/g, '');
+         let mentionElement = 'span';
+         if (this.options.mentions.mentionElement === 'a') {
+            mentionElement = 'a';
+         }
+         const mention = document.createElement(mentionElement);
+         mention.className = 'mention ray-mention';
+         mention.contentEditable = 'false';
+         mention.textContent = `@${cleanUsername}`;
+         if (mentionElement === 'a') {
+            if (!this.options.mentions.mentionUrl || this.options.mentions.mentionUrl.trim() === '') {
+               mention.href = '#';
+            } else {
+               mention.href = this.options.mentions.mentionUrl + cleanUsername;
+               mention.target = '_blank';
+            }
+         }
+         mention.setAttribute('data-mention', cleanUsername);
+         mention.dataset.username = cleanUsername;
          return mention.outerHTML;
-      }
-      );
+      });
       this.editorArea.innerHTML = content;
       const range = document.createRange();
       const sel = window.getSelection();
