@@ -125,7 +125,8 @@ document.addEventListener('DOMContentLoaded', () => {
       backgroundColor: true,
       link:true,
       table:true,
-      textAlignment:true
+      textAlignment:true,
+      hideWatermark:false
    });
 });
 ```
