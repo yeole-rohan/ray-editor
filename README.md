@@ -74,6 +74,12 @@
 
 ---
 
+### Optional Automatic Stylesheet Insertion
+
+* Optionally configure RayEditor to insert the stylesheet into the DOM so you don't have to manage it manually.
+
+---
+
 ## 🛠️ Setup Guide
 
 ### 1. Include RayEditor via CDN
@@ -126,6 +132,8 @@ document.addEventListener('DOMContentLoaded', () => {
       link:true,
       table:true,
       textAlignment:true,
+      initStyles: false,
+      stylesheetUrl: "",
       hideWatermark:false
    });
 });
@@ -160,6 +168,13 @@ E.g
   * `fileUploadUrl`: Upload endpoint for files.
   * `fileMaxSize`: Max file size in bytes.
 
+* **Custom Stylesheets & Automatic Stylesheet Insertion**
+
+  * `initStyles`: Default: false - Whether or not to automatically insert the stylesheet into the HTML DOM.
+    * Options true | false
+
+  * `stylesheetUrl`: Default: "" - If `initStyles:true` then will insert this url (relative or absolute path) into the DOM to load custom stylesheets.
+  * If left unset, defaults to the "main" branch CDN url.
 ---
 
 ## ✅ Benefits
