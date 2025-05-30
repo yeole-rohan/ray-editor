@@ -14,6 +14,7 @@ class RayEditor {
       this.#bindEvents();
       this.#addWatermark();
       this.#includeCSS();
+      this.#setToolbarType();
    }
    #createToolbar() {
       this.toolbar = document.createElement('div');
@@ -1255,6 +1256,25 @@ class RayEditor {
          style.href = this.options.stylesheetUrl
       }
       return window.document.head.appendChild(style);
+      }
+    }
+
+    #setToolbarType(){
+      if(!this.options.toolbarType || this.options.toolbarType === 'default') return;
+      const toolbar = document.querySelector('.ray-editor-toolbar');
+      if(!toolbar) return;
+      toolbar.classList.add(`ray-editor-toolbar-${this.options.toolbarType}`);
+
+      
+
+      if(this.options.toolbarType === 'inline'){
+         this.editorArea.addEventListener('focus', () => {
+            toolbar.style.display = 'flex';
+         });
+      }
+
+      #hideToolbarOnBlur(toolbar) {
+         toolbar.style.display = 'none';
       }
     }
 }
