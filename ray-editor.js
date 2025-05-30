@@ -424,7 +424,6 @@ class RayEditor {
    const selection = window.getSelection();
    if (!selection.rangeCount) return;
    if (!this.editorArea.contains(selection.anchorNode)) return;
-
       const range = selection.getRangeAt(0);
 
       // Create wrapper div
