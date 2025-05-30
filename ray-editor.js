@@ -12,7 +12,8 @@ class RayEditor {
       this.#createToolbar();
       this.#createEditorArea();
       this.#bindEvents();
-      this.#addWatermark()
+      this.#addWatermark();
+      this.#includeCSS();
    }
    #createToolbar() {
       this.toolbar = document.createElement('div');
@@ -124,7 +125,7 @@ class RayEditor {
    }
    #addWatermark() {
 
-      if (!this.editorArea) return;
+      if (!this.editorArea || this.options.hideWatermark) return;
       const watermark = document.createElement('div');
       watermark.id = 'ray-editor-watermark';
       watermark.innerHTML = `Made with ❤️ by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a>`;
@@ -1238,6 +1239,24 @@ class RayEditor {
       sel.addRange(range);
       this.editorArea.focus();
    }
+
+   #includeCSS(){
+      if(!this.options.initStyles) return;
+
+      let styleCount = document.querySelector('.ray-editor-styles')
+      if(!styleCount || styleCount.length === 0){
+      const style = document.createElement('link');
+      style.rel = 'stylesheet';
+      style.type = 'text/css';
+      style.className = 'ray-editor-styles';
+      style.href = 'https://cdn.jsdelivr.net/gh/yeole-rohan/ray-editor@main/ray-editor.css';
+      // Use the provided stylesheet URL or fallback to the CDN
+      if(this.options.stylesheetUrl && this.options.stylesheetUrl.length > 0){
+         style.href = this.options.stylesheetUrl
+      }
+      return window.document.head.appendChild(style);
+      }
+    }
 }
 
 const buttonConfigs = {

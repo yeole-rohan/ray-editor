@@ -74,10 +74,16 @@
 
 ---
 
+
 ### Mentions
 
 * When enabled, type @ and any alphanumeric character (and underscores _ ) to create a tag that can then be used by your own code to make interactible. 
 * Or configure the `mentionElement: "a"` option and the `mentionUrl:""` to have the mention link to a specific page.
+
+### Optional Automatic Stylesheet Insertion
+
+* Optionally configure RayEditor to insert the stylesheet into the DOM so you don't have to manage it manually.
+
 
 ---
 
@@ -137,7 +143,10 @@ document.addEventListener('DOMContentLoaded', () => {
         enableMentions: false,
         mentionElement: "span",
         mentionUrl:""
-      }
+      },
+      initStyles: false,
+      stylesheetUrl: "",
+      hideWatermark:false
    });
 });
 ```
@@ -177,6 +186,14 @@ E.g
   * `mentionUrl`: The relative or absolute path you want to link to. The @tagged value will be appended to the end of the url defined. Ex. `mentionUrl:"/user/" = "/user/{username}"
   * `mentionElement`: Default: span - The element that will replace any text beginning with @. 
     * `Options`: a | span
+
+* **Custom Stylesheets & Automatic Stylesheet Insertion**
+
+  * `initStyles`: Default: false - Whether or not to automatically insert the stylesheet into the HTML DOM.
+    * Options true | false
+
+  * `stylesheetUrl`: Default: "" - If `initStyles:true` then will insert this url (relative or absolute path) into the DOM to load custom stylesheets.
+  * If left unset, defaults to the "main" branch CDN url.
 
 ---
 
