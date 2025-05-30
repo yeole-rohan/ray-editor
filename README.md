@@ -133,7 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
       table:true,
       textAlignment:true,
       initStyles: false,
-      stylesheetUrl: ""
+      stylesheetUrl: "",
+      hideWatermark:false
    });
 });
 ```

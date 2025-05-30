@@ -125,7 +125,7 @@ class RayEditor {
    }
    #addWatermark() {
 
-      if (!this.editorArea) return;
+      if (!this.editorArea || this.options.hideWatermark) return;
       const watermark = document.createElement('div');
       watermark.id = 'ray-editor-watermark';
       watermark.innerHTML = `Made with ❤️ by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a>`;
@@ -413,6 +413,7 @@ class RayEditor {
    #insertCodeBlock() {
       const selection = window.getSelection();
       if (!selection.rangeCount) return;
+      if (!this.editorArea.contains(selection.anchorNode)) return; //check that codeblock is within the editor region.
 
       const range = selection.getRangeAt(0);
 
