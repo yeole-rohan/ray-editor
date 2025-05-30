@@ -237,6 +237,17 @@ class RayEditor {
                this.#handleCodeBlockExit(e, elementNode);
                this.#handleInlineCodeExit(e, sel, elementNode);
             }
+            if (evt === 'keyup'){
+               const mentionRegex = /(?:^|\s)(@\w+)/;
+               const text = elementNode.textContent;
+               const match = mentionRegex.exec(text);
+               if (match) {
+                  const mention = match[1];
+                  if (e.key == ' ' || e.key == 'Enter') {
+                     this.#handleMention(mention);
+                  }
+               }
+            }
 
             if (evt === 'paste') {
                this.#handleYoutubeEmbed(e);
@@ -411,10 +422,9 @@ class RayEditor {
       );
    }
    #insertCodeBlock() {
-      const selection = window.getSelection();
-      if (!selection.rangeCount) return;
-      if (!this.editorArea.contains(selection.anchorNode)) return; //check that codeblock is within the editor region.
-
+   const selection = window.getSelection();
+   if (!selection.rangeCount) return;
+   if (!this.editorArea.contains(selection.anchorNode)) return;
       const range = selection.getRangeAt(0);
 
       // Create wrapper div
@@ -1172,6 +1182,64 @@ class RayEditor {
          btn.classList.remove('active');
       });
    }
+
+   #handleMention(username) {
+      if(!this.options.mentions.enableMentions) return;
+      let mentionElement = 'span';
+      if(this.options.mentions.mentionElement) {
+         if(!this.options.mentions.mentionElement === 'span' && !this.options.mentions.mentionElement === 'a') return;
+            mentionElement = this.options.mentions.mentionElement === 'a' ? 'a' : 'span';
+      }
+      let cleanUsername = username.replace(/[^a-zA-Z0-9_]/g, '');
+      const mentionNode = document.createElement(mentionElement);
+      mentionNode.className = 'mention ray-mention';
+      mentionNode.contentEditable = 'false';
+      mentionNode.textContent = '@';
+      if (mentionElement === 'a') {
+         if(!this.options.mentions.mentionUrl || this.options.mentions.mentionUrl.trim() === '') {
+            console.warn('Mention URL is not configured. Please configure "mentionUrl" when initializing the editor.');
+            mentionNode.href = '#';
+         }else{
+            mentionNode.href = this.options.mentions.mentionUrl + cleanUsername;
+            mentionNode.target = '_blank'; 
+         }
+
+      }
+      mentionNode.setAttribute('data-mention', username);
+      
+      let content = this.editorArea.innerHTML;
+      content = content.replace(/@(\w+)/g, (match, username) => {
+         let cleanUsername = username.replace(/[^a-zA-Z0-9_]/g, '');
+         let mentionElement = 'span';
+         if (this.options.mentions.mentionElement === 'a') {
+            mentionElement = 'a';
+         }
+         const mention = document.createElement(mentionElement);
+         mention.className = 'mention ray-mention';
+         mention.contentEditable = 'false';
+         mention.textContent = `@${cleanUsername}`;
+         if (mentionElement === 'a') {
+            if (!this.options.mentions.mentionUrl || this.options.mentions.mentionUrl.trim() === '') {
+               mention.href = '#';
+            } else {
+               mention.href = this.options.mentions.mentionUrl + cleanUsername;
+               mention.target = '_blank';
+            }
+         }
+         mention.setAttribute('data-mention', cleanUsername);
+         mention.dataset.username = cleanUsername;
+         return mention.outerHTML;
+      });
+      this.editorArea.innerHTML = content;
+      const range = document.createRange();
+      const sel = window.getSelection();
+      range.selectNodeContents(this.editorArea);
+      range.collapse(false); 
+      sel.removeAllRanges();
+      sel.addRange(range);
+      this.editorArea.focus();
+   }
+
    #includeCSS(){
       if(!this.options.initStyles) return;
 
@@ -1188,8 +1256,9 @@ class RayEditor {
       }
       return window.document.head.appendChild(style);
       }
-   }
+    }
 }
+
 const buttonConfigs = {
    bold: {
       label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bold-icon lucide-bold"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"/></svg>`,
