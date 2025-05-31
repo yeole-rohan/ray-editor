@@ -62,28 +62,29 @@
 * Upload and attach documents or media files.
 * Size limits and upload endpoints are customizable.
 
+### 💬 Mentions
+
+* When enabled, type @ and any alphanumeric character (and underscores _ ) to create a tag that can then be used by your own code to make interactible. 
+* Or configure the `mentionElement: "a"` option and the `mentionUrl:""` to have the mention link to a specific page.
+
+### 🙌 Automatic Stylesheet Insertion
+
+* Optionally configure RayEditor to insert the stylesheet into the DOM so you don't have to manage it manually.
+
+### ➖ Toolbar Types
+
+* Multiple types of toolbars. Current options: "default" | "inline"
+* Inline toolbars are hidden until the editor area is focused and will hide again once focus is completely lost from the editor and the toolbar.
+
 ---
 
-### Tables
+### ⌗ Tables
 
 * Add Row: Add a new row below the selected row.
 * Delete Row: Remove the selected row.
 * Add Column: Add a new column to the right of the selected cell.
 * Delete Column: Remove the selected column.
 * Remove Table: Delete the entire table.
-
----
-
-
-### Mentions
-
-* When enabled, type @ and any alphanumeric character (and underscores _ ) to create a tag that can then be used by your own code to make interactible. 
-* Or configure the `mentionElement: "a"` option and the `mentionUrl:""` to have the mention link to a specific page.
-
-### Optional Automatic Stylesheet Insertion
-
-* Optionally configure RayEditor to insert the stylesheet into the DOM so you don't have to manage it manually.
-
 
 ---
 
@@ -136,8 +137,8 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       textColor: true,
       backgroundColor: true,
-      link:true,
-      table:true,
+      link: true,
+      table: true,
       textAlignment:true,
       mentions: {
         enableMentions: false,
@@ -146,12 +147,13 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       initStyles: false,
       stylesheetUrl: "",
-      hideWatermark:false
+      hideWatermark: false,
+      toolbarType: "default"
    });
 });
 ```
 
-## ```'/upload-file/'``` should return json with following
+## ```'/upload-file/'``` should return json with the following
 
 ```
 {
@@ -194,6 +196,12 @@ E.g
 
   * `stylesheetUrl`: Default: "" - If `initStyles:true` then will insert this url (relative or absolute path) into the DOM to load custom stylesheets.
   * If left unset, defaults to the "main" branch CDN url.
+
+* **Toolbar Options**
+
+  * `toolbarType`: Default: "default" - Change the style of the toolbar. Inline toolbars are hidden by default and will display when the editor area is focused.
+  
+    * Options: default | inline
 
 ---
 
