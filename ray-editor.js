@@ -8,6 +8,12 @@ class RayEditor {
       this.maxImageSize = null
       this.init();
       this.toolbarIndex = 0;
+      if(this.options.mentions.mentionTag == ""){
+         this.options.mentions.mentionTag = '@';
+      }
+      this.options.mentions.mentionTag = this.options.mentions.mentionTag || '@';
+      this.options.mentions.mentionTagUnescaped = this.options.mentions.mentionTag;
+      this.options.mentions.mentionTag = this.options.mentions.mentionTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
    }
    init() {
       this.#createToolbar();
@@ -241,10 +247,14 @@ class RayEditor {
                this.#handleInlineCodeExit(e, sel, elementNode);
             }
             if (evt === 'keyup'){
-               const mentionRegex = /(?:^|\s)(@\w+)/;
+               
+               
+               //const mentionRegex = /(?:^|\s)(@\w+)/;
+               const mentionRegex = new RegExp('(?:^|\\s)(' + this.options.mentions.mentionTag + '\\w+)', 'g');
                const text = elementNode.textContent;
                const match = mentionRegex.exec(text);
                if (match) {
+                  //console.log('Mention detected:', match[1]);
                   const mention = match[1];
                   if (e.key == ' ' || e.key == 'Enter') {
                      this.#handleMention(mention);
@@ -1197,7 +1207,7 @@ class RayEditor {
       const mentionNode = document.createElement(mentionElement);
       mentionNode.className = 'mention ray-mention';
       mentionNode.contentEditable = 'false';
-      mentionNode.textContent = '@';
+      mentionNode.textContent = this.options.mentions.mentionTagUnescaped;
       if (mentionElement === 'a') {
          if(!this.options.mentions.mentionUrl || this.options.mentions.mentionUrl.trim() === '') {
             console.warn('Mention URL is not configured. Please configure "mentionUrl" when initializing the editor.');
@@ -1211,7 +1221,8 @@ class RayEditor {
       mentionNode.setAttribute('data-mention', username);
       
       let content = this.editorArea.innerHTML;
-      content = content.replace(/@(\w+)/g, (match, username) => {
+      let regexReplace = new RegExp(this.options.mentions.mentionTag + '(\\w+)','g');
+      content = content.replace(regexReplace, (match, username) => {
          let cleanUsername = username.replace(/[^a-zA-Z0-9_]/g, '');
          let mentionElement = 'span';
          if (this.options.mentions.mentionElement === 'a') {
@@ -1220,7 +1231,8 @@ class RayEditor {
          const mention = document.createElement(mentionElement);
          mention.className = 'mention ray-mention';
          mention.contentEditable = 'false';
-         mention.textContent = `@${cleanUsername}`;
+         mention.textContent =  this.options.mentions.mentionTagUnescaped + `${cleanUsername}`;
+         
          if (mentionElement === 'a') {
             if (!this.options.mentions.mentionUrl || this.options.mentions.mentionUrl.trim() === '') {
                mention.href = '#';
