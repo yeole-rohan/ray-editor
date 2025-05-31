@@ -143,7 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
       mentions: {
         enableMentions: false,
         mentionElement: "span",
-        mentionUrl:""
+        mentionUrl:"",
+        mentionTag:""
       },
       initStyles: false,
       stylesheetUrl: "",
@@ -185,9 +186,14 @@ E.g
 * **Mentions**: Replace tags such as "@username" with an HTML element.
 
   * `enableMentions`: Default: false - Enables the @mention functionality.
+  
   * `mentionUrl`: The relative or absolute path you want to link to. The @tagged value will be appended to the end of the url defined. Ex. `mentionUrl:"/user/" = "/user/{username}"
+
   * `mentionElement`: Default: span - The element that will replace any text beginning with @. 
     * `Options`: a | span
+
+  * `mentionTag`: Define the tag that is required to activate the mention. Can be one or more characters.
+    * Default: "@"
 
 * **Custom Stylesheets & Automatic Stylesheet Insertion**
 
