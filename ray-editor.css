@@ -233,6 +233,10 @@
    margin-bottom: 5px;
 }
 
+.ray-editor-toolbar-inline {
+   display: none;
+}
+
 .ray-editor-toolbar select {
    padding: 6px 10px;
    border: 1px solid #ccc;

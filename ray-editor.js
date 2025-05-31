@@ -7,6 +7,7 @@ class RayEditor {
       this.imageUploadUrl = null
       this.maxImageSize = null
       this.init();
+      this.toolbarIndex = 0;
    }
    init() {
       this.#createToolbar();
@@ -14,6 +15,7 @@ class RayEditor {
       this.#bindEvents();
       this.#addWatermark();
       this.#includeCSS();
+      this.#setToolbarType();
    }
    #createToolbar() {
       this.toolbar = document.createElement('div');
@@ -222,6 +224,7 @@ class RayEditor {
    #execCommand(command, value = null) {
       document.execCommand(command, false, value);
       this.editorArea.focus();
+      this.#updateToolbar();
    }
    #bindEvents() {
       const events = ['keyup', 'mouseup', 'keydown', 'paste', 'click'];
@@ -1255,6 +1258,34 @@ class RayEditor {
          style.href = this.options.stylesheetUrl
       }
       return window.document.head.appendChild(style);
+      }
+    }
+
+    #setToolbarType(){
+      if(!this.options.toolbarType || this.options.toolbarType === 'default') return;
+
+      this.toolbar.classList.add(`ray-editor-toolbar-${this.options.toolbarType}`);
+      this.toolbar.id = 'ray-editor-toolbar-'+this.toolbarIndex;
+      this.toolbarIndex++;
+
+      if(this.options.toolbarType === 'inline'){
+         this.editorArea.addEventListener('focus', () => {
+            this.toolbar.style.display = 'flex';
+         });
+      const maybeHideToolbar = (e) => {
+         
+         const next = e.relatedTarget;
+         if (
+            !this.editorArea.contains(next) &&
+            !this.toolbar.contains(next)
+         ) {
+            this.toolbar.style.display = 'none';
+         }
+      };
+
+      this.editorArea.addEventListener('blur', maybeHideToolbar, true);
+      this.toolbar.addEventListener('blur', maybeHideToolbar, true);
+      this.toolbar.tabIndex = -1;
       }
     }
 }
