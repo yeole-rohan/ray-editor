@@ -7,12 +7,21 @@ class RayEditor {
       this.imageUploadUrl = null
       this.maxImageSize = null
       this.init();
+      this.toolbarIndex = 0;
+      if(this.options.mentions.mentionTag == ""){
+         this.options.mentions.mentionTag = '@';
+      }
+      this.options.mentions.mentionTag = this.options.mentions.mentionTag || '@';
+      this.options.mentions.mentionTagUnescaped = this.options.mentions.mentionTag;
+      this.options.mentions.mentionTag = this.options.mentions.mentionTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
    }
    init() {
       this.#createToolbar();
       this.#createEditorArea();
       this.#bindEvents();
-      this.#addWatermark()
+      this.#addWatermark();
+      this.#includeCSS();
+      this.#setToolbarType();
    }
    #createToolbar() {
       this.toolbar = document.createElement('div');
@@ -124,7 +133,7 @@ class RayEditor {
    }
    #addWatermark() {
 
-      if (!this.editorArea) return;
+      if (!this.editorArea || this.options.hideWatermark) return;
       const watermark = document.createElement('div');
       watermark.id = 'ray-editor-watermark';
       watermark.innerHTML = `Made with ❤️ by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a>`;
@@ -221,6 +230,7 @@ class RayEditor {
    #execCommand(command, value = null) {
       document.execCommand(command, false, value);
       this.editorArea.focus();
+      this.#updateToolbar();
    }
    #bindEvents() {
       const events = ['keyup', 'mouseup', 'keydown', 'paste', 'click'];
@@ -235,6 +245,21 @@ class RayEditor {
             if (evt === 'keydown') {
                this.#handleCodeBlockExit(e, elementNode);
                this.#handleInlineCodeExit(e, sel, elementNode);
+            }
+            if (evt === 'keyup'){
+               
+               
+               //const mentionRegex = /(?:^|\s)(@\w+)/;
+               const mentionRegex = new RegExp('(?:^|\\s)(' + this.options.mentions.mentionTag + '\\w+)', 'g');
+               const text = elementNode.textContent;
+               const match = mentionRegex.exec(text);
+               if (match) {
+                  //console.log('Mention detected:', match[1]);
+                  const mention = match[1];
+                  if (e.key == ' ' || e.key == 'Enter') {
+                     this.#handleMention(mention);
+                  }
+               }
             }
 
             if (evt === 'paste') {
@@ -410,9 +435,9 @@ class RayEditor {
       );
    }
    #insertCodeBlock() {
-      const selection = window.getSelection();
-      if (!selection.rangeCount) return;
-
+   const selection = window.getSelection();
+   if (!selection.rangeCount) return;
+   if (!this.editorArea.contains(selection.anchorNode)) return;
       const range = selection.getRangeAt(0);
 
       // Create wrapper div
@@ -1170,7 +1195,113 @@ class RayEditor {
          btn.classList.remove('active');
       });
    }
+
+   #handleMention(username) {
+      if(!this.options.mentions.enableMentions) return;
+      let mentionElement = 'span';
+      if(this.options.mentions.mentionElement) {
+         if(!this.options.mentions.mentionElement === 'span' && !this.options.mentions.mentionElement === 'a') return;
+            mentionElement = this.options.mentions.mentionElement === 'a' ? 'a' : 'span';
+      }
+      let cleanUsername = username.replace(/[^a-zA-Z0-9_]/g, '');
+      const mentionNode = document.createElement(mentionElement);
+      mentionNode.className = 'mention ray-mention';
+      mentionNode.contentEditable = 'false';
+      mentionNode.textContent = this.options.mentions.mentionTagUnescaped;
+      if (mentionElement === 'a') {
+         if(!this.options.mentions.mentionUrl || this.options.mentions.mentionUrl.trim() === '') {
+            console.warn('Mention URL is not configured. Please configure "mentionUrl" when initializing the editor.');
+            mentionNode.href = '#';
+         }else{
+            mentionNode.href = this.options.mentions.mentionUrl + cleanUsername;
+            mentionNode.target = '_blank'; 
+         }
+
+      }
+      mentionNode.setAttribute('data-mention', username);
+      
+      let content = this.editorArea.innerHTML;
+      let regexReplace = new RegExp(this.options.mentions.mentionTag + '(\\w+)','g');
+      content = content.replace(regexReplace, (match, username) => {
+         let cleanUsername = username.replace(/[^a-zA-Z0-9_]/g, '');
+         let mentionElement = 'span';
+         if (this.options.mentions.mentionElement === 'a') {
+            mentionElement = 'a';
+         }
+         const mention = document.createElement(mentionElement);
+         mention.className = 'mention ray-mention';
+         mention.contentEditable = 'false';
+         mention.textContent =  this.options.mentions.mentionTagUnescaped + `${cleanUsername}`;
+         
+         if (mentionElement === 'a') {
+            if (!this.options.mentions.mentionUrl || this.options.mentions.mentionUrl.trim() === '') {
+               mention.href = '#';
+            } else {
+               mention.href = this.options.mentions.mentionUrl + cleanUsername;
+               mention.target = '_blank';
+            }
+         }
+         mention.setAttribute('data-mention', cleanUsername);
+         mention.dataset.username = cleanUsername;
+         return mention.outerHTML;
+      });
+      this.editorArea.innerHTML = content;
+      const range = document.createRange();
+      const sel = window.getSelection();
+      range.selectNodeContents(this.editorArea);
+      range.collapse(false); 
+      sel.removeAllRanges();
+      sel.addRange(range);
+      this.editorArea.focus();
+   }
+
+   #includeCSS(){
+      if(!this.options.initStyles) return;
+
+      let styleCount = document.querySelector('.ray-editor-styles')
+      if(!styleCount || styleCount.length === 0){
+      const style = document.createElement('link');
+      style.rel = 'stylesheet';
+      style.type = 'text/css';
+      style.className = 'ray-editor-styles';
+      style.href = 'https://cdn.jsdelivr.net/gh/yeole-rohan/ray-editor@main/ray-editor.css';
+      // Use the provided stylesheet URL or fallback to the CDN
+      if(this.options.stylesheetUrl && this.options.stylesheetUrl.length > 0){
+         style.href = this.options.stylesheetUrl
+      }
+      return window.document.head.appendChild(style);
+      }
+    }
+
+    #setToolbarType(){
+      if(!this.options.toolbarType || this.options.toolbarType === 'default') return;
+
+      this.toolbar.classList.add(`ray-editor-toolbar-${this.options.toolbarType}`);
+      this.toolbar.id = 'ray-editor-toolbar-'+this.toolbarIndex;
+      this.toolbarIndex++;
+
+      if(this.options.toolbarType === 'inline'){
+         this.editorArea.addEventListener('focus', () => {
+            this.toolbar.style.display = 'flex';
+         });
+      const maybeHideToolbar = (e) => {
+         
+         const next = e.relatedTarget;
+         if (
+            !this.editorArea.contains(next) &&
+            !this.toolbar.contains(next)
+         ) {
+            this.toolbar.style.display = 'none';
+         }
+      };
+
+      this.editorArea.addEventListener('blur', maybeHideToolbar, true);
+      this.toolbar.addEventListener('blur', maybeHideToolbar, true);
+      this.toolbar.tabIndex = -1;
+      }
+    }
 }
+
 const buttonConfigs = {
    bold: {
       label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bold-icon lucide-bold"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"/></svg>`,
