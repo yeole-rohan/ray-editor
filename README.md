@@ -64,7 +64,7 @@
 
 ### 💬 Mentions
 
-* When enabled, type @ and any alphanumeric character (and underscores _ ) to create a tag that can then be used by your own code to make interactible. 
+* When enabled, type the configured tag, @ by default, and any alphanumeric character (and underscores _ ) to create a tag that can then be used by your own code to make interactible. 
 * Or configure the `mentionElement: "a"` option and the `mentionUrl:""` to have the mention link to a specific page.
 
 ### 🙌 Automatic Stylesheet Insertion
@@ -185,11 +185,11 @@ E.g
 
 * **Mentions**: Replace tags such as "@username" with an HTML element.
 
-  * `enableMentions`: Default: false - Enables the @mention functionality.
+  * `enableMentions`: Default: false - Enables the mention functionality.
   
-  * `mentionUrl`: The relative or absolute path you want to link to. The @tagged value will be appended to the end of the url defined. Ex. `mentionUrl:"/user/" = "/user/{username}"
+  * `mentionUrl`: The relative or absolute path you want to link to. The tagged value will be appended to the end of the url defined. Ex. `mentionUrl:"/user/" = "/user/{username}"
 
-  * `mentionElement`: Default: span - The element that will replace any text beginning with @. 
+  * `mentionElement`: Default: span - The element that will replace any text beginning with the defined `mentionTag`. 
     * `Options`: a | span
 
   * `mentionTag`: Define the tag that is required to activate the mention. Can be one or more characters.
