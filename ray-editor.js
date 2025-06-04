@@ -14,6 +14,8 @@ class RayEditor {
       this.options.mentions.mentionTag = this.options.mentions.mentionTag || '@';
       this.options.mentions.mentionTagUnescaped = this.options.mentions.mentionTag;
       this.options.mentions.mentionTag = this.options.mentions.mentionTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      this.overflowMode = false;
+      
    }
    init() {
       this.#createToolbar();
@@ -22,6 +24,12 @@ class RayEditor {
       this.#addWatermark();
       this.#includeCSS();
       this.#setToolbarType();
+      this.#checkToolbarWidth();
+      // // Add a resize observer to handle dynamic changes
+      // const resizeObserver = new ResizeObserver(() => {
+      //    this.#checkToolbarWidth();
+      // });
+      // resizeObserver.observe(this.toolbar);
    }
    #createToolbar() {
       this.toolbar = document.createElement('div');
@@ -1300,6 +1308,137 @@ class RayEditor {
       this.toolbar.tabIndex = -1;
       }
     }
+    #checkToolbarWidth() {
+   const oldOverflowBtn = this.toolbar.querySelector('.ray-btn-overflowMenu');
+   const oldDropdown = this.toolbar.querySelector('.ray-toolbar-overflow-dropdown');
+   if (oldOverflowBtn) oldOverflowBtn.remove();
+   if (oldDropdown) oldDropdown.remove();
+
+   const toolbarWidth = this.toolbar.offsetWidth;
+   const buttons = Array.from(this.toolbar.querySelectorAll('button:not(.ray-btn-overflowMenu)'));
+   let totalButtonWidth = 0;
+   let overflowStartIdx = buttons.length;
+
+   for (let i = 0; i < buttons.length; i++) {
+      totalButtonWidth += buttons[i].offsetWidth +
+         parseFloat(getComputedStyle(buttons[i]).marginLeft) +
+         parseFloat(getComputedStyle(buttons[i]).marginRight);
+   }
+   if (totalButtonWidth <= toolbarWidth) {
+      buttons.forEach(btn => btn.style.display = '');
+      return;
+   }
+
+
+   const overflowBtnWidth = 40; 
+   totalButtonWidth = 0;
+   for (let i = 0; i < buttons.length; i++) {
+      if (i === 0) {
+         
+         totalButtonWidth += buttons[i].offsetWidth +
+            parseFloat(getComputedStyle(buttons[i]).marginLeft) +
+            parseFloat(getComputedStyle(buttons[i]).marginRight);
+         continue;
+      }
+      if (totalButtonWidth + buttons[i].offsetWidth +
+         parseFloat(getComputedStyle(buttons[i]).marginLeft) +
+         parseFloat(getComputedStyle(buttons[i]).marginRight) > toolbarWidth - overflowBtnWidth) {
+         overflowStartIdx = i;
+         break;
+      }
+      totalButtonWidth += buttons[i].offsetWidth +
+         parseFloat(getComputedStyle(buttons[i]).marginLeft) +
+         parseFloat(getComputedStyle(buttons[i]).marginRight);
+   }
+
+   const overflowed = buttons.slice(overflowStartIdx);
+   overflowed.forEach(btn => btn.style.display = 'none');
+
+   const overflowBtn = document.createElement('button');
+   overflowBtn.type = 'button';
+   overflowBtn.className = 'ray-btn ray-btn-overflowMenu';
+   overflowBtn.innerHTML = buttonConfigs.overflowMenu.label;
+   overflowBtn.style.position = 'relative';
+
+
+   const dropdown = document.createElement('div');
+   dropdown.className = 'ray-toolbar-overflow-dropdown';
+   dropdown.style.position = 'absolute';
+   dropdown.style.top = '100%';
+   dropdown.style.right = '0';
+   dropdown.style.background = '#fff';
+   dropdown.style.border = '1px solid #ccc';
+   dropdown.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+   dropdown.style.display = 'none';
+   dropdown.style.zIndex = '1000';
+   dropdown.style.minWidth = '120px';
+   dropdown.style.maxHeight = '220px';
+   dropdown.style.overflowY = 'auto';
+
+   overflowed.forEach(btn => {
+      const keyname = btn.id.replace('ray-btn-', '');
+      const config = buttonConfigs[keyname];
+      if (!config) return;
+      const newBtn = document.createElement('button');
+      newBtn.type = 'button';
+      newBtn.className = btn.className;
+      newBtn.innerHTML = btn.innerHTML;
+      newBtn.title = btn.title;
+      newBtn.setAttribute('data-tooltip', btn.getAttribute('data-tooltip'));
+      newBtn.style.display = 'block';
+
+      newBtn.addEventListener('click', (e) => {
+         e.preventDefault();
+         if (config.cmd) {
+            this.#execCommand(config.cmd, config.value || null);
+         } else if (config.keyname === 'uppercase') {
+            this.#transformSelectedText('upper');
+         } else if (config.keyname === 'lowercase') {
+            this.#transformSelectedText('lower');
+         } else if (config.keyname === 'toggleCase') {
+            this.#toggleTextCase();
+         } else if (config.keyname === 'codeBlock') {
+            this.#insertCodeBlock();
+         } else if (config.keyname === 'codeInline') {
+            this.#insertInlineCode();
+         } else if (config.keyname === 'backgroundColor') {
+            this.#applyBackgroundColor();
+         } else if (config.keyname === 'textColor') {
+            this.#applyTextColor();
+         } else if (config.keyname === 'imageUpload') {
+            this.#triggerImageUpload();
+         } else if (config.keyname === 'fileUpload') {
+            this.#triggerFileUpload();
+         } else if (config.keyname === 'link') {
+            this.#openLinkModal();
+         } else if (config.keyname === 'removeFormat') {
+            this.#execCommand('removeFormat');
+         } else if (config.keyname === 'table') {
+            this.#openTableModal();
+         }
+         dropdown.style.display = 'none';
+      });
+
+      dropdown.appendChild(newBtn);
+   });
+
+   overflowBtn.addEventListener('mouseenter', () => {
+      dropdown.style.display = 'block';
+   });
+   overflowBtn.addEventListener('mouseleave', () => {
+      setTimeout(() => { dropdown.style.display = 'none'; }, 200);
+   });
+   dropdown.addEventListener('mouseenter', () => {
+      dropdown.style.display = 'block';
+   });
+   dropdown.addEventListener('mouseleave', () => {
+      dropdown.style.display = 'none';
+   });
+
+   overflowBtn.appendChild(dropdown);
+   this.toolbar.appendChild(overflowBtn);
+}
+    
 }
 
 const buttonConfigs = {
@@ -1422,5 +1561,9 @@ const buttonConfigs = {
    table: {
       keyname: "table",
       label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-table-icon lucide-table"><path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>`,
+   },
+   overflowMenu: {
+      keyname: "overflowMenu",
+      label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-more-horizontal-icon lucide-more-horizontal"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>`,
    },
 }
