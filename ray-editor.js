@@ -24,18 +24,43 @@ class RayEditor {
       this.#addWatermark();
       this.#includeCSS();
       this.#setToolbarType();
-      this.#checkToolbarWidth();
-      // // Add a resize observer to handle dynamic changes
-      // const resizeObserver = new ResizeObserver(() => {
-      //    this.#checkToolbarWidth();
-      // });
-      // resizeObserver.observe(this.toolbar);
+
+      let resizeTimeout;
+      const resizeObserver = new ResizeObserver(() => {
+         if (resizeTimeout) clearTimeout(resizeTimeout);
+         // Debounce the resize check to avoid excessive calls
+         resizeTimeout = setTimeout(() => {
+            this.#checkToolbarWidth();
+         }, 100);
+      });
+       resizeObserver.observe(this.toolbar);
    }
    #createToolbar() {
       this.toolbar = document.createElement('div');
       this.toolbar.className = 'ray-editor-toolbar';
       this.container.appendChild(this.toolbar);
       this.#generateToolbarButtons(buttonConfigs);
+
+      requestAnimationFrame(() => this.#checkToolbarWidth());
+      //get parent element of the toolbar
+      const parent = this.toolbar.parentElement;
+   
+      
+
+const observer = new MutationObserver((mutations) => {
+  mutations.forEach(mutation => {
+    // Check if display is no longer 'none'
+    if (getComputedStyle(parent).display !== 'none') {
+      // Defer to next frame so browser has rendered
+      requestAnimationFrame(() => {
+        this.#checkToolbarWidth();
+      });
+    }
+  });
+});
+
+observer.observe(parent, { attributes: true, attributeFilter: ['style', 'class'] });
+      
    }
    // Method to get the content from the editor
    getRayEditorContent() {
@@ -1308,53 +1333,60 @@ class RayEditor {
       this.toolbar.tabIndex = -1;
       }
     }
-    #checkToolbarWidth() {
+   #checkToolbarWidth() {
+   if(this.toolbar.style.display === 'none' || this.toolbar.parentElement.style.display === 'none') return;
+
    const oldOverflowBtn = this.toolbar.querySelector('.ray-btn-overflowMenu');
    const oldDropdown = this.toolbar.querySelector('.ray-toolbar-overflow-dropdown');
    if (oldOverflowBtn) oldOverflowBtn.remove();
    if (oldDropdown) oldDropdown.remove();
 
-   const toolbarWidth = this.toolbar.offsetWidth;
-   const buttons = Array.from(this.toolbar.querySelectorAll('button:not(.ray-btn-overflowMenu)'));
+   const toolbarRect = this.toolbar.offsetWidth;
+   const toolbarStyle = getComputedStyle(this.toolbar);
+   const toolbarWidth = toolbarRect 
+      - parseFloat(toolbarStyle.paddingLeft || 0)
+      - parseFloat(toolbarStyle.paddingRight || 0);
+      console.log('Toolbar width:', toolbarWidth);
+
+   let buttons = Array.from(this.toolbar.querySelectorAll('button:not(.ray-btn-overflowMenu)'));
+   let select = Array.from(this.toolbar.querySelectorAll('select'));
+   
+   buttons = buttons.concat(select);
    let totalButtonWidth = 0;
    let overflowStartIdx = buttons.length;
 
    for (let i = 0; i < buttons.length; i++) {
-      totalButtonWidth += buttons[i].offsetWidth +
-         parseFloat(getComputedStyle(buttons[i]).marginLeft) +
-         parseFloat(getComputedStyle(buttons[i]).marginRight);
+      const rect = buttons[i].offsetWidth;
+      totalButtonWidth += rect;
    }
-   if (totalButtonWidth <= toolbarWidth) {
+   console.log('Total button width:', totalButtonWidth);
+   if (totalButtonWidth < toolbarWidth) {
       buttons.forEach(btn => btn.style.display = '');
       return;
    }
+   let overflowBtn = document.createElement('button');
+   overflowBtn.type = 'button';
+   overflowBtn.className = 'ray-btn ray-btn-overflowMenu';
+   overflowBtn.innerHTML = buttonConfigs.overflowMenu.label;
+   overflowBtn.style.visibility = 'hidden';
+   document.body.appendChild(overflowBtn);
+   const overflowBtnWidth = overflowBtn.offsetWidth;
 
-
-   const overflowBtnWidth = 40; 
+   document.body.removeChild(overflowBtn);
    totalButtonWidth = 0;
    for (let i = 0; i < buttons.length; i++) {
-      if (i === 0) {
-         
-         totalButtonWidth += buttons[i].offsetWidth +
-            parseFloat(getComputedStyle(buttons[i]).marginLeft) +
-            parseFloat(getComputedStyle(buttons[i]).marginRight);
-         continue;
-      }
-      if (totalButtonWidth + buttons[i].offsetWidth +
-         parseFloat(getComputedStyle(buttons[i]).marginLeft) +
-         parseFloat(getComputedStyle(buttons[i]).marginRight) > toolbarWidth - overflowBtnWidth) {
+      const rect = buttons[i].offsetWidth;
+      if (totalButtonWidth + rect > toolbarWidth - overflowBtnWidth) {
          overflowStartIdx = i;
          break;
       }
-      totalButtonWidth += buttons[i].offsetWidth +
-         parseFloat(getComputedStyle(buttons[i]).marginLeft) +
-         parseFloat(getComputedStyle(buttons[i]).marginRight);
+      totalButtonWidth += rect;
    }
 
    const overflowed = buttons.slice(overflowStartIdx);
    overflowed.forEach(btn => btn.style.display = 'none');
 
-   const overflowBtn = document.createElement('button');
+   overflowBtn = document.createElement('button');
    overflowBtn.type = 'button';
    overflowBtn.className = 'ray-btn ray-btn-overflowMenu';
    overflowBtn.innerHTML = buttonConfigs.overflowMenu.label;
@@ -1386,6 +1418,8 @@ class RayEditor {
       newBtn.title = btn.title;
       newBtn.setAttribute('data-tooltip', btn.getAttribute('data-tooltip'));
       newBtn.style.display = 'block';
+      //TODO: Implement select for dropdowns
+
 
       newBtn.addEventListener('click', (e) => {
          e.preventDefault();
@@ -1438,6 +1472,7 @@ class RayEditor {
    overflowBtn.appendChild(dropdown);
    this.toolbar.appendChild(overflowBtn);
 }
+
     
 }
 
