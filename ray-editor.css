@@ -370,9 +370,9 @@ table.ray-editor-table-highlighted{
 .ray-mention:hover {
    cursor: pointer;
 }
-.ray-toolbar-overflow-dropdown button {
+.ray-toolbar-overflow-dropdown button, .ray-toolbar-overflow-dropdown select {
   width: 100%;
-  text-align: left;
+  text-align: center;
   border: none;
   background: none;
   padding: 8px 12px;
@@ -385,6 +385,9 @@ table.ray-editor-table-highlighted{
   max-height: 220px;
   overflow-y: auto;
   scrollbar-width: thin;
+  text-align: center;
+  overflow-x: hidden;
+  padding: 2.5px;
 }
 .ray-toolbar-overflow-dropdown::-webkit-scrollbar {
   width: 8px;

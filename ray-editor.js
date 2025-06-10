@@ -25,15 +25,31 @@ class RayEditor {
       this.#includeCSS();
       this.#setToolbarType();
 
-      let resizeTimeout;
-      const resizeObserver = new ResizeObserver(() => {
-         if (resizeTimeout) clearTimeout(resizeTimeout);
-         // Debounce the resize check to avoid excessive calls
-         resizeTimeout = setTimeout(() => {
-            this.#checkToolbarWidth();
-         }, 100);
-      });
-       resizeObserver.observe(this.toolbar);
+
+      if (this.options.overflowMenu) {
+      // Debounced resize handler
+      const debouncedCheck = () => {
+         if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
+         this.resizeTimeout = setTimeout(() => {
+            // Only check if width actually changed
+            const width = this.toolbar.offsetWidth;
+            if (width !== this.lastToolbarWidth) {
+               this.lastToolbarWidth = width;
+               this.#checkToolbarWidth();
+            }
+         }, 60); // 60ms debounce for fast UI, but not too fast
+      };
+
+      // Observe toolbar size changes
+      this.resizeObserver = new ResizeObserver(debouncedCheck);
+      this.resizeObserver.observe(this.toolbar);
+
+      // Also listen to window resize for layout changes
+      window.addEventListener('resize', debouncedCheck);
+
+      // Initial check after render
+      requestAnimationFrame(() => this.#checkToolbarWidth());
+   }
    }
    #createToolbar() {
       this.toolbar = document.createElement('div');
@@ -41,26 +57,27 @@ class RayEditor {
       this.container.appendChild(this.toolbar);
       this.#generateToolbarButtons(buttonConfigs);
 
-      requestAnimationFrame(() => this.#checkToolbarWidth());
-      //get parent element of the toolbar
-      const parent = this.toolbar.parentElement;
-   
-      
 
-const observer = new MutationObserver((mutations) => {
-  mutations.forEach(mutation => {
-    // Check if display is no longer 'none'
-    if (getComputedStyle(parent).display !== 'none') {
-      // Defer to next frame so browser has rendered
-      requestAnimationFrame(() => {
-        this.#checkToolbarWidth();
-      });
-    }
-  });
-});
-
-observer.observe(parent, { attributes: true, attributeFilter: ['style', 'class'] });
+      // if(this.options.overflowMenu){
+      // requestAnimationFrame(() => this.#checkToolbarWidth());
       
+      // //get parent element of the toolbar
+      // const parent = this.toolbar.parentElement;
+
+      // const observer = new MutationObserver((mutations) => {
+      // mutations.forEach(mutation => {
+      //    // Check if display is no longer 'none'
+      //    if (getComputedStyle(parent).display !== 'none') {
+      //       // Defer to next frame so browser has rendered
+      //       requestAnimationFrame(() => {
+      //       this.#checkToolbarWidth();
+      //       });
+      //    }
+      // });
+      // });
+
+      // observer.observe(parent, { attributes: true, attributeFilter: ['style', 'class'] });
+      // }
    }
    // Method to get the content from the editor
    getRayEditorContent() {
@@ -280,14 +297,10 @@ observer.observe(parent, { attributes: true, attributeFilter: ['style', 'class']
                this.#handleInlineCodeExit(e, sel, elementNode);
             }
             if (evt === 'keyup'){
-               
-               
-               //const mentionRegex = /(?:^|\s)(@\w+)/;
                const mentionRegex = new RegExp('(?:^|\\s)(' + this.options.mentions.mentionTag + '\\w+)', 'g');
                const text = elementNode.textContent;
                const match = mentionRegex.exec(text);
                if (match) {
-                  //console.log('Mention detected:', match[1]);
                   const mention = match[1];
                   if (e.key == ' ' || e.key == 'Enter') {
                      this.#handleMention(mention);
@@ -1308,6 +1321,11 @@ observer.observe(parent, { attributes: true, attributeFilter: ['style', 'class']
 
     #setToolbarType(){
       if(!this.options.toolbarType || this.options.toolbarType === 'default') return;
+      if (
+         this.toolbar.style.display === 'none' ||
+         this.toolbar.parentElement.style.display === 'none' ||
+         this.toolbar.offsetParent === null // not visible in DOM
+      ) return;
 
       this.toolbar.classList.add(`ray-editor-toolbar-${this.options.toolbarType}`);
       this.toolbar.id = 'ray-editor-toolbar-'+this.toolbarIndex;
@@ -1334,7 +1352,13 @@ observer.observe(parent, { attributes: true, attributeFilter: ['style', 'class']
       }
     }
    #checkToolbarWidth() {
-   if(this.toolbar.style.display === 'none' || this.toolbar.parentElement.style.display === 'none') return;
+   if(this.toolbar.style.display === 'none' || 
+      this.toolbar.parentElement.style.display === 'none') return;
+   if (
+      this.toolbar.style.display === 'none' ||
+      this.toolbar.parentElement.style.display === 'none' ||
+      this.toolbar.offsetParent === null
+   ) return;
 
    const oldOverflowBtn = this.toolbar.querySelector('.ray-btn-overflowMenu');
    const oldDropdown = this.toolbar.querySelector('.ray-toolbar-overflow-dropdown');
@@ -1346,7 +1370,6 @@ observer.observe(parent, { attributes: true, attributeFilter: ['style', 'class']
    const toolbarWidth = toolbarRect 
       - parseFloat(toolbarStyle.paddingLeft || 0)
       - parseFloat(toolbarStyle.paddingRight || 0);
-      console.log('Toolbar width:', toolbarWidth);
 
    let buttons = Array.from(this.toolbar.querySelectorAll('button:not(.ray-btn-overflowMenu)'));
    let select = Array.from(this.toolbar.querySelectorAll('select'));
@@ -1357,9 +1380,8 @@ observer.observe(parent, { attributes: true, attributeFilter: ['style', 'class']
 
    for (let i = 0; i < buttons.length; i++) {
       const rect = buttons[i].offsetWidth;
-      totalButtonWidth += rect;
+      totalButtonWidth += rect + 10;
    }
-   console.log('Total button width:', totalButtonWidth);
    if (totalButtonWidth < toolbarWidth) {
       buttons.forEach(btn => btn.style.display = '');
       return;
@@ -1380,7 +1402,7 @@ observer.observe(parent, { attributes: true, attributeFilter: ['style', 'class']
          overflowStartIdx = i;
          break;
       }
-      totalButtonWidth += rect;
+      totalButtonWidth += rect + 10;
    }
 
    const overflowed = buttons.slice(overflowStartIdx);
@@ -1408,66 +1430,99 @@ observer.observe(parent, { attributes: true, attributeFilter: ['style', 'class']
    dropdown.style.overflowY = 'auto';
 
    overflowed.forEach(btn => {
-      const keyname = btn.id.replace('ray-btn-', '');
-      const config = buttonConfigs[keyname];
-      if (!config) return;
-      const newBtn = document.createElement('button');
-      newBtn.type = 'button';
-      newBtn.className = btn.className;
-      newBtn.innerHTML = btn.innerHTML;
-      newBtn.title = btn.title;
-      newBtn.setAttribute('data-tooltip', btn.getAttribute('data-tooltip'));
-      newBtn.style.display = 'block';
-      //TODO: Implement select for dropdowns
+   if (btn.tagName === 'SELECT') {
+      const selectClone = btn.cloneNode(true);
+      selectClone.style.display = 'block';
 
+      const keyname = Array.from(btn.classList).find(cls => cls.startsWith('ray-dropdown-'));
+      let configKey = keyname ? keyname.replace('ray-dropdown-', '') : null;
+      if(configKey === 'heading'){
+         configKey = 'headings'; // Normalize to match buttonConfigs
+      }
+      const config = buttonConfigs[configKey];
+      if (config && config.options) {
+         selectClone.addEventListener('change', () => {
+            if (configKey === 'headings') {
+               let value = selectClone.value;
+               if (value.startsWith('<') && value.endsWith('>')) {
+                  value = value.slice(1, -1);
+               }
+               this.#execCommand('formatBlock', value);
+            } else {
+               const selected = config.options[selectClone.selectedOptions[0].textContent.toLowerCase().replace(/\s/g, '')];
+               if (selected?.cmd) {
+                  this.#execCommand(selected.cmd, selected.value);
+               }
+            }
+         });
+      }
+      dropdown.appendChild(selectClone);
+      return;
+   }
 
-      newBtn.addEventListener('click', (e) => {
-         e.preventDefault();
-         if (config.cmd) {
-            this.#execCommand(config.cmd, config.value || null);
-         } else if (config.keyname === 'uppercase') {
-            this.#transformSelectedText('upper');
-         } else if (config.keyname === 'lowercase') {
-            this.#transformSelectedText('lower');
-         } else if (config.keyname === 'toggleCase') {
-            this.#toggleTextCase();
-         } else if (config.keyname === 'codeBlock') {
-            this.#insertCodeBlock();
-         } else if (config.keyname === 'codeInline') {
-            this.#insertInlineCode();
-         } else if (config.keyname === 'backgroundColor') {
-            this.#applyBackgroundColor();
-         } else if (config.keyname === 'textColor') {
-            this.#applyTextColor();
-         } else if (config.keyname === 'imageUpload') {
-            this.#triggerImageUpload();
-         } else if (config.keyname === 'fileUpload') {
-            this.#triggerFileUpload();
-         } else if (config.keyname === 'link') {
-            this.#openLinkModal();
-         } else if (config.keyname === 'removeFormat') {
-            this.#execCommand('removeFormat');
-         } else if (config.keyname === 'table') {
-            this.#openTableModal();
-         }
-         dropdown.style.display = 'none';
-      });
+   const keyname = btn.id.replace('ray-btn-', '');
+   const config = buttonConfigs[keyname];
+   if (!config) return;
+   const newBtn = document.createElement('button');
+   newBtn.type = 'button';
+   newBtn.className = btn.className;
+   newBtn.innerHTML = btn.innerHTML;
+   newBtn.title = btn.title;
+   newBtn.setAttribute('data-tooltip', btn.getAttribute('data-tooltip'));
+   newBtn.style.display = 'block';
 
-      dropdown.appendChild(newBtn);
-   });
-
-   overflowBtn.addEventListener('mouseenter', () => {
-      dropdown.style.display = 'block';
-   });
-   overflowBtn.addEventListener('mouseleave', () => {
-      setTimeout(() => { dropdown.style.display = 'none'; }, 200);
-   });
-   dropdown.addEventListener('mouseenter', () => {
-      dropdown.style.display = 'block';
-   });
-   dropdown.addEventListener('mouseleave', () => {
+   newBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (config.cmd) {
+         this.#execCommand(config.cmd, config.value || null);
+      } else if (config.keyname === 'uppercase') {
+         this.#transformSelectedText('upper');
+      } else if (config.keyname === 'lowercase') {
+         this.#transformSelectedText('lower');
+      } else if (config.keyname === 'toggleCase') {
+         this.#toggleTextCase();
+      } else if (config.keyname === 'codeBlock') {
+         this.#insertCodeBlock();
+      } else if (config.keyname === 'codeInline') {
+         this.#insertInlineCode();
+      } else if (config.keyname === 'backgroundColor') {
+         this.#applyBackgroundColor();
+      } else if (config.keyname === 'textColor') {
+         this.#applyTextColor();
+      } else if (config.keyname === 'imageUpload') {
+         this.#triggerImageUpload();
+      } else if (config.keyname === 'fileUpload') {
+         this.#triggerFileUpload();
+      } else if (config.keyname === 'link') {
+         this.#openLinkModal();
+      } else if (config.keyname === 'removeFormat') {
+         this.#execCommand('removeFormat');
+      } else if (config.keyname === 'table') {
+         this.#openTableModal();
+      }
       dropdown.style.display = 'none';
    });
+
+   dropdown.appendChild(newBtn);
+});
+
+let dropdownOpen = false;
+overflowBtn.addEventListener('click', (e) => {
+   e.stopPropagation();
+   if (!dropdown.contains(e.target)) {
+      dropdownOpen = !dropdownOpen;
+      dropdown.style.display = dropdownOpen ? 'block' : 'none';
+   }
+});
+dropdown.addEventListener('click', (e) => {
+   e.stopPropagation();
+});
+document.addEventListener('click', function hideDropdown(e) {
+   if (dropdownOpen && !dropdown.contains(e.target) && e.target !== overflowBtn) {
+      dropdown.style.display = 'none';
+      dropdownOpen = false;
+   }
+});
 
    overflowBtn.appendChild(dropdown);
    this.toolbar.appendChild(overflowBtn);
