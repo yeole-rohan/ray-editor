@@ -370,3 +370,29 @@ table.ray-editor-table-highlighted{
 .ray-mention:hover {
    cursor: pointer;
 }
+.ray-toolbar-overflow-dropdown button, .ray-toolbar-overflow-dropdown select {
+  width: 100%;
+  text-align: center;
+  border: none;
+  background: none;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.ray-toolbar-overflow-dropdown button:hover {
+  background: #f0f0f0;
+}
+.ray-toolbar-overflow-dropdown {
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  text-align: center;
+  overflow-x: hidden;
+  padding: 2.5px;
+}
+.ray-toolbar-overflow-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+.ray-toolbar-overflow-dropdown::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 4px;
+}
