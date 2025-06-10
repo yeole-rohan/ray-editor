@@ -1321,11 +1321,6 @@ class RayEditor {
 
     #setToolbarType(){
       if(!this.options.toolbarType || this.options.toolbarType === 'default') return;
-      if (
-         this.toolbar.style.display === 'none' ||
-         this.toolbar.parentElement.style.display === 'none' ||
-         this.toolbar.offsetParent === null // not visible in DOM
-      ) return;
 
       this.toolbar.classList.add(`ray-editor-toolbar-${this.options.toolbarType}`);
       this.toolbar.id = 'ray-editor-toolbar-'+this.toolbarIndex;
