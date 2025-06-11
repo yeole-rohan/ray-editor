@@ -73,8 +73,14 @@
 
 ### ➖ Toolbar Types
 
-* Multiple types of toolbars. Current options: "default" | "inline"
+* Multiple types of toolbars. Current options: "`default`" | "`inline`"
 * Inline toolbars are hidden until the editor area is focused and will hide again once focus is completely lost from the editor and the toolbar.
+
+### Toolbar Overflow Mode (1-Line Toolbar Mode)
+
+* Automatically calculates the width of the toolbar area and tries to shrink the total buttons to fit on a single line. Useful when using the inline toolbar style so the toolbar is smaller overall.
+* Options: `overflowMenu:` `true` | `false`
+
 
 ---
 
@@ -149,7 +155,8 @@ document.addEventListener('DOMContentLoaded', () => {
       initStyles: false,
       stylesheetUrl: "",
       hideWatermark: false,
-      toolbarType: "default"
+      toolbarType: "default",
+      overflowMenu: false
    });
 });
 ```
