@@ -396,3 +396,10 @@ table.ray-editor-table-highlighted{
   background: #ddd;
   border-radius: 4px;
 }
+.ray-editor-sourcearea {
+  font-family: monospace;
+  font-size: 14px;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 200px;
+}
