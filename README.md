@@ -81,6 +81,10 @@
 * Automatically calculates the width of the toolbar area and tries to shrink the total buttons to fit on a single line. Useful when using the inline toolbar style so the toolbar is smaller overall.
 * Options: `overflowMenu:` `true` | `false`
 
+### <> Source Toggle
+
+  * Allows viewing or editing the HTML source code of the editor area with the press of a button.
+  * Options: `showSource:` `true` | `false`
 
 ---
 
@@ -156,7 +160,8 @@ document.addEventListener('DOMContentLoaded', () => {
       stylesheetUrl: "",
       hideWatermark: false,
       toolbarType: "default",
-      overflowMenu: false
+      overflowMenu: false,
+      showSource: true
    });
 });
 ```
