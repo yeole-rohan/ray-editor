@@ -1,5 +1,6 @@
 class RayEditor {
-   constructor(containerId, options = {}) {
+   constructor(containerId, options = {}, contentId = null) {
+      this.contentId = contentId;
       this.container = document.getElementById(containerId);
       this.options = options;
       this.toolbar = null;
@@ -15,6 +16,8 @@ class RayEditor {
       this.options.mentions.mentionTagUnescaped = this.options.mentions.mentionTag;
       this.options.mentions.mentionTag = this.options.mentions.mentionTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       this.overflowMode = false;
+      this.isSourceMode = false;
+      this.sourceTextarea = null;
       
    }
    init() {
@@ -24,60 +27,53 @@ class RayEditor {
       this.#addWatermark();
       this.#includeCSS();
       this.#setToolbarType();
-
-
+      
       if (this.options.overflowMenu) {
-      // Debounced resize handler
       const debouncedCheck = () => {
          if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
          this.resizeTimeout = setTimeout(() => {
-            // Only check if width actually changed
             const width = this.toolbar.offsetWidth;
             if (width !== this.lastToolbarWidth) {
                this.lastToolbarWidth = width;
                this.#checkToolbarWidth();
             }
-         }, 60); // 60ms debounce for fast UI, but not too fast
+         }, 60); 
       };
 
-      // Observe toolbar size changes
       this.resizeObserver = new ResizeObserver(debouncedCheck);
       this.resizeObserver.observe(this.toolbar);
 
-      // Also listen to window resize for layout changes
       window.addEventListener('resize', debouncedCheck);
-
-      // Initial check after render
       requestAnimationFrame(() => this.#checkToolbarWidth());
    }
    }
    #createToolbar() {
-      this.toolbar = document.createElement('div');
-      this.toolbar.className = 'ray-editor-toolbar';
-      this.container.appendChild(this.toolbar);
+      if(this.contentId){
+         const contentElement = document.getElementById(this.contentId);
+         if (!contentElement) {
+            console.error(`Content element with ID "${this.contentId}" not found.`);
+            return;
+         }
+         this.container = contentElement.parentNode;
+         this.toolbar = document.createElement('div');
+         this.toolbar.className = 'ray-editor-toolbar';
+         this.container.insertBefore(this.toolbar, contentElement);
+
+      }else{
+         this.toolbar = document.createElement('div');
+         this.toolbar.className = 'ray-editor-toolbar';
+         this.container.appendChild(this.toolbar);
+      }
       this.#generateToolbarButtons(buttonConfigs);
-
-
-      // if(this.options.overflowMenu){
-      // requestAnimationFrame(() => this.#checkToolbarWidth());
+   }
+   addEventListener(event, callback) {
+      console.log(`Adding event listener for: ${event}`);
+      if (!this.editorArea) {
+         console.error('Editor element not found');
+         return;
+      }
+      this.editorArea.addEventListener(event, callback);
       
-      // //get parent element of the toolbar
-      // const parent = this.toolbar.parentElement;
-
-      // const observer = new MutationObserver((mutations) => {
-      // mutations.forEach(mutation => {
-      //    // Check if display is no longer 'none'
-      //    if (getComputedStyle(parent).display !== 'none') {
-      //       // Defer to next frame so browser has rendered
-      //       requestAnimationFrame(() => {
-      //       this.#checkToolbarWidth();
-      //       });
-      //    }
-      // });
-      // });
-
-      // observer.observe(parent, { attributes: true, attributeFilter: ['style', 'class'] });
-      // }
    }
    // Method to get the content from the editor
    getRayEditorContent() {
@@ -174,6 +170,37 @@ class RayEditor {
    }
 
    #createEditorArea() {
+   if(this.contentId){
+      const contentElement = document.getElementById(this.contentId);
+      if (!contentElement) {
+         console.error(`Content element with ID "${this.contentId}" not found.`);
+         return;
+      }
+      this.editorArea = document.createElement('div');
+      this.editorArea.className = 'ray-editor-content';
+
+      for (let attr of contentElement.attributes) {
+         if (attr.name === 'class') {
+            this.editorArea.className += ' ' + attr.value;
+         } else if (attr.name !== 'id') {
+            this.editorArea.setAttribute(attr.name, attr.value);
+         }
+      }
+
+      if (contentElement.id) {
+         this.editorArea.id = contentElement.id;
+      }
+
+      this.editorArea.contentEditable = true;
+      this.editorArea.spellcheck = true;
+
+      if (contentElement.tagName === 'TEXTAREA') {
+         this.editorArea.innerHTML = contentElement.value || '<p><br></p>';
+      } else {
+         this.editorArea.innerHTML = contentElement.innerHTML || '<p><br></p>';
+      }
+      contentElement.parentNode.replaceChild(this.editorArea, contentElement);
+   } else {
       this.editorArea = document.createElement('div');
       this.editorArea.className = 'ray-editor-content';
       this.editorArea.contentEditable = true;
@@ -181,8 +208,8 @@ class RayEditor {
       this.editorArea.innerHTML = '<p><br></p>';
       this.container.appendChild(this.editorArea);
    }
+}
    #addWatermark() {
-
       if (!this.editorArea || this.options.hideWatermark) return;
       const watermark = document.createElement('div');
       watermark.id = 'ray-editor-watermark';
@@ -272,6 +299,8 @@ class RayEditor {
             this.#execCommand('removeFormat')
          } else if (config.keyname === 'table') {
             this.#openTableModal();
+         } else if (config.keyname === 'showSource') {
+            this.#toggleSourceMode();
          }
       });
 
@@ -1522,6 +1551,28 @@ document.addEventListener('click', function hideDropdown(e) {
    overflowBtn.appendChild(dropdown);
    this.toolbar.appendChild(overflowBtn);
 }
+#toggleSourceMode() {
+   if (!this.editorArea) return;
+
+   if (!this.isSourceMode) {
+      this.sourceTextarea = document.createElement('textarea');
+      this.sourceTextarea.className = 'ray-editor-sourcearea';
+      this.sourceTextarea.style.width = '100%';
+      this.sourceTextarea.style.height = this.editorArea.offsetHeight + 'px';
+      this.sourceTextarea.value = this.editorArea.innerHTML;
+      this.editorArea.style.display = 'none';
+      this.editorArea.parentNode.insertBefore(this.sourceTextarea, this.editorArea);
+      this.isSourceMode = true;
+   } else {
+      if (this.sourceTextarea) {
+         this.editorArea.innerHTML = this.sourceTextarea.value;
+         this.sourceTextarea.parentNode.removeChild(this.sourceTextarea);
+         this.sourceTextarea = null;
+      }
+      this.editorArea.style.display = '';
+      this.isSourceMode = false;
+   }
+}
 
     
 }
@@ -1650,5 +1701,9 @@ const buttonConfigs = {
    overflowMenu: {
       keyname: "overflowMenu",
       label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-more-horizontal-icon lucide-more-horizontal"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>`,
+   },
+   showSource: {
+   keyname: "showSource",
+   label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
    },
 }
