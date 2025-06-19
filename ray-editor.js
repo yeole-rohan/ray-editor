@@ -67,13 +67,34 @@ class RayEditor {
       this.#generateToolbarButtons(buttonConfigs);
    }
    addEventListener(event, callback) {
-      console.log(`Adding event listener for: ${event}`);
       if (!this.editorArea) {
          console.error('Editor element not found');
          return;
       }
       this.editorArea.addEventListener(event, callback);
       
+   }
+   destroy() {
+      return new Promise((resolve, reject) => {
+         try {
+            console.log('Destroying RayEditor instance');
+            if (this.editorArea) {
+               this.editorArea.setAttribute('contenteditable', 'false');
+               this.editorArea.removeEventListener('keyup', this.#updateToolbar);
+               this.editorArea.classList.remove('ray-editor-content');
+            }
+            if (this.toolbar) {
+               this.toolbar.remove();
+               this.toolbar = null;
+            }
+            resolve();
+         } catch (err) {
+            reject(err);
+         }
+      });
+   }
+   then(callback) {
+      return Promise.resolve(this).then(callback);
    }
    // Method to get the content from the editor
    getRayEditorContent() {
