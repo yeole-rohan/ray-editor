@@ -76,7 +76,7 @@
 
 ## 🛠️ Setup Guide
 
-### 1. Include RayEditor via CDN
+### 1. Include RayEditor
 
 ```html
 <!-- RayEditor CSS -->
