@@ -62,9 +62,33 @@
 * Upload and attach documents or media files.
 * Size limits and upload endpoints are customizable.
 
+### 💬 Mentions
+
+* When enabled, type the configured tag, @ by default, and any alphanumeric character (and underscores _ ) to create a tag that can then be used by your own code to make interactible. 
+* Or configure the `mentionElement: "a"` option and the `mentionUrl:""` to have the mention link to a specific page.
+
+### 🙌 Automatic Stylesheet Insertion
+
+* Optionally configure RayEditor to insert the stylesheet into the DOM so you don't have to manage it manually.
+
+### ➖ Toolbar Types
+
+* Multiple types of toolbars. Current options: "`default`" | "`inline`"
+* Inline toolbars are hidden until the editor area is focused and will hide again once focus is completely lost from the editor and the toolbar.
+
+### Toolbar Overflow Mode (1-Line Toolbar Mode)
+
+* Automatically calculates the width of the toolbar area and tries to shrink the total buttons to fit on a single line. Useful when using the inline toolbar style so the toolbar is smaller overall.
+* Options: `overflowMenu:` `true` | `false`
+
+### <> Source Toggle
+
+  * Allows viewing or editing the HTML source code of the editor area with the press of a button.
+  * Options: `showSource:` `true` | `false`
+
 ---
 
-### Tables
+### ⌗ Tables
 
 * Add Row: Add a new row below the selected row.
 * Delete Row: Remove the selected row.
@@ -123,14 +147,26 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       textColor: true,
       backgroundColor: true,
-      link:true,
-      table:true,
-      textAlignment:true
+      link: true,
+      table: true,
+      textAlignment:true,
+      mentions: {
+        enableMentions: false,
+        mentionElement: "span",
+        mentionUrl:"",
+        mentionTag:""
+      },
+      initStyles: false,
+      stylesheetUrl: "",
+      hideWatermark: false,
+      toolbarType: "default",
+      overflowMenu: false,
+      showSource: true
    });
 });
 ```
 
-## ```'/upload-file/'``` should return json with following
+## ```'/upload-file/'``` should return json with the following
 
 ```
 {
@@ -158,6 +194,32 @@ E.g
 
   * `fileUploadUrl`: Upload endpoint for files.
   * `fileMaxSize`: Max file size in bytes.
+
+* **Mentions**: Replace tags such as "@username" with an HTML element.
+
+  * `enableMentions`: Default: false - Enables the mention functionality.
+  
+  * `mentionUrl`: The relative or absolute path you want to link to. The tagged value will be appended to the end of the url defined. Ex. `mentionUrl:"/user/" = "/user/{username}"
+
+  * `mentionElement`: Default: span - The element that will replace any text beginning with the defined `mentionTag`. 
+    * `Options`: a | span
+
+  * `mentionTag`: Define the tag that is required to activate the mention. Can be one or more characters.
+    * Default: "@"
+
+* **Custom Stylesheets & Automatic Stylesheet Insertion**
+
+  * `initStyles`: Default: false - Whether or not to automatically insert the stylesheet into the HTML DOM.
+    * Options true | false
+
+  * `stylesheetUrl`: Default: "" - If `initStyles:true` then will insert this url (relative or absolute path) into the DOM to load custom stylesheets.
+  * If left unset, defaults to the "main" branch CDN url.
+
+* **Toolbar Options**
+
+  * `toolbarType`: Default: "default" - Change the style of the toolbar. Inline toolbars are hidden by default and will display when the editor area is focused.
+  
+    * Options: default | inline
 
 ---
 
