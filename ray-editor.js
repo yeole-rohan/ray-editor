@@ -27,7 +27,6 @@ class RayEditor {
       this.#addWatermark()
       // Force new lines to be <p>
       document.execCommand('defaultParagraphSeparator', false, 'p');
-      this.#addWatermark();
       this.#includeCSS();
       this.#setToolbarType();
       
