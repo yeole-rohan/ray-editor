@@ -914,8 +914,8 @@ class RayEditor {
       return {
          wrapper,
       };
-   }
-
+   })
+}
 #openImageEditor(originalImg, wrapper) {
    const editor = document.createElement('div');
    editor.className = 'ray-img-editor-modal';
@@ -969,10 +969,7 @@ class RayEditor {
 
       editor.remove();
    };
-
-   // (Optional: Add draggable crop rectangle and ratio enforcement logic)
-}
-
+};
    #triggerFileUpload() {
       const input = document.createElement('input');
       input.type = 'file';
@@ -1005,7 +1002,6 @@ class RayEditor {
       input.click();
       document.body.removeChild(input);
    }
-
    #handleFileUpload(file) {
 
       if (!this.fileUploadUrl) {
