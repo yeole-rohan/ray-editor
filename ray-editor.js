@@ -1,5 +1,6 @@
 class RayEditor {
-   constructor(containerId, options = {}) {
+   constructor(containerId, options = {}, contentId = null) {
+      this.contentId = contentId;
       this.container = document.getElementById(containerId);
       this.options = options;
       this.toolbar = null;
@@ -7,6 +8,17 @@ class RayEditor {
       this.imageUploadUrl = null
       this.maxImageSize = null
       this.init();
+      this.toolbarIndex = 0;
+      if(this.options.mentions.mentionTag == ""){
+         this.options.mentions.mentionTag = '@';
+      }
+      this.options.mentions.mentionTag = this.options.mentions.mentionTag || '@';
+      this.options.mentions.mentionTagUnescaped = this.options.mentions.mentionTag;
+      this.options.mentions.mentionTag = this.options.mentions.mentionTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      this.overflowMode = false;
+      this.isSourceMode = false;
+      this.sourceTextarea = null;
+      
    }
    init() {
       this.#createToolbar();
@@ -15,12 +27,56 @@ class RayEditor {
       this.#addWatermark()
       // Force new lines to be <p>
       document.execCommand('defaultParagraphSeparator', false, 'p');
+      this.#addWatermark();
+      this.#includeCSS();
+      this.#setToolbarType();
+      
+      if (this.options.overflowMenu) {
+      const debouncedCheck = () => {
+         if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
+         this.resizeTimeout = setTimeout(() => {
+            const width = this.toolbar.offsetWidth;
+            if (width !== this.lastToolbarWidth) {
+               this.lastToolbarWidth = width;
+               this.#checkToolbarWidth();
+            }
+         }, 60); 
+      };
+
+      this.resizeObserver = new ResizeObserver(debouncedCheck);
+      this.resizeObserver.observe(this.toolbar);
+
+      window.addEventListener('resize', debouncedCheck);
+      requestAnimationFrame(() => this.#checkToolbarWidth());
+   }
    }
    #createToolbar() {
-      this.toolbar = document.createElement('div');
-      this.toolbar.className = 'ray-editor-toolbar';
-      this.container.appendChild(this.toolbar);
+      if(this.contentId){
+         const contentElement = document.getElementById(this.contentId);
+         if (!contentElement) {
+            console.error(`Content element with ID "${this.contentId}" not found.`);
+            return;
+         }
+         this.container = contentElement.parentNode;
+         this.toolbar = document.createElement('div');
+         this.toolbar.className = 'ray-editor-toolbar';
+         this.container.insertBefore(this.toolbar, contentElement);
+
+      }else{
+         this.toolbar = document.createElement('div');
+         this.toolbar.className = 'ray-editor-toolbar';
+         this.container.appendChild(this.toolbar);
+      }
       this.#generateToolbarButtons(buttonConfigs);
+   }
+   addEventListener(event, callback) {
+      console.log(`Adding event listener for: ${event}`);
+      if (!this.editorArea) {
+         console.error('Editor element not found');
+         return;
+      }
+      this.editorArea.addEventListener(event, callback);
+      
    }
    // Method to get the content from the editor
    getRayEditorContent() {
@@ -117,6 +173,37 @@ class RayEditor {
    }
 
    #createEditorArea() {
+   if(this.contentId){
+      const contentElement = document.getElementById(this.contentId);
+      if (!contentElement) {
+         console.error(`Content element with ID "${this.contentId}" not found.`);
+         return;
+      }
+      this.editorArea = document.createElement('div');
+      this.editorArea.className = 'ray-editor-content';
+
+      for (let attr of contentElement.attributes) {
+         if (attr.name === 'class') {
+            this.editorArea.className += ' ' + attr.value;
+         } else if (attr.name !== 'id') {
+            this.editorArea.setAttribute(attr.name, attr.value);
+         }
+      }
+
+      if (contentElement.id) {
+         this.editorArea.id = contentElement.id;
+      }
+
+      this.editorArea.contentEditable = true;
+      this.editorArea.spellcheck = true;
+
+      if (contentElement.tagName === 'TEXTAREA') {
+         this.editorArea.innerHTML = contentElement.value || '<p><br></p>';
+      } else {
+         this.editorArea.innerHTML = contentElement.innerHTML || '<p><br></p>';
+      }
+      contentElement.parentNode.replaceChild(this.editorArea, contentElement);
+   } else {
       this.editorArea = document.createElement('div');
       this.editorArea.className = 'ray-editor-content';
       this.editorArea.contentEditable = true;
@@ -124,9 +211,9 @@ class RayEditor {
       this.editorArea.innerHTML = '<p><br></p>';
       this.container.appendChild(this.editorArea);
    }
+}
    #addWatermark() {
-
-      if (!this.editorArea) return;
+      if (!this.editorArea || this.options.hideWatermark) return;
       const watermark = document.createElement('div');
       watermark.id = 'ray-editor-watermark';
       watermark.innerHTML = `Made with ❤️ by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a>`;
@@ -221,6 +308,8 @@ class RayEditor {
 
             const blockInsert = confirm("Insert date/time on a new line?");
             this.#insertDateTime({ block: blockInsert });
+         } else if (config.keyname === 'showSource') {
+            this.#toggleSourceMode();
          }
 
       });
@@ -230,6 +319,7 @@ class RayEditor {
    #execCommand(command, value = null) {
       document.execCommand(command, false, value);
       this.editorArea.focus();
+      this.#updateToolbar();
    }
    #bindEvents() {
       const events = ['keyup', 'mouseup', 'keydown', 'paste', 'click'];
@@ -244,6 +334,17 @@ class RayEditor {
             if (evt === 'keydown') {
                this.#handleCodeBlockExit(e, elementNode);
                this.#handleInlineCodeExit(e, sel, elementNode);
+            }
+            if (evt === 'keyup'){
+               const mentionRegex = new RegExp('(?:^|\\s)(' + this.options.mentions.mentionTag + '\\w+)', 'g');
+               const text = elementNode.textContent;
+               const match = mentionRegex.exec(text);
+               if (match) {
+                  const mention = match[1];
+                  if (e.key == ' ' || e.key == 'Enter') {
+                     this.#handleMention(mention);
+                  }
+               }
             }
 
             if (evt === 'paste') {
@@ -439,9 +540,9 @@ class RayEditor {
       );
    }
    #insertCodeBlock() {
-      const selection = window.getSelection();
-      if (!selection.rangeCount) return;
-
+   const selection = window.getSelection();
+   if (!selection.rangeCount) return;
+   if (!this.editorArea.contains(selection.anchorNode)) return;
       const range = selection.getRangeAt(0);
 
       // Create wrapper div
@@ -668,6 +769,16 @@ class RayEditor {
          newRange.setStart(spacer, 0);
          newRange.collapse(true);
          const sel = window.getSelection();
+         if (!sel || sel.rangeCount === 0) return;
+
+         const range = sel.getRangeAt(0);
+         // Replace range with the resizable image wrapper
+         placeholder.remove()
+         range.insertNode(wrapper);
+
+         // Move the cursor *after* the inserted wrapper
+         range.setStartAfter(wrapper);
+         range.collapse(true);
          sel.removeAllRanges();
          sel.addRange(newRange);
       }
@@ -778,6 +889,11 @@ class RayEditor {
       wrapper.appendChild(editBtn);
 
       editBtn.addEventListener('click', (e) => {
+      // Resize logic (with aspect ratio lock)
+      let startX, startY, startWidth, startHeight;
+      // **Modified resizing logic (constrains aspect ratio)**
+      handle.addEventListener('mousedown', (e) => {
+         e.preventDefault();
          e.stopPropagation();
          this.#openImageEditor(img, wrapper);
       });
@@ -794,10 +910,10 @@ class RayEditor {
          editBtn.style.opacity = '0';
       });
 
-      // Resize logic...
-      // (same as before — skipping here for brevity)
-
-      return { wrapper };
+      // **Return BOTH the wrapper AND the new line for proper insertion**
+      return {
+         wrapper,
+      };
    }
 
 #openImageEditor(originalImg, wrapper) {
@@ -1413,8 +1529,312 @@ class RayEditor {
       selection.addRange(newRange);
    }
 
+   #handleMention(username) {
+      if(!this.options.mentions.enableMentions) return;
+      let mentionElement = 'span';
+      if(this.options.mentions.mentionElement) {
+         if(!this.options.mentions.mentionElement === 'span' && !this.options.mentions.mentionElement === 'a') return;
+            mentionElement = this.options.mentions.mentionElement === 'a' ? 'a' : 'span';
+      }
+      let cleanUsername = username.replace(/[^a-zA-Z0-9_]/g, '');
+      const mentionNode = document.createElement(mentionElement);
+      mentionNode.className = 'mention ray-mention';
+      mentionNode.contentEditable = 'false';
+      mentionNode.textContent = this.options.mentions.mentionTagUnescaped;
+      if (mentionElement === 'a') {
+         if(!this.options.mentions.mentionUrl || this.options.mentions.mentionUrl.trim() === '') {
+            console.warn('Mention URL is not configured. Please configure "mentionUrl" when initializing the editor.');
+            mentionNode.href = '#';
+         }else{
+            mentionNode.href = this.options.mentions.mentionUrl + cleanUsername;
+            mentionNode.target = '_blank'; 
+         }
 
+      }
+      mentionNode.setAttribute('data-mention', username);
+      
+      let content = this.editorArea.innerHTML;
+      let regexReplace = new RegExp(this.options.mentions.mentionTag + '(\\w+)','g');
+      content = content.replace(regexReplace, (match, username) => {
+         let cleanUsername = username.replace(/[^a-zA-Z0-9_]/g, '');
+         let mentionElement = 'span';
+         if (this.options.mentions.mentionElement === 'a') {
+            mentionElement = 'a';
+         }
+         const mention = document.createElement(mentionElement);
+         mention.className = 'mention ray-mention';
+         mention.contentEditable = 'false';
+         mention.textContent =  this.options.mentions.mentionTagUnescaped + `${cleanUsername}`;
+         
+         if (mentionElement === 'a') {
+            if (!this.options.mentions.mentionUrl || this.options.mentions.mentionUrl.trim() === '') {
+               mention.href = '#';
+            } else {
+               mention.href = this.options.mentions.mentionUrl + cleanUsername;
+               mention.target = '_blank';
+            }
+         }
+         mention.setAttribute('data-mention', cleanUsername);
+         mention.dataset.username = cleanUsername;
+         return mention.outerHTML;
+      });
+      this.editorArea.innerHTML = content;
+      const range = document.createRange();
+      const sel = window.getSelection();
+      range.selectNodeContents(this.editorArea);
+      range.collapse(false); 
+      sel.removeAllRanges();
+      sel.addRange(range);
+      this.editorArea.focus();
+   }
+
+   #includeCSS(){
+      if(!this.options.initStyles) return;
+
+      let styleCount = document.querySelector('.ray-editor-styles')
+      if(!styleCount || styleCount.length === 0){
+      const style = document.createElement('link');
+      style.rel = 'stylesheet';
+      style.type = 'text/css';
+      style.className = 'ray-editor-styles';
+      style.href = 'https://cdn.jsdelivr.net/gh/yeole-rohan/ray-editor@main/ray-editor.css';
+      // Use the provided stylesheet URL or fallback to the CDN
+      if(this.options.stylesheetUrl && this.options.stylesheetUrl.length > 0){
+         style.href = this.options.stylesheetUrl
+      }
+      return window.document.head.appendChild(style);
+      }
+    }
+
+    #setToolbarType(){
+      if(!this.options.toolbarType || this.options.toolbarType === 'default') return;
+
+      this.toolbar.classList.add(`ray-editor-toolbar-${this.options.toolbarType}`);
+      this.toolbar.id = 'ray-editor-toolbar-'+this.toolbarIndex;
+      this.toolbarIndex++;
+
+      if(this.options.toolbarType === 'inline'){
+         this.editorArea.addEventListener('focus', () => {
+            this.toolbar.style.display = 'flex';
+         });
+      const maybeHideToolbar = (e) => {
+         
+         const next = e.relatedTarget;
+         if (
+            !this.editorArea.contains(next) &&
+            !this.toolbar.contains(next)
+         ) {
+            this.toolbar.style.display = 'none';
+         }
+      };
+
+      this.editorArea.addEventListener('blur', maybeHideToolbar, true);
+      this.toolbar.addEventListener('blur', maybeHideToolbar, true);
+      this.toolbar.tabIndex = -1;
+      }
+    }
+   #checkToolbarWidth() {
+   if(this.toolbar.style.display === 'none' || 
+      this.toolbar.parentElement.style.display === 'none') return;
+   if (
+      this.toolbar.style.display === 'none' ||
+      this.toolbar.parentElement.style.display === 'none' ||
+      this.toolbar.offsetParent === null
+   ) return;
+
+   const oldOverflowBtn = this.toolbar.querySelector('.ray-btn-overflowMenu');
+   const oldDropdown = this.toolbar.querySelector('.ray-toolbar-overflow-dropdown');
+   if (oldOverflowBtn) oldOverflowBtn.remove();
+   if (oldDropdown) oldDropdown.remove();
+
+   const toolbarRect = this.toolbar.offsetWidth;
+   const toolbarStyle = getComputedStyle(this.toolbar);
+   const toolbarWidth = toolbarRect 
+      - parseFloat(toolbarStyle.paddingLeft || 0)
+      - parseFloat(toolbarStyle.paddingRight || 0);
+
+   let buttons = Array.from(this.toolbar.querySelectorAll('button:not(.ray-btn-overflowMenu)'));
+   let select = Array.from(this.toolbar.querySelectorAll('select'));
+   
+   buttons = buttons.concat(select);
+   let totalButtonWidth = 0;
+   let overflowStartIdx = buttons.length;
+
+   for (let i = 0; i < buttons.length; i++) {
+      const rect = buttons[i].offsetWidth;
+      totalButtonWidth += rect + 10;
+   }
+   if (totalButtonWidth < toolbarWidth) {
+      buttons.forEach(btn => btn.style.display = '');
+      return;
+   }
+   let overflowBtn = document.createElement('button');
+   overflowBtn.type = 'button';
+   overflowBtn.className = 'ray-btn ray-btn-overflowMenu';
+   overflowBtn.innerHTML = buttonConfigs.overflowMenu.label;
+   overflowBtn.style.visibility = 'hidden';
+   document.body.appendChild(overflowBtn);
+   const overflowBtnWidth = overflowBtn.offsetWidth;
+
+   document.body.removeChild(overflowBtn);
+   totalButtonWidth = 0;
+   for (let i = 0; i < buttons.length; i++) {
+      const rect = buttons[i].offsetWidth;
+      if (totalButtonWidth + rect > toolbarWidth - overflowBtnWidth) {
+         overflowStartIdx = i;
+         break;
+      }
+      totalButtonWidth += rect + 10;
+   }
+
+   const overflowed = buttons.slice(overflowStartIdx);
+   overflowed.forEach(btn => btn.style.display = 'none');
+
+   overflowBtn = document.createElement('button');
+   overflowBtn.type = 'button';
+   overflowBtn.className = 'ray-btn ray-btn-overflowMenu';
+   overflowBtn.innerHTML = buttonConfigs.overflowMenu.label;
+   overflowBtn.style.position = 'relative';
+
+
+   const dropdown = document.createElement('div');
+   dropdown.className = 'ray-toolbar-overflow-dropdown';
+   dropdown.style.position = 'absolute';
+   dropdown.style.top = '100%';
+   dropdown.style.right = '0';
+   dropdown.style.background = '#fff';
+   dropdown.style.border = '1px solid #ccc';
+   dropdown.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+   dropdown.style.display = 'none';
+   dropdown.style.zIndex = '1000';
+   dropdown.style.minWidth = '120px';
+   dropdown.style.maxHeight = '220px';
+   dropdown.style.overflowY = 'auto';
+
+   overflowed.forEach(btn => {
+   if (btn.tagName === 'SELECT') {
+      const selectClone = btn.cloneNode(true);
+      selectClone.style.display = 'block';
+
+      const keyname = Array.from(btn.classList).find(cls => cls.startsWith('ray-dropdown-'));
+      let configKey = keyname ? keyname.replace('ray-dropdown-', '') : null;
+      if(configKey === 'heading'){
+         configKey = 'headings'; // Normalize to match buttonConfigs
+      }
+      const config = buttonConfigs[configKey];
+      if (config && config.options) {
+         selectClone.addEventListener('change', () => {
+            if (configKey === 'headings') {
+               let value = selectClone.value;
+               if (value.startsWith('<') && value.endsWith('>')) {
+                  value = value.slice(1, -1);
+               }
+               this.#execCommand('formatBlock', value);
+            } else {
+               const selected = config.options[selectClone.selectedOptions[0].textContent.toLowerCase().replace(/\s/g, '')];
+               if (selected?.cmd) {
+                  this.#execCommand(selected.cmd, selected.value);
+               }
+            }
+         });
+      }
+      dropdown.appendChild(selectClone);
+      return;
+   }
+
+   const keyname = btn.id.replace('ray-btn-', '');
+   const config = buttonConfigs[keyname];
+   if (!config) return;
+   const newBtn = document.createElement('button');
+   newBtn.type = 'button';
+   newBtn.className = btn.className;
+   newBtn.innerHTML = btn.innerHTML;
+   newBtn.title = btn.title;
+   newBtn.setAttribute('data-tooltip', btn.getAttribute('data-tooltip'));
+   newBtn.style.display = 'block';
+
+   newBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (config.cmd) {
+         this.#execCommand(config.cmd, config.value || null);
+      } else if (config.keyname === 'uppercase') {
+         this.#transformSelectedText('upper');
+      } else if (config.keyname === 'lowercase') {
+         this.#transformSelectedText('lower');
+      } else if (config.keyname === 'toggleCase') {
+         this.#toggleTextCase();
+      } else if (config.keyname === 'codeBlock') {
+         this.#insertCodeBlock();
+      } else if (config.keyname === 'codeInline') {
+         this.#insertInlineCode();
+      } else if (config.keyname === 'backgroundColor') {
+         this.#applyBackgroundColor();
+      } else if (config.keyname === 'textColor') {
+         this.#applyTextColor();
+      } else if (config.keyname === 'imageUpload') {
+         this.#triggerImageUpload();
+      } else if (config.keyname === 'fileUpload') {
+         this.#triggerFileUpload();
+      } else if (config.keyname === 'link') {
+         this.#openLinkModal();
+      } else if (config.keyname === 'removeFormat') {
+         this.#execCommand('removeFormat');
+      } else if (config.keyname === 'table') {
+         this.#openTableModal();
+      }
+      dropdown.style.display = 'none';
+   });
+
+   dropdown.appendChild(newBtn);
+});
+
+let dropdownOpen = false;
+overflowBtn.addEventListener('click', (e) => {
+   e.stopPropagation();
+   if (!dropdown.contains(e.target)) {
+      dropdownOpen = !dropdownOpen;
+      dropdown.style.display = dropdownOpen ? 'block' : 'none';
+   }
+});
+dropdown.addEventListener('click', (e) => {
+   e.stopPropagation();
+});
+document.addEventListener('click', function hideDropdown(e) {
+   if (dropdownOpen && !dropdown.contains(e.target) && e.target !== overflowBtn) {
+      dropdown.style.display = 'none';
+      dropdownOpen = false;
+   }
+});
+
+   overflowBtn.appendChild(dropdown);
+   this.toolbar.appendChild(overflowBtn);
 }
+#toggleSourceMode() {
+   if (!this.editorArea) return;
+
+   if (!this.isSourceMode) {
+      this.sourceTextarea = document.createElement('textarea');
+      this.sourceTextarea.className = 'ray-editor-sourcearea';
+      this.sourceTextarea.style.width = '100%';
+      this.sourceTextarea.style.height = this.editorArea.offsetHeight + 'px';
+      this.sourceTextarea.value = this.editorArea.innerHTML;
+      this.editorArea.style.display = 'none';
+      this.editorArea.parentNode.insertBefore(this.sourceTextarea, this.editorArea);
+      this.isSourceMode = true;
+   } else {
+      if (this.sourceTextarea) {
+         this.editorArea.innerHTML = this.sourceTextarea.value;
+         this.sourceTextarea.parentNode.removeChild(this.sourceTextarea);
+         this.sourceTextarea = null;
+      }
+      this.editorArea.style.display = '';
+      this.isSourceMode = false;
+   }
+}
+
+    
+}
+
 const buttonConfigs = {
    bold: {
       label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bold-icon lucide-bold"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"/></svg>`,
@@ -1555,4 +1975,13 @@ const buttonConfigs = {
       label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-days-icon lucide-calendar-days"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>`
    }
    ,
+
+   overflowMenu: {
+      keyname: "overflowMenu",
+      label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-more-horizontal-icon lucide-more-horizontal"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>`,
+   },
+   showSource: {
+   keyname: "showSource",
+   label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+   },
 }
