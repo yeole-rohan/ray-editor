@@ -359,3 +359,10 @@ table.ray-editor-table-highlighted{
    border: 2px solid #007BFF; /* Blue border for highlighting */
    box-shadow: 0 0 10px rgba(0, 123, 255, 0); /* Subtle blue glow */
 }
+.ray-editor-content blockquote {
+  border-left: 4px solid #ccc;
+  padding-left: 1em;
+  margin-left: 0;
+  color: #555;
+  font-style: italic;
+}
