@@ -8,6 +8,7 @@ import type {
   EventHandler,
 } from './types/plugin';
 import { DEFAULT_TOOLBAR } from './types/options';
+import { applySanitizedHTML, sanitizeUrl } from './core/sanitize';
 import { EventBus } from './core/events';
 import { SelectionManager } from './core/selection';
 import { CommandManager } from './core/commands';
@@ -273,7 +274,7 @@ export class RayEditor implements RayEditorInstance {
     btn.type = 'button';
     btn.id = `ray-btn-${config.name}`;
     btn.className = `ray-btn ray-btn-${config.name}`;
-    btn.innerHTML = config.icon;
+    applySanitizedHTML(btn, config.icon);
     btn.title = config.tooltip ?? config.name;
     btn.setAttribute('data-tooltip', btn.title);
     btn.addEventListener('click', () => config.action(this));
@@ -660,72 +661,12 @@ export class RayEditor implements RayEditorInstance {
       this.isSourceMode = true;
     } else {
       if (this.sourceTextarea) {
-        this.applySanitizedHTML(this.editorElement, this.sourceTextarea.value);
+        applySanitizedHTML(this.editorElement, this.sourceTextarea.value);
         this.sourceTextarea.parentNode?.removeChild(this.sourceTextarea);
         this.sourceTextarea = null;
       }
       this.editorElement.style.display = '';
       this.isSourceMode = false;
-    }
-  }
-
-  /**
-   * Sanitizes raw HTML and writes it directly into `target` using DOM node
-   * adoption — no innerHTML assignment of user-derived text.
-   *
-   * Flow:
-   *  1. DOMParser parses in a sandboxed, inert document (scripts never run).
-   *  2. Walk every element and remove forbidden tags and dangerous attributes.
-   *  3. Adopt each cleaned node into the main document via document.adoptNode()
-   *     and append to `target` — taint never flows through innerHTML.
-   *
-   * Forbidden tags : script, iframe, object, embed, form controls, base, link
-   * Stripped attrs : on* (event handlers), javascript/vbscript/data: URIs
-   */
-  private applySanitizedHTML(target: HTMLElement, html: string): void {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-
-    const FORBIDDEN = new Set([
-      'script', 'iframe', 'frame', 'frameset',
-      'object', 'embed', 'applet',
-      'form', 'input', 'button', 'select', 'option', 'textarea',
-      'base', 'link', 'meta',
-    ]);
-
-    const URL_ATTRS = new Set(['href', 'src', 'action', 'formaction', 'data']);
-
-    const walk = (node: Element): void => {
-      // Post-order: clean children before the parent so removals don't
-      // invalidate the live child list while we still need it.
-      Array.from(node.children).forEach(walk);
-
-      if (FORBIDDEN.has(node.tagName.toLowerCase())) {
-        node.remove();
-        return;
-      }
-
-      Array.from(node.attributes).forEach(attr => {
-        const name  = attr.name.toLowerCase();
-        const value = attr.value.replace(/[\s\u0000-\u001F\u007F]/g, '').toLowerCase();
-
-        const isEventHandler  = name.startsWith('on');
-        const isDangerousUri  =
-          URL_ATTRS.has(name) && /^(javascript|vbscript|data):/.test(value);
-
-        if (isEventHandler || isDangerousUri) {
-          node.removeAttribute(attr.name);
-        }
-      });
-    };
-
-    Array.from(doc.body.children).forEach(walk);
-
-    // Clear target and transplant sanitized nodes directly.
-    // Using adoptNode + appendChild avoids any innerHTML assignment
-    // of user-derived content (breaks CodeQL's taint chain).
-    while (target.firstChild) target.removeChild(target.firstChild);
-    while (doc.body.firstChild) {
-      target.appendChild(document.adoptNode(doc.body.firstChild));
     }
   }
 
@@ -790,9 +731,8 @@ export class RayEditor implements RayEditorInstance {
     link.rel = 'stylesheet';
     link.type = 'text/css';
     link.className = 'ray-editor-styles';
-    link.href =
-      this.options.stylesheetUrl ||
-      'https://cdn.jsdelivr.net/npm/ray-editor@2/dist/ray-editor.css';
+    const cdnFallback = 'https://cdn.jsdelivr.net/npm/ray-editor@2/dist/ray-editor.css';
+    link.href = sanitizeUrl(this.options.stylesheetUrl || cdnFallback) || cdnFallback;
     document.head.appendChild(link);
   }
 
@@ -853,7 +793,7 @@ export class RayEditor implements RayEditorInstance {
         if (contentEl.tagName === 'TEXTAREA') {
           // Sanitize textarea content before writing to innerHTML to prevent
           // script injection when initialising from an existing textarea element.
-          this.applySanitizedHTML(
+          applySanitizedHTML(
             area,
             (contentEl as HTMLTextAreaElement).value || '<p><br></p>'
           );

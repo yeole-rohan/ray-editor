@@ -1,4 +1,5 @@
 import { SelectionManager } from '../core/selection';
+import { sanitizeUrl } from '../core/sanitize';
 
 /**
  * Link modal, edit popup, remove link.
@@ -65,7 +66,7 @@ export class LinkFeature {
 
       this.selectionManager.restore(savedRange);
 
-      const safeUrl = this.sanitizeUrl(url);
+      const safeUrl = sanitizeUrl(url);
       if (!safeUrl) {
         urlError.textContent = 'URL scheme not allowed (javascript: / vbscript: / data: are blocked).';
         urlError.style.display = 'block';
@@ -141,29 +142,6 @@ export class LinkFeature {
     document.addEventListener('click', onDocClick);
   }
 
-  /**
-   * Returns a safe, normalised URL string, or '' if the scheme is dangerous.
-   *
-   * - Strips whitespace/control chars before scheme check (defeats obfuscation)
-   * - For absolute URLs: passes through new URL() so CodeQL sees the URL
-   *   constructor's output (parsed.href), not the raw user input
-   * - For relative URLs: safe after the scheme check, returned as-is
-   * - Blocks javascript:, vbscript:, and data: schemes
-   */
-  private sanitizeUrl(url: string): string {
-    const stripped = url.replace(/[\s\u0000-\u001F\u007F]/g, '');
-    if (/^(javascript|vbscript|data):/i.test(stripped)) return '';
-
-    try {
-      const parsed = new URL(url);
-      const ALLOWED = new Set(['http:', 'https:', 'mailto:', 'tel:', 'ftp:']);
-      return ALLOWED.has(parsed.protocol) ? parsed.href : '';
-    } catch {
-      // Relative URL — safe after the scheme check above
-      return url;
-    }
-  }
-
   removeLink(anchor: HTMLAnchorElement): void {
     const parent = anchor.parentNode!;
     while (anchor.firstChild) {
@@ -193,7 +171,7 @@ export class LinkFeature {
       throw new Error('Cross-block selection');
     }
 
-    const safeHref = this.sanitizeUrl(href);
+    const safeHref = sanitizeUrl(href);
     if (!safeHref) {
       throw new Error('URL scheme not allowed');
     }
