@@ -660,7 +660,7 @@ export class RayEditor implements RayEditorInstance {
       this.isSourceMode = true;
     } else {
       if (this.sourceTextarea) {
-        this.editorElement.innerHTML = this.sanitizeSourceHTML(this.sourceTextarea.value);
+        this.applySanitizedHTML(this.editorElement, this.sourceTextarea.value);
         this.sourceTextarea.parentNode?.removeChild(this.sourceTextarea);
         this.sourceTextarea = null;
       }
@@ -670,16 +670,19 @@ export class RayEditor implements RayEditorInstance {
   }
 
   /**
-   * Sanitizes raw HTML from the source-view textarea before writing it back
-   * into the contenteditable area.
+   * Sanitizes raw HTML and writes it directly into `target` using DOM node
+   * adoption — no innerHTML assignment of user-derived text.
    *
-   * Uses DOMParser to parse in a sandboxed document, then walks every element
-   * and removes:
-   *  - Forbidden tags: script, iframe, object, embed, form controls, base, link
-   *  - All event-handler attributes (on*)
-   *  - javascript: URIs in href / src / action
+   * Flow:
+   *  1. DOMParser parses in a sandboxed, inert document (scripts never run).
+   *  2. Walk every element and remove forbidden tags and dangerous attributes.
+   *  3. Adopt each cleaned node into the main document via document.adoptNode()
+   *     and append to `target` — taint never flows through innerHTML.
+   *
+   * Forbidden tags : script, iframe, object, embed, form controls, base, link
+   * Stripped attrs : on* (event handlers), javascript/vbscript/data: URIs
    */
-  private sanitizeSourceHTML(html: string): string {
+  private applySanitizedHTML(target: HTMLElement, html: string): void {
     const doc = new DOMParser().parseFromString(html, 'text/html');
 
     const FORBIDDEN = new Set([
@@ -703,20 +706,27 @@ export class RayEditor implements RayEditorInstance {
 
       Array.from(node.attributes).forEach(attr => {
         const name  = attr.name.toLowerCase();
-        const value = attr.value.trim().toLowerCase().replace(/\s/g, '');
+        const value = attr.value.replace(/[\s\u0000-\u001F\u007F]/g, '').toLowerCase();
 
-        const isEventHandler = name.startsWith('on');
-        const isJavascriptURI =
-          URL_ATTRS.has(name) && value.startsWith('javascript:');
+        const isEventHandler  = name.startsWith('on');
+        const isDangerousUri  =
+          URL_ATTRS.has(name) && /^(javascript|vbscript|data):/.test(value);
 
-        if (isEventHandler || isJavascriptURI) {
+        if (isEventHandler || isDangerousUri) {
           node.removeAttribute(attr.name);
         }
       });
     };
 
     Array.from(doc.body.children).forEach(walk);
-    return doc.body.innerHTML;
+
+    // Clear target and transplant sanitized nodes directly.
+    // Using adoptNode + appendChild avoids any innerHTML assignment
+    // of user-derived content (breaks CodeQL's taint chain).
+    while (target.firstChild) target.removeChild(target.firstChild);
+    while (doc.body.firstChild) {
+      target.appendChild(document.adoptNode(doc.body.firstChild));
+    }
   }
 
   /**
@@ -843,7 +853,8 @@ export class RayEditor implements RayEditorInstance {
         if (contentEl.tagName === 'TEXTAREA') {
           // Sanitize textarea content before writing to innerHTML to prevent
           // script injection when initialising from an existing textarea element.
-          area.innerHTML = this.sanitizeSourceHTML(
+          this.applySanitizedHTML(
+            area,
             (contentEl as HTMLTextAreaElement).value || '<p><br></p>'
           );
         } else {
