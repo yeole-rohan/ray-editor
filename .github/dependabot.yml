@@ -1,0 +1,82 @@
+version: 2
+
+updates:
+  # Root package (build tools, test framework)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Kolkata"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "automated"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+    groups:
+      rollup:
+        patterns:
+          - "rollup*"
+          - "@rollup/*"
+      testing:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+          - "jsdom"
+    ignore:
+      # Don't auto-update major versions — review manually
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # React wrapper
+  - package-ecosystem: "npm"
+    directory: "/packages/react"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels: ["dependencies", "automated", "react"]
+    commit-message:
+      prefix: "chore(deps/react)"
+
+  # Vue wrapper
+  - package-ecosystem: "npm"
+    directory: "/packages/vue"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels: ["dependencies", "automated", "vue"]
+    commit-message:
+      prefix: "chore(deps/vue)"
+
+  # Angular wrapper
+  - package-ecosystem: "npm"
+    directory: "/packages/angular"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels: ["dependencies", "automated", "angular"]
+    commit-message:
+      prefix: "chore(deps/angular)"
+
+  # Svelte wrapper
+  - package-ecosystem: "npm"
+    directory: "/packages/svelte"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels: ["dependencies", "automated", "svelte"]
+    commit-message:
+      prefix: "chore(deps/svelte)"
+
+  # Keep GitHub Actions up to date
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels: ["dependencies", "github-actions"]
+    commit-message:
+      prefix: "chore(actions)"
