@@ -1,0 +1,851 @@
+/* Import themes */
+@import '../themes/light.css';
+
+/* ─── Editor Wrapper ──────────────────────────────────────────────────────── */
+
+.ray-editor-wrapper {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-sizing: border-box;
+}
+
+/* ─── Editor Content Area ─────────────────────────────────────────────────── */
+
+.ray-editor-content {
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-radius: 4px;
+  z-index: 1;
+  position: relative;
+  padding: 12px 16px;
+  background-color: var(--ray-bg, #ffffff);
+  color: var(--ray-text, #1a202c);
+  overflow: auto;
+  min-height: 150px;
+  line-height: 1.6;
+  transition: border-color 0.2s ease;
+}
+
+.ray-editor-content:focus {
+  outline: none;
+  border-color: var(--ray-accent, #3b82f6);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+.ray-editor-content p,
+.ray-editor-content h1,
+.ray-editor-content h2,
+.ray-editor-content h3,
+.ray-editor-content h4,
+.ray-editor-content h5,
+.ray-editor-content h6 {
+  margin: 0 0 0.5em;
+  padding: 0;
+  outline: none;
+}
+
+.ray-editor-content blockquote {
+  border-left: 4px solid var(--ray-blockquote-border, #ccc);
+  padding-left: 1em;
+  margin-left: 0;
+  color: var(--ray-blockquote-text, #555);
+  font-style: italic;
+}
+
+.ray-editor-content code {
+  background: rgba(0, 0, 0, 0.06);
+  color: #d63384;
+  font-family: Consolas, Monaco, 'Courier New', monospace;
+  font-size: 0.9em;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  white-space: pre-wrap;
+}
+
+/* ─── Toolbar ─────────────────────────────────────────────────────────────── */
+
+.ray-editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  background-color: var(--ray-toolbar-bg, #f8f9fa);
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.ray-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 4px;
+  border-right: 1px solid var(--ray-border, #e2e8f0);
+}
+
+.ray-toolbar-group:last-child {
+  border-right: none;
+}
+
+.ray-editor-toolbar-inline {
+  display: none;
+}
+
+.ray-editor-toolbar select {
+  padding: 5px 8px;
+  border: 1px solid var(--ray-border, #ccc);
+  border-radius: 6px;
+  font-size: 13px;
+  background-color: var(--ray-btn-bg, #fff);
+  color: var(--ray-text, #1a202c);
+  cursor: pointer;
+  height: 32px;
+}
+
+/* ─── Toolbar Buttons ─────────────────────────────────────────────────────── */
+
+.ray-btn {
+  background: var(--ray-btn-bg, #fff);
+  border: 1px solid var(--ray-border, #ddd);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+  line-height: 1;
+  position: relative;
+  color: var(--ray-text, #1a202c);
+}
+
+.ray-btn:hover {
+  background-color: var(--ray-btn-hover, #edf2f7);
+  border-color: var(--ray-accent, #3b82f6);
+}
+
+.ray-btn.active {
+  background-color: var(--ray-btn-active-bg, #CDF6E4);
+  border-color: var(--ray-btn-active-border, #4a90e2);
+  color: var(--ray-btn-active-text, #1a73e8);
+}
+
+.ray-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  display: block;
+  pointer-events: none;
+}
+
+/* Tooltip */
+.ray-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1a202c;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 1000;
+}
+
+.ray-btn:hover::after {
+  opacity: 1;
+}
+
+/* ─── Code Block ──────────────────────────────────────────────────────────── */
+
+.ray-code-block {
+  background-color: var(--ray-code-bg, #1e1e1e);
+  color: var(--ray-code-text, #d4d4d4);
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 1em 0;
+  font-family: Consolas, Monaco, 'Courier New', monospace;
+  position: relative;
+}
+
+.ray-code-block pre code {
+  color: inherit;
+}
+
+.ray-code-content {
+  outline: none;
+  white-space: pre-wrap;
+  font-size: 14px;
+  min-height: 1em;
+  margin-bottom: 0;
+  color: var(--ray-code-text, #d4d4d4);
+}
+
+.ray-code-block::-webkit-scrollbar {
+  height: 6px;
+}
+.ray-code-block::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 3px;
+}
+
+/* ─── Link Styles ─────────────────────────────────────────────────────────── */
+
+.ray-link {
+  text-decoration: underline;
+  color: var(--ray-link-color, hsl(220, 100%, 50%));
+  background-color: var(--ray-link-bg, hsl(220, 100%, 96%));
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+.ray-editor-link-edit-remove {
+  position: absolute;
+  background: var(--ray-modal-bg, white);
+  border: 1px solid var(--ray-border, #ccc);
+  padding: 6px 8px;
+  border-radius: 4px;
+  box-shadow: var(--ray-shadow-lg, 0 2px 8px rgba(0, 0, 0, 0.15));
+  z-index: 10001;
+  display: flex;
+  gap: 8px;
+}
+
+.ray-editor-link-edit-remove button {
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid var(--ray-border, #ccc);
+  border-radius: 4px;
+  background: var(--ray-btn-bg, #fff);
+  color: var(--ray-text, #1a202c);
+}
+
+/* ─── Link Modal ──────────────────────────────────────────────────────────── */
+
+.ray-editor-link-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--ray-modal-overlay, rgba(0, 0, 0, 0.4));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.ray-editor-link-modal .modal-content {
+  background: var(--ray-modal-bg, white);
+  color: var(--ray-text, #1a202c);
+  padding: 20px 24px;
+  border-radius: 8px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: var(--ray-shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.2));
+  font-family: inherit;
+  animation: ray-fadeInScale 0.15s ease;
+}
+
+@keyframes ray-fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.ray-editor-link-modal label {
+  display: block;
+  margin: 10px 0 4px;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.ray-editor-link-modal input[type="text"],
+.ray-editor-link-modal select {
+  width: 100%;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+  border: 1px solid var(--ray-border, #ccc);
+  border-radius: 4px;
+  font-size: 14px;
+  background: var(--ray-btn-bg, #fff);
+  color: var(--ray-text, #1a202c);
+}
+
+.ray-editor-link-modal input[type="text"]:focus,
+.ray-editor-link-modal select:focus {
+  outline: none;
+  border-color: var(--ray-accent, #3b82f6);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+.ray-editor-link-modal .modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ray-editor-link-modal button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity 0.15s ease;
+}
+
+#ray-insert-link {
+  background-color: var(--ray-accent, hsl(220, 100%, 56%));
+  color: white;
+}
+
+#ray-insert-link:hover {
+  opacity: 0.9;
+}
+
+#ray-cancel-link {
+  background-color: var(--ray-btn-hover, #eee);
+  color: var(--ray-text, #333);
+}
+
+/* ─── Table ───────────────────────────────────────────────────────────────── */
+
+.ray-editor-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+}
+
+.ray-editor-table td,
+.ray-editor-table th {
+  border: 1px solid var(--ray-border, #ccc);
+  padding: 8px 10px;
+  min-width: 60px;
+}
+
+table.ray-editor-table-highlighted {
+  border: 2px solid var(--ray-accent, #007BFF);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.ray-editor-table-modal {
+  position: fixed;
+  inset: 0;
+  background: var(--ray-modal-overlay, rgba(0, 0, 0, 0.5));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.ray-editor-table-modal-content {
+  background: var(--ray-modal-bg, #fff);
+  color: var(--ray-text, #1a202c);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: var(--ray-shadow-lg);
+}
+
+.ray-editor-table-modal-content label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.ray-editor-table-modal-content input {
+  padding: 6px 8px;
+  margin-left: 8px;
+  border: 1px solid var(--ray-border, #ccc);
+  border-radius: 4px;
+  width: 60px;
+  background: var(--ray-btn-bg, #fff);
+  color: var(--ray-text, #1a202c);
+}
+
+.ray-editor-table-modal-content button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+#ray-insert-table {
+  background-color: var(--ray-accent, #3b82f6);
+  color: white;
+}
+
+#ray-cancel-table {
+  background-color: var(--ray-btn-hover, #eee);
+  color: var(--ray-text, #333);
+}
+
+.ray-table-context-menu {
+  position: fixed;
+  background: var(--ray-modal-bg, #fff);
+  border: 1px solid var(--ray-border, #ccc);
+  box-shadow: var(--ray-shadow-lg);
+  padding: 4px 0;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+  min-width: 160px;
+}
+
+.ray-table-context-menu button {
+  padding: 8px 14px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ray-text, #1a202c);
+}
+
+.ray-table-context-menu button:hover {
+  background: var(--ray-btn-hover, #f0f0f0);
+}
+
+/* ─── Watermark ───────────────────────────────────────────────────────────── */
+
+#ray-editor-watermark {
+  text-align: right;
+  font-size: 0.8rem;
+  color: var(--ray-watermark-text, #999);
+  font-style: italic;
+  padding: 4px 0;
+}
+
+#ray-editor-watermark a {
+  color: var(--ray-watermark-text, #999);
+  text-decoration: none;
+  border-bottom: 1px dashed;
+}
+
+#ray-editor-watermark a:hover {
+  color: var(--ray-text, #000);
+}
+
+/* ─── Upload Placeholder ──────────────────────────────────────────────────── */
+
+.upload-placeholder {
+  font-style: italic;
+  background: var(--ray-placeholder-bg, #f5f5f5);
+  padding: 8px 12px;
+  margin: 10px 0;
+  border: 1px dashed var(--ray-border, #bbb);
+  color: var(--ray-placeholder-text, #555);
+  border-radius: 4px;
+}
+
+/* ─── Mention ─────────────────────────────────────────────────────────────── */
+
+.ray-mention {
+  text-decoration: underline;
+  font-weight: 600;
+  color: var(--ray-accent, #3b82f6);
+  cursor: pointer;
+}
+
+/* ─── Source Code Textarea ────────────────────────────────────────────────── */
+
+.ray-editor-sourcearea {
+  font-family: Consolas, Monaco, 'Courier New', monospace;
+  font-size: 13px;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 200px;
+  width: 100%;
+  border: 1px solid var(--ray-border, #e2e8f0);
+  padding: 12px;
+  background: var(--ray-code-bg, #1e1e1e);
+  color: var(--ray-code-text, #d4d4d4);
+  border-radius: 4px;
+}
+
+/* ─── Overflow Menu ───────────────────────────────────────────────────────── */
+
+.ray-toolbar-overflow-dropdown button,
+.ray-toolbar-overflow-dropdown select {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ray-text, #1a202c);
+}
+
+.ray-toolbar-overflow-dropdown button:hover {
+  background: var(--ray-btn-hover, #f0f0f0);
+}
+
+.ray-toolbar-overflow-dropdown {
+  max-height: 240px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  overflow-x: hidden;
+}
+
+.ray-toolbar-overflow-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+.ray-toolbar-overflow-dropdown::-webkit-scrollbar-thumb {
+  background: var(--ray-border, #ddd);
+  border-radius: 4px;
+}
+
+/* ─── Fullscreen ──────────────────────────────────────────────────────────── */
+
+.ray-editor-wrapper.ray-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 99000;
+  background: var(--ray-bg, #fff);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ray-fullscreen .ray-editor-toolbar {
+  position: sticky;
+  top: 0;
+  border-radius: 0;
+  flex-shrink: 0;
+}
+
+.ray-fullscreen .ray-editor-content {
+  flex: 1;
+  overflow-y: auto;
+  border-radius: 0;
+  min-height: unset;
+}
+
+/* ─── Find & Replace Panel ────────────────────────────────────────────────── */
+
+.ray-find-panel {
+  background: var(--ray-find-bg, #f8f9fa);
+  border: 1px solid var(--ray-find-border, #dee2e6);
+  border-bottom: none;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-radius: 4px 4px 0 0;
+}
+
+.ray-find-row,
+.ray-replace-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ray-find-panel input[type="text"] {
+  padding: 5px 8px;
+  border: 1px solid var(--ray-border, #ccc);
+  border-radius: 4px;
+  font-size: 13px;
+  background: var(--ray-bg, #fff);
+  color: var(--ray-text, #1a202c);
+  flex: 1;
+  min-width: 0;
+}
+
+.ray-find-panel input[type="text"]:focus {
+  outline: none;
+  border-color: var(--ray-accent, #3b82f6);
+}
+
+.ray-find-option {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0 4px;
+  white-space: nowrap;
+  color: var(--ray-text, #1a202c);
+}
+
+.ray-find-count {
+  font-size: 12px;
+  color: var(--ray-watermark-text, #999);
+  white-space: nowrap;
+  min-width: 60px;
+}
+
+.ray-find-panel button {
+  padding: 4px 8px;
+  border: 1px solid var(--ray-border, #ccc);
+  border-radius: 4px;
+  background: var(--ray-btn-bg, #fff);
+  color: var(--ray-text, #1a202c);
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.ray-find-panel button:hover {
+  background: var(--ray-btn-hover, #eee);
+}
+
+/* Find highlights */
+.ray-find-match {
+  background-color: #fef08a;
+  border-radius: 2px;
+}
+
+.ray-find-active {
+  background-color: #fb923c;
+  color: white;
+}
+
+/* ─── Slash Command Palette ────────────────────────────────────────────────── */
+
+.ray-slash-palette {
+  background: var(--ray-slash-bg, #ffffff);
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-radius: 8px;
+  box-shadow: var(--ray-shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.15));
+  min-width: 260px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.ray-slash-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ray-slash-item:hover,
+.ray-slash-item-active {
+  background: var(--ray-slash-hover, #f0f4ff);
+}
+
+.ray-slash-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ray-btn-hover, #edf2f7);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ray-text, #1a202c);
+  flex-shrink: 0;
+  font-family: monospace;
+}
+
+.ray-slash-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.ray-slash-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ray-text, #1a202c);
+}
+
+.ray-slash-desc {
+  font-size: 11px;
+  color: var(--ray-watermark-text, #999);
+}
+
+/* ─── Emoji Picker ────────────────────────────────────────────────────────── */
+
+.ray-emoji-picker {
+  background: var(--ray-slash-bg, #ffffff);
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-radius: 8px;
+  box-shadow: var(--ray-shadow-lg);
+  padding: 8px;
+  width: 280px;
+}
+
+.ray-emoji-tabs {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--ray-border, #e2e8f0);
+  padding-bottom: 6px;
+}
+
+.ray-emoji-tab {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--ray-text, #1a202c);
+}
+
+.ray-emoji-tab-active {
+  background: var(--ray-btn-hover, #edf2f7);
+}
+
+.ray-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.ray-emoji-grid-hidden {
+  display: none;
+}
+
+.ray-emoji-btn {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.ray-emoji-btn:hover {
+  background: var(--ray-btn-hover, #edf2f7);
+}
+
+/* ─── Word Count Bar ──────────────────────────────────────────────────────── */
+
+.ray-word-count-bar {
+  font-size: 11px;
+  color: var(--ray-watermark-text, #999);
+  padding: 4px 8px;
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  background: var(--ray-toolbar-bg, #f8f9fa);
+  text-align: right;
+}
+
+/* ─── Custom Confirm Modal ────────────────────────────────────────────────── */
+
+.ray-confirm-modal {
+  position: fixed;
+  inset: 0;
+  background: var(--ray-modal-overlay, rgba(0, 0, 0, 0.5));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.ray-confirm-box {
+  background: var(--ray-modal-bg, #fff);
+  color: var(--ray-text, #1a202c);
+  padding: 20px 24px;
+  border-radius: 8px;
+  box-shadow: var(--ray-shadow-lg);
+  max-width: 360px;
+  width: 90%;
+  animation: ray-fadeInScale 0.15s ease;
+}
+
+.ray-confirm-message {
+  margin: 0 0 16px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.ray-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ray-confirm-ok {
+  padding: 7px 16px;
+  background: var(--ray-accent, #3b82f6);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.ray-confirm-cancel {
+  padding: 7px 16px;
+  background: var(--ray-btn-hover, #eee);
+  color: var(--ray-text, #333);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* ─── Error Toast ─────────────────────────────────────────────────────────── */
+
+.ray-editor-error-toast {
+  animation: ray-fadeInScale 0.15s ease;
+}
+
+/* ─── Date/Time Element ───────────────────────────────────────────────────── */
+
+.ray-date-time {
+  display: inline;
+  font-size: 0.85em;
+  color: #666;
+  user-select: none;
+  cursor: pointer;
+}
+
+.ray-date-time:hover {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* ─── Print Styles ────────────────────────────────────────────────────────── */
+
+@media print {
+  .ray-editor-toolbar,
+  .ray-word-count-bar,
+  .ray-find-panel,
+  #ray-editor-watermark {
+    display: none !important;
+  }
+
+  .ray-editor-content {
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+}
