@@ -59,7 +59,9 @@ export class FileFeature {
       })
       .catch(err => {
         console.error('File upload failed:', err);
-        placeholder.innerHTML = `❌ Failed to upload "${file.name}"`;
+        // Use textContent so file.name is treated as plain text,
+        // not parsed as HTML (avoids XSS via crafted filenames).
+        placeholder.textContent = `❌ Failed to upload "${file.name}"`;
       });
   }
 
