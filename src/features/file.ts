@@ -1,4 +1,5 @@
 import type { FileUploadOptions } from '../types/options';
+import { sanitizeUrl } from '../core/sanitize';
 
 /**
  * File upload feature.
@@ -95,7 +96,8 @@ export class FileFeature {
     url: string
   ): void {
     const link = document.createElement('a');
-    link.href = url;
+    // Validate the server-returned URL before setting it as href.
+    link.href = sanitizeUrl(url) || '#';
     link.target = '_blank';
     link.download = filename;
     link.textContent = `📄 ${filename}`;

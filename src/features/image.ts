@@ -1,4 +1,5 @@
 import type { ImageUploadOptions } from '../types/options';
+import { sanitizeUrl } from '../core/sanitize';
 
 /**
  * Image upload, resize handle, and edit modal.
@@ -101,7 +102,8 @@ export class ImageFeature {
     imageName: string
   ): void {
     const img = new Image();
-    img.src = imageUrl;
+    // Validate the server-returned URL before assigning to img.src.
+    img.src = sanitizeUrl(imageUrl) || '';
     img.alt = imageName;
     img.title = imageName;
 

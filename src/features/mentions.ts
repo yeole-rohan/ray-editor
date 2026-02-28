@@ -1,4 +1,5 @@
 import type { MentionOptions } from '../types/options';
+import { applySanitizedHTML, sanitizeUrl } from '../core/sanitize';
 
 /**
  * @mention / #tag system — BUG FIX #2 applied here.
@@ -58,7 +59,8 @@ export class MentionsFeature {
         if (!this.opts.mentionUrl) {
           a.href = '#';
         } else {
-          a.href = this.opts.mentionUrl + cleanUser;
+          // Validate mentionUrl to block javascript:/vbscript:/data: base URLs.
+          a.href = sanitizeUrl(this.opts.mentionUrl + cleanUser) || '#';
           a.target = '_blank';
         }
       }
@@ -67,7 +69,9 @@ export class MentionsFeature {
       return el.outerHTML;
     });
 
-    this.editorArea.innerHTML = content;
+    // Use applySanitizedHTML so the rebuilt HTML string goes through the
+    // DOMParser sanitizer before being written back to the editor.
+    applySanitizedHTML(this.editorArea, content);
 
     // Move cursor to end
     const range = document.createRange();
