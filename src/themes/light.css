@@ -1,0 +1,32 @@
+/**
+ * RayEditor Light Theme — CSS Custom Properties
+ */
+.ray-editor-wrapper {
+  --ray-bg: #ffffff;
+  --ray-toolbar-bg: #f8f9fa;
+  --ray-border: #e2e8f0;
+  --ray-text: #1a202c;
+  --ray-btn-bg: #ffffff;
+  --ray-btn-hover: #edf2f7;
+  --ray-btn-active-bg: #CDF6E4;
+  --ray-btn-active-border: #4a90e2;
+  --ray-btn-active-text: #1a73e8;
+  --ray-accent: #3b82f6;
+  --ray-code-bg: #1e1e1e;
+  --ray-code-text: #d4d4d4;
+  --ray-modal-bg: #ffffff;
+  --ray-modal-overlay: rgba(0, 0, 0, 0.5);
+  --ray-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --ray-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --ray-link-color: hsl(220, 100%, 50%);
+  --ray-link-bg: hsl(220, 100%, 96%);
+  --ray-blockquote-border: #ccc;
+  --ray-blockquote-text: #555;
+  --ray-watermark-text: #999;
+  --ray-placeholder-bg: #f5f5f5;
+  --ray-placeholder-text: #555;
+  --ray-slash-bg: #ffffff;
+  --ray-slash-hover: #f0f4ff;
+  --ray-find-bg: #f8f9fa;
+  --ray-find-border: #dee2e6;
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@ray-editor/angular",
+  "version": "2.0.0",
+  "description": "Angular wrapper for RayEditor",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist", "src"],
+  "keywords": ["ray-editor", "angular", "wysiwyg", "rich-text-editor"],
+  "author": "Rohan Yeole",
+  "license": "MIT",
+  "peerDependencies": {
+    "@angular/core": ">=15.0.0",
+    "@angular/common": ">=15.0.0",
+    "@angular/forms": ">=15.0.0",
+    "ray-editor": "^2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.2"
+  }
+}
