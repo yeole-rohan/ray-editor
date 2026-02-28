@@ -54,6 +54,9 @@ export function sanitizeUrl(url: string): string {
  * Stripped attrs : on* event handlers, javascript/vbscript/data: URIs
  */
 export function applySanitizedHTML(target: HTMLElement, html: string): void {
+  // codeql[js/xss-through-dom] -- html enters an inert DOMParser sandbox (scripts never execute);
+  // every element is then walked, forbidden tags removed, dangerous attrs stripped, and nodes are
+  // transplanted via document.adoptNode() — tainted text never flows back through innerHTML.
   const doc = new DOMParser().parseFromString(html, 'text/html');
 
   const FORBIDDEN = new Set([
