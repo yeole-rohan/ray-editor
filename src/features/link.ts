@@ -65,6 +65,12 @@ export class LinkFeature {
 
       this.selectionManager.restore(savedRange);
 
+      if (!this.isSafeUrl(url)) {
+        urlError.textContent = 'URL scheme not allowed (javascript: / vbscript: / data: are blocked).';
+        urlError.style.display = 'block';
+        return;
+      }
+
       if (anchor) {
         anchor.setAttribute('href', url);
         anchor.setAttribute('target', targetSelect.value);
@@ -134,6 +140,16 @@ export class LinkFeature {
     document.addEventListener('click', onDocClick);
   }
 
+  /**
+   * Returns false for javascript:, vbscript:, and data: URIs.
+   * Strips whitespace and control characters before checking to defeat
+   * obfuscation like "  j a v a s c r i p t :".
+   */
+  private isSafeUrl(url: string): boolean {
+    const stripped = url.replace(/[\s\u0000-\u001F\u007F]/g, '').toLowerCase();
+    return !/^(javascript|vbscript|data):/.test(stripped);
+  }
+
   removeLink(anchor: HTMLAnchorElement): void {
     const parent = anchor.parentNode!;
     while (anchor.firstChild) {
@@ -161,6 +177,10 @@ export class LinkFeature {
 
     if (startBlock !== endBlock) {
       throw new Error('Cross-block selection');
+    }
+
+    if (!this.isSafeUrl(href)) {
+      throw new Error('URL scheme not allowed');
     }
 
     const anchor = document.createElement('a');

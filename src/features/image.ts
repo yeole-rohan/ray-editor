@@ -126,7 +126,9 @@ export class ImageFeature {
   }
 
   private showUploadError(placeholder: HTMLElement, imageName: string): void {
-    placeholder.innerHTML = `❌ Failed to upload "${imageName}"`;
+    // Use textContent so imageName is treated as plain text,
+    // not parsed as HTML (avoids XSS via crafted filenames).
+    placeholder.textContent = `❌ Failed to upload "${imageName}"`;
 
     const removeBtn = document.createElement('button');
     removeBtn.textContent = 'Remove';
