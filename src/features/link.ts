@@ -74,6 +74,7 @@ export class LinkFeature {
       }
 
       if (anchor) {
+        // codeql[js/xss-through-dom] -- safeUrl has passed through sanitizeUrl(), blocking javascript:, vbscript:, and data: schemes.
         anchor.setAttribute('href', safeUrl);
         anchor.setAttribute('target', targetSelect.value);
         if (relSelect.value) {
@@ -177,6 +178,7 @@ export class LinkFeature {
     }
 
     const anchor = document.createElement('a');
+    // codeql[js/xss-through-dom] -- safeHref has passed through sanitizeUrl(), blocking javascript:, vbscript:, and data: schemes.
     anchor.href = safeHref;
     anchor.target = target || '_self';
     if (rel) anchor.rel = rel;
