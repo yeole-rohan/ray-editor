@@ -1,8 +1,6 @@
 name: CodeQL Security Scan
 
 on:
-  push:
-    branches: [main, new-features]
   pull_request:
     branches: [main]
   schedule:
@@ -43,5 +41,7 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
+          # Change 'always' to 'true' (or remove it, as 'true' is the default)
+          upload: true 
+          # Ensure the category string is clean
           category: "/language:${{ matrix.language }}"
-          upload: always
