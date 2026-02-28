@@ -660,13 +660,63 @@ export class RayEditor implements RayEditorInstance {
       this.isSourceMode = true;
     } else {
       if (this.sourceTextarea) {
-        this.editorElement.innerHTML = this.sourceTextarea.value;
+        this.editorElement.innerHTML = this.sanitizeSourceHTML(this.sourceTextarea.value);
         this.sourceTextarea.parentNode?.removeChild(this.sourceTextarea);
         this.sourceTextarea = null;
       }
       this.editorElement.style.display = '';
       this.isSourceMode = false;
     }
+  }
+
+  /**
+   * Sanitizes raw HTML from the source-view textarea before writing it back
+   * into the contenteditable area.
+   *
+   * Uses DOMParser to parse in a sandboxed document, then walks every element
+   * and removes:
+   *  - Forbidden tags: script, iframe, object, embed, form controls, base, link
+   *  - All event-handler attributes (on*)
+   *  - javascript: URIs in href / src / action
+   */
+  private sanitizeSourceHTML(html: string): string {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+
+    const FORBIDDEN = new Set([
+      'script', 'iframe', 'frame', 'frameset',
+      'object', 'embed', 'applet',
+      'form', 'input', 'button', 'select', 'option', 'textarea',
+      'base', 'link', 'meta',
+    ]);
+
+    const URL_ATTRS = new Set(['href', 'src', 'action', 'formaction', 'data']);
+
+    const walk = (node: Element): void => {
+      // Post-order: clean children before the parent so removals don't
+      // invalidate the live child list while we still need it.
+      Array.from(node.children).forEach(walk);
+
+      if (FORBIDDEN.has(node.tagName.toLowerCase())) {
+        node.remove();
+        return;
+      }
+
+      Array.from(node.attributes).forEach(attr => {
+        const name  = attr.name.toLowerCase();
+        const value = attr.value.trim().toLowerCase().replace(/\s/g, '');
+
+        const isEventHandler = name.startsWith('on');
+        const isJavascriptURI =
+          URL_ATTRS.has(name) && value.startsWith('javascript:');
+
+        if (isEventHandler || isJavascriptURI) {
+          node.removeAttribute(attr.name);
+        }
+      });
+    };
+
+    Array.from(doc.body.children).forEach(walk);
+    return doc.body.innerHTML;
   }
 
   /**
@@ -791,7 +841,11 @@ export class RayEditor implements RayEditorInstance {
         if (contentEl.id) area.id = contentEl.id;
 
         if (contentEl.tagName === 'TEXTAREA') {
-          area.innerHTML = (contentEl as HTMLTextAreaElement).value || '<p><br></p>';
+          // Sanitize textarea content before writing to innerHTML to prevent
+          // script injection when initialising from an existing textarea element.
+          area.innerHTML = this.sanitizeSourceHTML(
+            (contentEl as HTMLTextAreaElement).value || '<p><br></p>'
+          );
         } else {
           area.innerHTML = contentEl.innerHTML || '<p><br></p>';
         }
