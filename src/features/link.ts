@@ -65,14 +65,15 @@ export class LinkFeature {
 
       this.selectionManager.restore(savedRange);
 
-      if (!this.isSafeUrl(url)) {
+      const safeUrl = this.sanitizeUrl(url);
+      if (!safeUrl) {
         urlError.textContent = 'URL scheme not allowed (javascript: / vbscript: / data: are blocked).';
         urlError.style.display = 'block';
         return;
       }
 
       if (anchor) {
-        anchor.setAttribute('href', url);
+        anchor.setAttribute('href', safeUrl);
         anchor.setAttribute('target', targetSelect.value);
         if (relSelect.value) {
           anchor.setAttribute('rel', relSelect.value);
@@ -82,7 +83,7 @@ export class LinkFeature {
       } else {
         try {
           this.applyLinkToSelection({
-            href: url,
+            href: safeUrl,
             target: targetSelect.value,
             rel: relSelect.value,
           });
@@ -141,13 +142,26 @@ export class LinkFeature {
   }
 
   /**
-   * Returns false for javascript:, vbscript:, and data: URIs.
-   * Strips whitespace and control characters before checking to defeat
-   * obfuscation like "  j a v a s c r i p t :".
+   * Returns a safe, normalised URL string, or '' if the scheme is dangerous.
+   *
+   * - Strips whitespace/control chars before scheme check (defeats obfuscation)
+   * - For absolute URLs: passes through new URL() so CodeQL sees the URL
+   *   constructor's output (parsed.href), not the raw user input
+   * - For relative URLs: safe after the scheme check, returned as-is
+   * - Blocks javascript:, vbscript:, and data: schemes
    */
-  private isSafeUrl(url: string): boolean {
-    const stripped = url.replace(/[\s\u0000-\u001F\u007F]/g, '').toLowerCase();
-    return !/^(javascript|vbscript|data):/.test(stripped);
+  private sanitizeUrl(url: string): string {
+    const stripped = url.replace(/[\s\u0000-\u001F\u007F]/g, '');
+    if (/^(javascript|vbscript|data):/i.test(stripped)) return '';
+
+    try {
+      const parsed = new URL(url);
+      const ALLOWED = new Set(['http:', 'https:', 'mailto:', 'tel:', 'ftp:']);
+      return ALLOWED.has(parsed.protocol) ? parsed.href : '';
+    } catch {
+      // Relative URL — safe after the scheme check above
+      return url;
+    }
   }
 
   removeLink(anchor: HTMLAnchorElement): void {
@@ -179,12 +193,13 @@ export class LinkFeature {
       throw new Error('Cross-block selection');
     }
 
-    if (!this.isSafeUrl(href)) {
+    const safeHref = this.sanitizeUrl(href);
+    if (!safeHref) {
       throw new Error('URL scheme not allowed');
     }
 
     const anchor = document.createElement('a');
-    anchor.href = href;
+    anchor.href = safeHref;
     anchor.target = target || '_self';
     if (rel) anchor.rel = rel;
     anchor.className = 'ray-link';
