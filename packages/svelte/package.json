@@ -1,0 +1,29 @@
+{
+  "name": "@ray-editor/svelte",
+  "version": "2.0.0",
+  "description": "Svelte wrapper for RayEditor",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "svelte": "src/RayEditor.svelte",
+  "exports": {
+    ".": {
+      "svelte": "./src/RayEditor.svelte",
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist", "src"],
+  "keywords": ["ray-editor", "svelte", "wysiwyg", "rich-text-editor"],
+  "author": "Rohan Yeole",
+  "license": "MIT",
+  "peerDependencies": {
+    "svelte": ">=4.0.0",
+    "ray-editor": "^2.0.0"
+  },
+  "devDependencies": {
+    "svelte": ">=4.0.0",
+    "typescript": "^5.4.2"
+  }
+}

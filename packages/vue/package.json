@@ -1,0 +1,27 @@
+{
+  "name": "@ray-editor/vue",
+  "version": "2.0.0",
+  "description": "Vue 3 wrapper for RayEditor",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist", "src"],
+  "keywords": ["ray-editor", "vue", "vue3", "wysiwyg", "rich-text-editor"],
+  "author": "Rohan Yeole",
+  "license": "MIT",
+  "peerDependencies": {
+    "vue": ">=3.0.0",
+    "ray-editor": "^2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.2",
+    "vue": ">=3.0.0"
+  }
+}

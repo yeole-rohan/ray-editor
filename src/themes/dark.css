@@ -1,0 +1,124 @@
+/**
+ * RayEditor Dark Theme
+ * Applied via data-ray-theme="dark" on .ray-editor-wrapper
+ */
+[data-ray-theme="dark"].ray-editor-wrapper,
+[data-ray-theme="dark"] .ray-editor-wrapper {
+  --ray-bg: #1e1e2e;
+  --ray-toolbar-bg: #181825;
+  --ray-border: #313244;
+  --ray-text: #cdd6f4;
+  --ray-btn-bg: #181825;
+  --ray-btn-hover: #313244;
+  --ray-btn-active-bg: #1e3a5f;
+  --ray-btn-active-border: #89b4fa;
+  --ray-btn-active-text: #89b4fa;
+  --ray-accent: #89b4fa;
+  --ray-code-bg: #11111b;
+  --ray-code-text: #cdd6f4;
+  --ray-modal-bg: #1e1e2e;
+  --ray-modal-overlay: rgba(0, 0, 0, 0.7);
+  --ray-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --ray-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --ray-link-color: #89b4fa;
+  --ray-link-bg: rgba(137, 180, 250, 0.1);
+  --ray-blockquote-border: #45475a;
+  --ray-blockquote-text: #a6adc8;
+  --ray-watermark-text: #585b70;
+  --ray-placeholder-bg: #313244;
+  --ray-placeholder-text: #a6adc8;
+  --ray-slash-bg: #181825;
+  --ray-slash-hover: #313244;
+  --ray-find-bg: #181825;
+  --ray-find-border: #313244;
+}
+
+[data-ray-theme="dark"] .ray-editor-content {
+  background-color: var(--ray-bg);
+  color: var(--ray-text);
+  border-color: var(--ray-border);
+}
+
+[data-ray-theme="dark"] .ray-editor-toolbar {
+  background-color: var(--ray-toolbar-bg);
+  border-color: var(--ray-border);
+}
+
+[data-ray-theme="dark"] .ray-btn {
+  background-color: var(--ray-btn-bg);
+  border-color: var(--ray-border);
+  color: var(--ray-text);
+}
+
+[data-ray-theme="dark"] .ray-btn:hover {
+  background-color: var(--ray-btn-hover);
+}
+
+[data-ray-theme="dark"] .ray-btn.active {
+  background-color: var(--ray-btn-active-bg);
+  border-color: var(--ray-btn-active-border);
+  color: var(--ray-btn-active-text);
+}
+
+[data-ray-theme="dark"] .ray-editor-toolbar select {
+  background-color: var(--ray-btn-bg);
+  color: var(--ray-text);
+  border-color: var(--ray-border);
+}
+
+[data-ray-theme="dark"] .ray-editor-link-modal .modal-content,
+[data-ray-theme="dark"] .ray-editor-table-modal-content,
+[data-ray-theme="dark"] .ray-img-editor-modal {
+  background-color: var(--ray-modal-bg);
+  color: var(--ray-text);
+}
+
+[data-ray-theme="dark"] .ray-editor-link-modal input,
+[data-ray-theme="dark"] .ray-editor-link-modal select,
+[data-ray-theme="dark"] .ray-editor-table-modal-content input {
+  background-color: var(--ray-btn-bg);
+  color: var(--ray-text);
+  border-color: var(--ray-border);
+}
+
+[data-ray-theme="dark"] .ray-find-panel {
+  background-color: var(--ray-find-bg);
+  border-color: var(--ray-find-border);
+}
+
+[data-ray-theme="dark"] .ray-find-panel input {
+  background-color: var(--ray-btn-bg);
+  color: var(--ray-text);
+  border-color: var(--ray-border);
+}
+
+[data-ray-theme="dark"] .ray-slash-palette {
+  background-color: var(--ray-slash-bg);
+  border-color: var(--ray-border);
+}
+
+[data-ray-theme="dark"] .ray-slash-item:hover,
+[data-ray-theme="dark"] .ray-slash-item-active {
+  background-color: var(--ray-slash-hover);
+}
+
+[data-ray-theme="dark"] .ray-confirm-box {
+  background-color: var(--ray-modal-bg);
+  color: var(--ray-text);
+}
+
+[data-ray-theme="dark"] .ray-emoji-picker {
+  background-color: var(--ray-slash-bg);
+  border-color: var(--ray-border);
+}
+
+[data-ray-theme="dark"] .ray-editor-content blockquote {
+  border-left-color: var(--ray-blockquote-border);
+  color: var(--ray-blockquote-text);
+}
+
+[data-ray-theme="dark"] .ray-word-count-bar {
+  background-color: var(--ray-toolbar-bg);
+  color: var(--ray-text);
+  border-color: var(--ray-border);
+}

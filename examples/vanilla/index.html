@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RayEditor — Vanilla JS Demo</title>
+
+  <!-- Option A: Load from CDN (production) -->
+  <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ray-editor@2/dist/ray-editor.css"> -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/ray-editor@2/dist/ray-editor.umd.min.js"></script> -->
+
+  <!-- Option B: Load from local dist (development) -->
+  <link rel="stylesheet" href="../../dist/ray-editor.css">
+  <script src="../../dist/ray-editor.umd.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      background: #f0f4f8;
+      color: #1a202c;
+    }
+    .page {
+      max-width: 860px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      color: #64748b;
+      margin-bottom: 32px;
+      font-size: 15px;
+    }
+    .demo-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+      margin-bottom: 24px;
+    }
+    .demo-card h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 16px;
+      color: #374151;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 12px;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .controls button {
+      padding: 8px 16px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      background: #f8fafc;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    .controls button:hover {
+      background: #e2e8f0;
+    }
+    .controls button.primary {
+      background: #3b82f6;
+      color: white;
+      border-color: #3b82f6;
+    }
+    .controls button.primary:hover {
+      background: #2563eb;
+    }
+    .output {
+      margin-top: 16px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      background: #1e1e2e;
+      color: #cdd6f4;
+      padding: 12px 16px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+    }
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #dcfce7;
+      color: #166534;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>RayEditor <span class="badge">v2.0</span></h1>
+    <p class="subtitle">Lightweight, dependency-free WYSIWYG editor — free alternative to TinyMCE & CKEditor</p>
+
+    <!-- Editor 1: Full-featured default -->
+    <div class="demo-card">
+      <h2>Full-Featured Editor (Default Toolbar)</h2>
+      <div id="editor1"></div>
+      <div class="controls">
+        <button class="primary" onclick="showContent()">Get Content</button>
+        <button onclick="setContent()">Set Content</button>
+        <button onclick="toggleTheme()">Toggle Dark Mode</button>
+        <button onclick="toggleReadOnly()">Toggle Read-Only</button>
+        <div class="theme-toggle">
+          Word count: <span id="wc">—</span>
+        </div>
+      </div>
+      <pre id="output" class="output"></pre>
+    </div>
+
+    <!-- Editor 2: Minimal toolbar -->
+    <div class="demo-card">
+      <h2>Minimal Toolbar (Custom Configuration)</h2>
+      <div id="editor2"></div>
+    </div>
+
+    <!-- Editor 3: Inline toolbar -->
+    <div class="demo-card">
+      <h2>Inline Toolbar (Appears on Focus)</h2>
+      <div id="editor3"></div>
+    </div>
+  </div>
+
+  <script>
+    // ─── Editor 1: Full default ───────────────────────────────────────────────
+    const editor1 = new RayEditor.RayEditor('editor1', {
+      theme: 'light',
+      wordCount: true,
+      slashCommands: true,
+      findReplace: true,
+      markdownShortcuts: true,
+      overflowMenu: true,
+      onChange: (html) => {
+        updateWordCount();
+      },
+    });
+
+    // ─── Editor 2: Minimal ────────────────────────────────────────────────────
+    const editor2 = new RayEditor.RayEditor('editor2', {
+      toolbar: [
+        ['bold', 'italic', 'underline'],
+        ['headings'],
+        ['link'],
+        ['undo', 'redo'],
+      ],
+    });
+    editor2.setContent('<p>This editor has a minimal toolbar — just the essentials.</p>');
+
+    // ─── Editor 3: Inline ─────────────────────────────────────────────────────
+    const editor3 = new RayEditor.RayEditor('editor3', {
+      toolbarType: 'inline',
+      toolbar: [
+        ['bold', 'italic', 'underline', 'strikethrough'],
+        ['textColor', 'backgroundColor'],
+        ['link'],
+      ],
+    });
+    editor3.setContent('<p>Click inside to show the inline toolbar above.</p>');
+
+    // ─── Controls ─────────────────────────────────────────────────────────────
+    let isDark = false;
+    let isReadOnly = false;
+
+    function showContent() {
+      const output = document.getElementById('output');
+      output.style.display = 'block';
+      output.textContent = editor1.getContent();
+    }
+
+    function setContent() {
+      editor1.setContent(`
+        <h1>Hello from RayEditor!</h1>
+        <p>This content was <strong>set programmatically</strong> using <code>editor.setContent()</code>.</p>
+        <ul>
+          <li>Zero dependencies</li>
+          <li>Full TypeScript types</li>
+          <li>Plugin API</li>
+          <li>Dark mode + CSS variables</li>
+        </ul>
+      `);
+    }
+
+    function toggleTheme() {
+      isDark = !isDark;
+      editor1.setTheme(isDark ? 'dark' : 'light');
+    }
+
+    function toggleReadOnly() {
+      isReadOnly = !isReadOnly;
+      editor1.setReadOnly(isReadOnly);
+    }
+
+    function updateWordCount() {
+      const { words, chars } = editor1.getWordCount();
+      document.getElementById('wc').textContent = `${words} words / ${chars} chars`;
+    }
+
+    updateWordCount();
+
+    // ─── Plugin Example ───────────────────────────────────────────────────────
+    const WordCountPlugin = {
+      name: 'word-count-plugin',
+      install(editor) {
+        editor.on('content:change', () => {
+          const { words } = editor.getWordCount?.() ?? { words: 0 };
+          console.log('[Plugin] Word count:', words);
+        });
+      },
+    };
+
+    editor1.use(WordCountPlugin);
+
+    // ─── Slash command example ─────────────────────────────────────────────────
+    editor1.registerSlashCommand({
+      name: 'Today\'s Date',
+      icon: '📅',
+      description: 'Insert today\'s date',
+      action: () => {
+        document.execCommand('insertText', false, new Date().toLocaleDateString());
+      },
+    });
+  </script>
+</body>
+</html>
