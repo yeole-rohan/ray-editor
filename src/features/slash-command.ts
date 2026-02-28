@@ -1,4 +1,5 @@
 import type { SlashCommandConfig, RayEditorInstance } from '../types/plugin';
+import { escapeHtml } from '../core/sanitize';
 
 /**
  * Notion-style slash command palette.
@@ -215,10 +216,10 @@ export class SlashCommandFeature {
       const item = document.createElement('div');
       item.className = `ray-slash-item${i === this.selectedIndex ? ' ray-slash-item-active' : ''}`;
       item.innerHTML = `
-        <span class="ray-slash-icon">${cmd.icon}</span>
+        <span class="ray-slash-icon">${escapeHtml(cmd.icon)}</span>
         <span class="ray-slash-info">
-          <span class="ray-slash-name">${cmd.name}</span>
-          ${cmd.description ? `<span class="ray-slash-desc">${cmd.description}</span>` : ''}
+          <span class="ray-slash-name">${escapeHtml(cmd.name)}</span>
+          ${cmd.description ? `<span class="ray-slash-desc">${escapeHtml(cmd.description)}</span>` : ''}
         </span>
       `;
       item.addEventListener('mousedown', e => {
