@@ -1,3 +1,6 @@
+/* ─── Dark Theme (must be @import'd at top for postcss-import to process) ── */
+@import '../themes/dark.css';
+
 /* ─── Light Theme (default) ───────────────────────────────────────────────── */
 
 .ray-editor-wrapper {
@@ -383,6 +386,12 @@
 
 .ray-table-ctx-btn:hover {
   background: var(--ray-btn-hover, #edf2f7);
+}
+
+.ray-table-ctx-btn.active {
+  background: var(--ray-btn-active-bg, #CDF6E4);
+  color: var(--ray-btn-active-text, #1a73e8);
+  border: 1px solid var(--ray-btn-active-border, #4a90e2);
 }
 
 .ray-table-ctx-btn:last-child {
@@ -1014,14 +1023,16 @@ table.ray-editor-table-highlighted {
 .ray-date-time {
   display: inline;
   font-size: 0.85em;
-  color: #666;
-  user-select: none;
-  cursor: pointer;
+  color: var(--ray-accent, #3b82f6);
+  background: rgba(59, 130, 246, 0.08);
+  border-radius: 3px;
+  padding: 0 3px;
+  cursor: default;
 }
 
-.ray-date-time:hover {
-  text-decoration: line-through;
-  opacity: 0.7;
+p.ray-date-time {
+  display: block;
+  margin: 0.3em 0;
 }
 
 /* ─── Print Styles ────────────────────────────────────────────────────────── */
@@ -1063,5 +1074,194 @@ table.ray-editor-table-highlighted {
   }
 }
 
-/* ─── Dark Theme ──────────────────────────────────────────────────────────── */
-@import '../themes/dark.css';
+/* ─── Inline Color Picker Popup ────────────────────────────────────────────── */
+
+.ray-color-picker-popup {
+  position: absolute;
+  z-index: 10000;
+  background: var(--ray-modal-bg, #fff);
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  user-select: none;
+}
+
+.ray-color-swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 3px;
+  margin-bottom: 8px;
+}
+
+.ray-color-swatch {
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.ray-color-swatch:hover {
+  transform: scale(1.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+.ray-color-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.ray-color-hex-label {
+  font-size: 13px;
+  color: var(--ray-text, #1a202c);
+  font-weight: 600;
+}
+
+.ray-color-hex-input {
+  flex: 1;
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 12px;
+  font-family: monospace;
+  background: var(--ray-bg, #fff);
+  color: var(--ray-text, #1a202c);
+  min-width: 0;
+}
+
+.ray-color-apply-btn {
+  padding: 3px 10px;
+  border: 1px solid var(--ray-accent, #3b82f6);
+  border-radius: 4px;
+  background: var(--ray-accent, #3b82f6);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ray-color-apply-btn:hover {
+  opacity: 0.85;
+}
+
+.ray-color-remove-btn {
+  width: 100%;
+  padding: 4px 0;
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ray-text, #1a202c);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.ray-color-remove-btn:hover {
+  background: var(--ray-btn-hover, #edf2f7);
+}
+
+
+/* ─── DateTime Picker Popup ─────────────────────────────────────────────────── */
+
+.ray-datetime-popup {
+  position: absolute;
+  z-index: 10000;
+  background: var(--ray-modal-bg, #fff);
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 280px;
+  user-select: none;
+}
+
+.ray-dt-quick-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.ray-dt-quick-btn {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-radius: 6px;
+  background: var(--ray-btn-bg, #fff);
+  color: var(--ray-text, #1a202c);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ray-dt-quick-btn:hover {
+  background: var(--ray-btn-hover, #edf2f7);
+}
+
+.ray-dt-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.ray-dt-input {
+  flex: 1;
+  padding: 5px 8px;
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-radius: 5px;
+  font-size: 13px;
+  background: var(--ray-bg, #fff);
+  color: var(--ray-text, #1a202c);
+  min-width: 0;
+}
+
+.ray-dt-mode-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--ray-text, #1a202c);
+}
+
+.ray-dt-mode-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.ray-dt-action-row {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.ray-dt-action-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-radius: 6px;
+  background: var(--ray-btn-bg, #fff);
+  color: var(--ray-text, #1a202c);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ray-dt-action-btn:hover {
+  background: var(--ray-btn-hover, #edf2f7);
+}
+
+.ray-dt-action-btn-primary {
+  background: var(--ray-accent, #3b82f6);
+  border-color: var(--ray-accent, #3b82f6);
+  color: #fff;
+}
+
+.ray-dt-action-btn-primary:hover {
+  opacity: 0.85;
+}

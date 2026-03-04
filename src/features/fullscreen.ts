@@ -3,10 +3,12 @@
  */
 export class FullscreenFeature {
   private wrapper: HTMLElement;
+  private toolbar: HTMLElement;
   private isFullscreen = false;
 
-  constructor(wrapper: HTMLElement) {
+  constructor(wrapper: HTMLElement, toolbar: HTMLElement) {
     this.wrapper = wrapper;
+    this.toolbar = toolbar;
     this.bindKeyboardShortcut();
   }
 
@@ -14,7 +16,7 @@ export class FullscreenFeature {
     this.isFullscreen = !this.isFullscreen;
     this.wrapper.classList.toggle('ray-fullscreen', this.isFullscreen);
 
-    const btn = document.getElementById('ray-btn-fullscreen');
+    const btn = this.toolbar.querySelector<HTMLElement>('.ray-btn-fullscreen');
     if (btn) {
       btn.classList.toggle('active', this.isFullscreen);
       btn.title = this.isFullscreen ? 'Exit Fullscreen' : 'Fullscreen';

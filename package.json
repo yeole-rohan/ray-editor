@@ -11,20 +11,22 @@
       "require": "./dist/ray-editor.cjs.js",
       "types": "./dist/index.d.ts"
     },
-    "./css": "./dist/ray-editor.css",
-    "./dark": "./dist/ray-editor.dark.css"
+    "./css": "./dist/ray-editor.css"
   },
   "files": [
     "dist",
-    "src"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "rollup -c rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "dev": "rollup -c rollup.config.ts --configPlugin @rollup/plugin-typescript -w",
     "test": "vitest",
+    "test:run": "vitest run",
     "test:ui": "vitest --ui",
     "lint": "tsc --noEmit",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "prepublishOnly": "npm run lint && npm run test:run && npm run build"
   },
   "keywords": [
     "wysiwyg",
