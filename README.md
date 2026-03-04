@@ -72,6 +72,8 @@ const editor = new RayEditor('editor', { theme: 'light' });
 
 ## Framework Usage
 
+RayEditor is framework-agnostic — use it directly in any framework by mounting it in a container element.
+
 ### React
 
 ```bash
@@ -79,18 +81,25 @@ npm install @rohanyeole/ray-editor
 ```
 
 ```tsx
-import { RayEditorComponent } from '@rohanyeole/ray-editor/react';
+import { useEffect, useRef } from 'react';
+import { RayEditor } from '@rohanyeole/ray-editor';
 import '@rohanyeole/ray-editor/css';
 
-function App() {
-  const [html, setHtml] = React.useState('');
-  return (
-    <RayEditorComponent
-      value={html}
-      onChange={setHtml}
-      options={{ theme: 'light', wordCount: true }}
-    />
-  );
+function Editor({ onChange }: { onChange?: (html: string) => void }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<RayEditor | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    editorRef.current = new RayEditor(containerRef.current, {
+      theme: 'light',
+      wordCount: true,
+      onChange,
+    });
+    return () => editorRef.current?.destroy();
+  }, []);
+
+  return <div ref={containerRef} />;
 }
 ```
 
@@ -101,14 +110,22 @@ npm install @rohanyeole/ray-editor
 ```
 
 ```vue
-<script setup>
-import { ref } from 'vue';
-import { RayEditorVue } from '@rohanyeole/ray-editor/vue';
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue';
+import { RayEditor } from '@rohanyeole/ray-editor';
 import '@rohanyeole/ray-editor/css';
-const content = ref('');
+
+const container = ref<HTMLDivElement>();
+let editor: RayEditor;
+
+onMounted(() => {
+  editor = new RayEditor(container.value!, { theme: 'light', wordCount: true });
+});
+onUnmounted(() => editor?.destroy());
 </script>
+
 <template>
-  <RayEditorVue v-model="content" :options="{ theme: 'light' }" />
+  <div ref="container" />
 </template>
 ```
 
@@ -119,16 +136,22 @@ npm install @rohanyeole/ray-editor
 ```
 
 ```typescript
-// app.component.ts
-import { RayEditorAngularComponent } from '@rohanyeole/ray-editor/angular';
+import { Component, ElementRef, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { RayEditor } from '@rohanyeole/ray-editor';
+import '@rohanyeole/ray-editor/css';
 
 @Component({
-  standalone: true,
-  imports: [RayEditorAngularComponent],
-  template: `<ray-editor [(ngModel)]="content"></ray-editor>`,
+  selector: 'app-editor',
+  template: `<div #container></div>`,
 })
-export class AppComponent {
-  content = '';
+export class EditorComponent implements OnInit, OnDestroy {
+  @ViewChild('container', { static: true }) containerRef!: ElementRef;
+  private editor!: RayEditor;
+
+  ngOnInit() {
+    this.editor = new RayEditor(this.containerRef.nativeElement, { theme: 'light' });
+  }
+  ngOnDestroy() { this.editor?.destroy(); }
 }
 ```
 
@@ -139,12 +162,19 @@ npm install @rohanyeole/ray-editor
 ```
 
 ```svelte
-<script>
-  import RayEditor from '@rohanyeole/ray-editor/svelte';
+<script lang="ts">
+  import { onMount, onDestroy } from 'svelte';
+  import { RayEditor } from '@rohanyeole/ray-editor';
   import '@rohanyeole/ray-editor/css';
-  let content = '';
+
+  let container: HTMLDivElement;
+  let editor: RayEditor;
+
+  onMount(() => { editor = new RayEditor(container, { theme: 'light' }); });
+  onDestroy(() => editor?.destroy());
 </script>
-<RayEditor bind:value={content} />
+
+<div bind:this={container} />
 ```
 
 ---
