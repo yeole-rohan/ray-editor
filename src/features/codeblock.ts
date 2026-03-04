@@ -1,3 +1,14 @@
+const LANGUAGES = [
+  { value: 'plaintext', label: 'Plain Text' },
+  { value: 'javascript', label: 'JavaScript' },
+  { value: 'typescript', label: 'TypeScript' },
+  { value: 'python', label: 'Python' },
+  { value: 'html', label: 'HTML' },
+  { value: 'css', label: 'CSS' },
+  { value: 'json', label: 'JSON' },
+  { value: 'bash', label: 'Bash' },
+];
+
 /**
  * Code block and inline code features.
  */
@@ -17,7 +28,49 @@ export class CodeBlockFeature {
 
     const wrapper = document.createElement('div');
     wrapper.className = 'ray-code-block';
+    wrapper.setAttribute('data-lang', 'javascript');
 
+    // ── Header bar ──────────────────────────────────────────────────────────
+    const header = document.createElement('div');
+    header.className = 'ray-code-header';
+    header.contentEditable = 'false';
+
+    const select = document.createElement('select');
+    select.className = 'ray-code-lang-select';
+    LANGUAGES.forEach(({ value, label }) => {
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = label;
+      if (value === 'javascript') opt.selected = true;
+      select.appendChild(opt);
+    });
+    select.onchange = () => {
+      wrapper.setAttribute('data-lang', select.value);
+    };
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'ray-code-delete-btn';
+    deleteBtn.type = 'button';
+    deleteBtn.title = 'Remove code block';
+    deleteBtn.textContent = '✕';
+    deleteBtn.onmousedown = (e) => {
+      e.preventDefault();
+      const newPara = document.createElement('p');
+      newPara.innerHTML = '<br>';
+      wrapper.parentNode?.insertBefore(newPara, wrapper);
+      wrapper.remove();
+      const r = document.createRange();
+      r.selectNodeContents(newPara);
+      r.collapse(true);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(r);
+    };
+
+    header.appendChild(select);
+    header.appendChild(deleteBtn);
+
+    // ── Code area ────────────────────────────────────────────────────────────
     const pre = document.createElement('pre');
     pre.className = 'ray-code-content';
     pre.setAttribute('contenteditable', 'true');
@@ -27,6 +80,7 @@ export class CodeBlockFeature {
     code.innerHTML = '<br>';
 
     pre.appendChild(code);
+    wrapper.appendChild(header);
     wrapper.appendChild(pre);
 
     range.deleteContents();

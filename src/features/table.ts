@@ -1,162 +1,332 @@
 import { SelectionManager } from '../core/selection';
 
 /**
- * Table insertion and context menu.
+ * Table insertion, grid picker, floating context toolbar, and keyboard navigation.
  */
 export class TableFeature {
   private editorArea: HTMLElement;
   private selectionManager: SelectionManager;
+  private picker: HTMLElement | null = null;
+  private contextToolbar: HTMLElement | null = null;
+  private activeCell: HTMLTableCellElement | null = null;
 
   constructor(editorArea: HTMLElement, selectionManager: SelectionManager) {
     this.editorArea = editorArea;
     this.selectionManager = selectionManager;
   }
 
-  openTableModal(): void {
-    const savedRange = this.selectionManager.save();
+  // ── Grid Picker ─────────────────────────────────────────────────────────────
 
-    const modal = document.createElement('div');
-    modal.className = 'ray-editor-table-modal';
-    modal.innerHTML = `
-      <div class="ray-editor-table-modal-content">
-        <h3 style="margin:0 0 12px;font-size:16px;">Insert Table</h3>
-        <label>Rows <input type="number" id="ray-table-rows" min="1" value="2" /></label>
-        <label>Columns <input type="number" id="ray-table-cols" min="1" value="2" /></label>
-        <div style="margin-top:12px;display:flex;gap:8px;">
-          <button id="ray-insert-table">Insert Table</button>
-          <button id="ray-cancel-table">Cancel</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
+  showTablePicker(anchorBtn: HTMLElement): void {
+    this.hidePicker();
 
-    modal.querySelector('#ray-insert-table')!.addEventListener('click', () => {
-      const rows = parseInt(
-        (modal.querySelector<HTMLInputElement>('#ray-table-rows')!).value
-      );
-      const cols = parseInt(
-        (modal.querySelector<HTMLInputElement>('#ray-table-cols')!).value
-      );
-      this.selectionManager.restore(savedRange);
-      this.insertTable(rows, cols);
-      modal.remove();
-    });
+    const ROWS = 8;
+    const COLS = 8;
 
-    modal.querySelector('#ray-cancel-table')!.addEventListener('click', () => {
-      modal.remove();
-    });
+    const picker = document.createElement('div');
+    picker.className = 'ray-table-picker';
+    this.picker = picker;
 
-    modal.addEventListener('click', e => {
-      if (e.target === modal) modal.remove();
-    });
+    const label = document.createElement('div');
+    label.className = 'ray-table-picker-label';
+    label.textContent = 'Insert Table';
+
+    const grid = document.createElement('div');
+    grid.className = 'ray-table-picker-grid';
+    grid.style.gridTemplateColumns = `repeat(${COLS}, 1fr)`;
+
+    const cells: HTMLElement[] = [];
+
+    const highlight = (r: number, c: number) => {
+      cells.forEach((cell, i) => {
+        const cr = Math.floor(i / COLS);
+        const cc = i % COLS;
+        cell.classList.toggle('active', cr <= r && cc <= c);
+      });
+      label.textContent = `${r + 1} × ${c + 1}`;
+    };
+
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'ray-table-picker-cell';
+        cell.addEventListener('mouseover', () => highlight(r, c));
+        cell.addEventListener('click', () => {
+          this.hidePicker();
+          this.insertTable(r + 1, c + 1);
+        });
+        grid.appendChild(cell);
+        cells.push(cell);
+      }
+    }
+
+    picker.appendChild(label);
+    picker.appendChild(grid);
+    document.body.appendChild(picker);
+
+    // Position below the anchor button
+    const rect = anchorBtn.getBoundingClientRect();
+    picker.style.top = `${rect.bottom + window.scrollY + 4}px`;
+    picker.style.left = `${rect.left + window.scrollX}px`;
+
+    // Close on outside click
+    const onOutside = (e: MouseEvent) => {
+      if (!picker.contains(e.target as Node)) {
+        this.hidePicker();
+        document.removeEventListener('mousedown', onOutside);
+      }
+    };
+    setTimeout(() => document.addEventListener('mousedown', onOutside), 0);
   }
 
-  private insertTable(rows: number, cols: number): void {
-    const table = document.createElement('table');
-    table.className = 'ray-editor-table';
+  private hidePicker(): void {
+    this.picker?.remove();
+    this.picker = null;
+  }
 
-    for (let i = 0; i < rows; i++) {
+  // ── Table Insertion ──────────────────────────────────────────────────────────
+
+  insertTable(rows: number, cols: number): void {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'ray-table-wrapper';
+
+    const table = document.createElement('table');
+    table.className = 'ray-table';
+
+    const tbody = document.createElement('tbody');
+    for (let r = 0; r < rows; r++) {
       const tr = document.createElement('tr');
-      for (let j = 0; j < cols; j++) {
+      for (let c = 0; c < cols; c++) {
         const td = document.createElement('td');
-        td.innerHTML = '&nbsp;';
+        td.innerHTML = '<br>';
         tr.appendChild(td);
       }
-      table.appendChild(tr);
+      tbody.appendChild(tr);
     }
+    table.appendChild(tbody);
+    wrapper.appendChild(table);
 
     const sel = window.getSelection();
-    const range = sel?.getRangeAt(0);
+    const range = sel?.rangeCount ? sel.getRangeAt(0) : null;
     if (range) {
       range.deleteContents();
-      range.insertNode(table);
+      range.insertNode(wrapper);
+      // Move range after the inserted wrapper
+      range.setStartAfter(wrapper);
+      range.collapse(true);
     } else {
-      this.editorArea.appendChild(table);
+      this.editorArea.appendChild(wrapper);
     }
 
-    // Attach context menu
-    table.addEventListener('contextmenu', e => {
-      e.preventDefault();
-      const td = (e.target as HTMLElement).closest('td');
-      if (!td) return;
-      this.showContextMenu(td as HTMLTableCellElement, e.pageX, e.pageY);
-    });
-
-    // Table highlight on click
-    table.addEventListener('click', () => {
-      document.querySelectorAll('.ray-editor-table-highlighted').forEach(t =>
-        t.classList.remove('ray-editor-table-highlighted')
-      );
-      table.classList.add('ray-editor-table-highlighted');
-    });
-
-    // Paragraph after table
+    // Paragraph after table so user can exit
     const newLine = document.createElement('p');
     newLine.innerHTML = '<br>';
-    table.after(newLine);
+    wrapper.after(newLine);
 
-    const newRange = document.createRange();
-    newRange.setStart(newLine, 0);
-    newRange.collapse(true);
-    sel?.removeAllRanges();
-    sel?.addRange(newRange);
+    // Place cursor in first cell
+    const firstCell = table.querySelector('td');
+    if (firstCell) {
+      const r = document.createRange();
+      r.selectNodeContents(firstCell);
+      r.collapse(true);
+      sel?.removeAllRanges();
+      sel?.addRange(r);
+    }
   }
 
-  private showContextMenu(td: HTMLTableCellElement, x: number, y: number): void {
-    document.getElementById('ray-table-context-menu')?.remove();
+  // ── Floating Context Toolbar ─────────────────────────────────────────────────
 
-    const menu = document.createElement('div');
-    menu.id = 'ray-table-context-menu';
-    menu.className = 'ray-table-context-menu';
-    menu.style.left = `${x}px`;
-    menu.style.top = `${y}px`;
+  showContextToolbar(cell: HTMLTableCellElement): void {
+    if (this.activeCell === cell && this.contextToolbar) return;
+    this.activeCell = cell;
+    this.hideContextToolbar();
 
-    menu.innerHTML = `
-      <button data-action="add-row">Add Row Below</button>
-      <button data-action="delete-row">Delete Row</button>
-      <button data-action="add-col">Add Column Right</button>
-      <button data-action="delete-col">Delete Column</button>
-      <button data-action="remove-table">Remove Table</button>
-    `;
+    const toolbar = document.createElement('div');
+    toolbar.className = 'ray-table-context-toolbar';
+    this.contextToolbar = toolbar;
 
-    document.body.appendChild(menu);
+    const actions: Array<{ label: string; title: string; action: () => void }> = [
+      { label: '↑ Row', title: 'Insert row above', action: () => this.insertRowAbove() },
+      { label: '↓ Row', title: 'Insert row below', action: () => this.insertRowBelow() },
+      { label: '← Col', title: 'Insert column left', action: () => this.insertColumnLeft() },
+      { label: '→ Col', title: 'Insert column right', action: () => this.insertColumnRight() },
+      { label: '✕ Row', title: 'Delete row', action: () => this.deleteRow() },
+      { label: '✕ Col', title: 'Delete column', action: () => this.deleteColumn() },
+      { label: '🗑', title: 'Delete table', action: () => this.deleteTable() },
+    ];
 
-    const tr = td.parentElement as HTMLTableRowElement;
-    const table = td.closest('table') as HTMLTableElement;
-    const cellIndex = Array.from(td.parentNode!.children).indexOf(td);
-
-    menu.addEventListener('click', e => {
-      const action = (e.target as HTMLElement).dataset.action;
-      if (!action) return;
-
-      switch (action) {
-        case 'add-row': {
-          const newRow = tr.cloneNode(true) as HTMLTableRowElement;
-          newRow.querySelectorAll('td').forEach(cell => (cell.innerHTML = '&nbsp;'));
-          tr.after(newRow);
-          break;
-        }
-        case 'delete-row':
-          if (table.rows.length > 1) tr.remove();
-          break;
-        case 'add-col':
-          Array.from(table.rows).forEach(row => {
-            const cell = row.insertCell(cellIndex + 1);
-            cell.innerHTML = '&nbsp;';
-          });
-          break;
-        case 'delete-col':
-          if (table.rows[0].cells.length > 1) {
-            Array.from(table.rows).forEach(row => row.deleteCell(cellIndex));
-          }
-          break;
-        case 'remove-table':
-          table.remove();
-          break;
-      }
-      menu.remove();
+    actions.forEach(({ label, title, action }) => {
+      const btn = document.createElement('button');
+      btn.className = 'ray-table-ctx-btn';
+      btn.textContent = label;
+      btn.title = title;
+      btn.onmousedown = (e) => {
+        e.preventDefault();
+        action();
+        this.repositionContextToolbar();
+      };
+      toolbar.appendChild(btn);
     });
 
-    document.addEventListener('click', () => menu.remove(), { once: true });
+    document.body.appendChild(toolbar);
+    this.repositionContextToolbar();
+  }
+
+  repositionContextToolbar(): void {
+    if (!this.contextToolbar || !this.activeCell) return;
+    const table = this.activeCell.closest('table');
+    if (!table) { this.hideContextToolbar(); return; }
+
+    const rect = table.getBoundingClientRect();
+    this.contextToolbar.style.top = `${rect.top + window.scrollY - this.contextToolbar.offsetHeight - 6}px`;
+    this.contextToolbar.style.left = `${rect.left + window.scrollX}px`;
+  }
+
+  hideContextToolbar(): void {
+    this.contextToolbar?.remove();
+    this.contextToolbar = null;
+    this.activeCell = null;
+  }
+
+  // ── Row / Column Operations ──────────────────────────────────────────────────
+
+  private getActiveCell(): HTMLTableCellElement | null {
+    const sel = window.getSelection();
+    if (!sel?.rangeCount) return this.activeCell;
+    const node = sel.anchorNode;
+    const el = node?.nodeType === Node.TEXT_NODE ? node.parentElement : node as Element;
+    return (el?.closest('td') ?? el?.closest('th') ?? this.activeCell) as HTMLTableCellElement | null;
+  }
+
+  insertRowAbove(): void {
+    const td = this.getActiveCell();
+    const tr = td?.closest('tr');
+    if (!tr) return;
+    const cols = tr.cells.length;
+    const newRow = document.createElement('tr');
+    for (let i = 0; i < cols; i++) {
+      const cell = document.createElement('td');
+      cell.innerHTML = '<br>';
+      newRow.appendChild(cell);
+    }
+    tr.parentNode?.insertBefore(newRow, tr);
+  }
+
+  insertRowBelow(): void {
+    const td = this.getActiveCell();
+    const tr = td?.closest('tr');
+    if (!tr) return;
+    const cols = tr.cells.length;
+    const newRow = document.createElement('tr');
+    for (let i = 0; i < cols; i++) {
+      const cell = document.createElement('td');
+      cell.innerHTML = '<br>';
+      newRow.appendChild(cell);
+    }
+    tr.after(newRow);
+  }
+
+  insertColumnLeft(): void {
+    const td = this.getActiveCell();
+    const table = td?.closest('table');
+    if (!td || !table) return;
+    const colIndex = Array.from((td.parentElement as HTMLTableRowElement).cells).indexOf(td);
+    Array.from(table.rows).forEach(row => {
+      const cell = document.createElement('td');
+      cell.innerHTML = '<br>';
+      row.insertBefore(cell, row.cells[colIndex] ?? null);
+    });
+  }
+
+  insertColumnRight(): void {
+    const td = this.getActiveCell();
+    const table = td?.closest('table');
+    if (!td || !table) return;
+    const colIndex = Array.from((td.parentElement as HTMLTableRowElement).cells).indexOf(td);
+    Array.from(table.rows).forEach(row => {
+      const cell = document.createElement('td');
+      cell.innerHTML = '<br>';
+      const ref = row.cells[colIndex + 1] ?? null;
+      row.insertBefore(cell, ref);
+    });
+  }
+
+  deleteRow(): void {
+    const td = this.getActiveCell();
+    const tr = td?.closest('tr');
+    const table = tr?.closest('table');
+    if (!tr || !table) return;
+    if (table.rows.length <= 1) { this.deleteTable(); return; }
+    const nextRow = (tr.nextElementSibling ?? tr.previousElementSibling) as HTMLTableRowElement | null;
+    tr.remove();
+    if (nextRow?.cells[0]) this.focusCell(nextRow.cells[0] as HTMLTableCellElement);
+  }
+
+  deleteColumn(): void {
+    const td = this.getActiveCell();
+    const table = td?.closest('table');
+    if (!td || !table) return;
+    const colIndex = Array.from((td.parentElement as HTMLTableRowElement).cells).indexOf(td);
+    if (table.rows[0]?.cells.length <= 1) { this.deleteTable(); return; }
+    Array.from(table.rows).forEach(row => {
+      if (row.cells[colIndex]) row.deleteCell(colIndex);
+    });
+  }
+
+  deleteTable(): void {
+    const td = this.getActiveCell();
+    const wrapper = td?.closest('.ray-table-wrapper') ?? td?.closest('table');
+    if (!wrapper) return;
+    const newPara = document.createElement('p');
+    newPara.innerHTML = '<br>';
+    wrapper.parentNode?.insertBefore(newPara, wrapper);
+    wrapper.remove();
+    this.hideContextToolbar();
+    const r = document.createRange();
+    r.selectNodeContents(newPara);
+    r.collapse(true);
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(r);
+  }
+
+  private focusCell(cell: HTMLTableCellElement): void {
+    const r = document.createRange();
+    r.selectNodeContents(cell);
+    r.collapse(true);
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(r);
+  }
+
+  // ── Tab Key Navigation ────────────────────────────────────────────────────────
+
+  handleKeydown(e: KeyboardEvent): void {
+    if (e.key !== 'Tab') return;
+    const sel = window.getSelection();
+    if (!sel?.rangeCount) return;
+    const node = sel.anchorNode;
+    const el = node?.nodeType === Node.TEXT_NODE ? node.parentElement : node as Element;
+    const td = el?.closest('td') ?? el?.closest('th');
+    if (!td) return;
+
+    e.preventDefault();
+    const table = td.closest('table') as HTMLTableElement;
+    const cells = Array.from(table.querySelectorAll('td, th')) as HTMLTableCellElement[];
+    const idx = cells.indexOf(td as HTMLTableCellElement);
+
+    if (!e.shiftKey) {
+      if (idx < cells.length - 1) {
+        this.focusCell(cells[idx + 1]);
+      } else {
+        // Add new row
+        this.activeCell = td as HTMLTableCellElement;
+        this.insertRowBelow();
+        const newCells = Array.from(table.querySelectorAll('td, th')) as HTMLTableCellElement[];
+        this.focusCell(newCells[idx + 1]);
+      }
+    } else {
+      if (idx > 0) this.focusCell(cells[idx - 1]);
+    }
   }
 }

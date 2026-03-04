@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RayEditor — Vanilla JS Demo</title>
 
-  <!-- Option A: Load from CDN (production) -->
-  <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ray-editor@2/dist/ray-editor.css"> -->
-  <!-- <script src="https://cdn.jsdelivr.net/npm/ray-editor@2/dist/ray-editor.umd.min.js"></script> -->
+  <!-- Option A: Load from CDN (always latest from main branch) -->
+  <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yeole-rohan/ray-editor@main/dist/ray-editor.css"> -->
+  <!-- <script src="https://cdn.jsdelivr.net/gh/yeole-rohan/ray-editor@main/dist/ray-editor.umd.js"></script> -->
 
   <!-- Option B: Load from local dist (development) -->
   <link rel="stylesheet" href="../../dist/ray-editor.css">
@@ -153,33 +153,32 @@
       slashCommands: true,
       findReplace: true,
       markdownShortcuts: true,
-      overflowMenu: true,
       onChange: (html) => {
         updateWordCount();
       },
     });
 
     // ─── Editor 2: Minimal ────────────────────────────────────────────────────
-    const editor2 = new RayEditor.RayEditor('editor2', {
-      toolbar: [
-        ['bold', 'italic', 'underline'],
-        ['headings'],
-        ['link'],
-        ['undo', 'redo'],
-      ],
-    });
-    editor2.setContent('<p>This editor has a minimal toolbar — just the essentials.</p>');
+    // const editor2 = new RayEditor.RayEditor('editor2', {
+    //   toolbar: [
+    //     ['bold', 'italic', 'underline'],
+    //     ['headings'],
+    //     ['link'],
+    //     ['undo', 'redo'],
+    //   ],
+    // });
+    // editor2.setContent('<p>This editor has a minimal toolbar — just the essentials.</p>');
 
     // ─── Editor 3: Inline ─────────────────────────────────────────────────────
-    const editor3 = new RayEditor.RayEditor('editor3', {
-      toolbarType: 'inline',
-      toolbar: [
-        ['bold', 'italic', 'underline', 'strikethrough'],
-        ['textColor', 'backgroundColor'],
-        ['link'],
-      ],
-    });
-    editor3.setContent('<p>Click inside to show the inline toolbar above.</p>');
+    // const editor3 = new RayEditor.RayEditor('editor3', {
+    //   toolbarType: 'inline',
+    //   toolbar: [
+    //     ['bold', 'italic', 'underline', 'strikethrough'],
+    //     ['textColor', 'backgroundColor'],
+    //     ['link'],
+    //   ],
+    // });
+    // editor3.setContent('<p>Click inside to show the inline toolbar above.</p>');
 
     // ─── Controls ─────────────────────────────────────────────────────────────
     let isDark = false;
