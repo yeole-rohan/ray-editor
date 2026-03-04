@@ -19,8 +19,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "rollup -c rollup.config.ts --configPlugin @rollup/plugin-typescript",
-    "dev": "rollup -c rollup.config.ts --configPlugin @rollup/plugin-typescript -w",
+    "build": "rollup -c rollup.config.mjs",
+    "dev": "rollup -c rollup.config.mjs -w",
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
