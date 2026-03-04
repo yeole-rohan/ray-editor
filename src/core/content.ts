@@ -52,6 +52,7 @@ export class ContentManager {
 
     allTargets.forEach(el => {
       if (isInsideCodeBlock(el)) return;
+      if (el.classList.contains('ray-date-time')) return;
       if (isEffectivelyEmpty(el)) el.remove();
     });
 
@@ -63,10 +64,33 @@ export class ContentManager {
       div.parentNode?.replaceChild(p, div);
     });
 
-    // Mark code blocks as non-editable in output
-    tempDiv.querySelectorAll('.ray-code-content').forEach(pre => {
-      pre.setAttribute('contenteditable', 'false');
+    // Clean up code blocks: remove UI chrome (header bar), add data-lang, strip contenteditable
+    tempDiv.querySelectorAll('.ray-code-block').forEach(block => {
+      block.querySelector('.ray-code-header')?.remove();
+      const lang = block.getAttribute('data-lang') ?? 'plaintext';
+      const pre = block.querySelector<HTMLElement>('.ray-code-content');
+      if (pre) {
+        pre.setAttribute('data-lang', lang);
+        pre.removeAttribute('contenteditable');
+      }
     });
+
+    // Strip contenteditable from date-time elements
+    tempDiv.querySelectorAll('.ray-date-time').forEach(el => {
+      el.removeAttribute('contenteditable');
+    });
+
+    // Remove zero-width spaces left by cursor anchoring
+    const stripZWS = (node: Node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        if (node.nodeValue?.includes('\u200B')) {
+          node.nodeValue = node.nodeValue.replace(/\u200B/g, '');
+        }
+      } else {
+        node.childNodes.forEach(stripZWS);
+      }
+    };
+    stripZWS(tempDiv);
 
     return tempDiv.innerHTML;
   }

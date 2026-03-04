@@ -173,7 +173,7 @@ export class RayEditor implements RayEditorInstance {
       this.wordCountFeature = new WordCountFeature(this.editorElement);
     }
 
-    this.fullscreenFeature = new FullscreenFeature(this.wrapper);
+    this.fullscreenFeature = new FullscreenFeature(this.wrapper, this.toolbarElement);
 
     if (this.options.markdownShortcuts !== false) {
       this.markdownShortcutsFeature = new MarkdownShortcutsFeature(this.editorElement);
@@ -272,7 +272,6 @@ export class RayEditor implements RayEditorInstance {
   addButton(config: ButtonConfig): void {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.id = `ray-btn-${config.name}`;
     btn.className = `ray-btn ray-btn-${config.name}`;
     applySanitizedHTML(btn, config.icon);
     btn.title = config.tooltip ?? config.name;
@@ -283,7 +282,7 @@ export class RayEditor implements RayEditorInstance {
 
   /** Remove a toolbar button */
   removeButton(name: string): void {
-    document.getElementById(`ray-btn-${name}`)?.remove();
+    this.toolbarElement.querySelector(`.ray-btn-${name}`)?.remove();
   }
 
   /** Register a slash command */
@@ -395,12 +394,16 @@ export class RayEditor implements RayEditorInstance {
       case 'toggleCase':
         this.formattingFeature.toggleTextCase();
         break;
-      case 'textColor':
-        this.formattingFeature.applyTextColor();
+      case 'textColor': {
+        const tcBtn = this.toolbarElement.querySelector<HTMLElement>('.ray-btn-textColor');
+        if (tcBtn) this.formattingFeature.showTextColorPicker(tcBtn);
         break;
-      case 'backgroundColor':
-        this.formattingFeature.applyBackgroundColor();
+      }
+      case 'backgroundColor': {
+        const bgBtn = this.toolbarElement.querySelector<HTMLElement>('.ray-btn-backgroundColor');
+        if (bgBtn) this.formattingFeature.showBackgroundColorPicker(bgBtn);
         break;
+      }
       case 'codeBlock':
         this.codeBlockFeature.insertCodeBlock();
         break;
@@ -443,7 +446,7 @@ export class RayEditor implements RayEditorInstance {
         window.print();
         break;
       case 'emoji': {
-        const emojiBtn = document.getElementById('ray-btn-emoji');
+        const emojiBtn = this.toolbarElement.querySelector<HTMLElement>('.ray-btn-emoji');
         this.emojiFeature?.toggle(emojiBtn ?? undefined);
         break;
       }
@@ -499,8 +502,8 @@ export class RayEditor implements RayEditorInstance {
             return;
           }
 
-          // Tab → indent / Shift+Tab → outdent
-          if (event.key === 'Tab') {
+          // Tab → indent / Shift+Tab → outdent (skip inside table cells — handled by tableFeature)
+          if (event.key === 'Tab' && !elementNode.closest('td, th')) {
             event.preventDefault();
             document.execCommand(event.shiftKey ? 'outdent' : 'indent', false);
           }
@@ -551,13 +554,18 @@ export class RayEditor implements RayEditorInstance {
 
     // Selection change — also drives table context toolbar
     document.addEventListener('selectionchange', () => {
-      if (!this.editorElement.contains(document.activeElement)) return;
+      const sel = window.getSelection();
+      if (!sel?.rangeCount) return;
+
+      // Only handle selections inside this editor
+      const anchorNode = sel.anchorNode;
+      if (!this.editorElement.contains(anchorNode)) return;
+
       this.eventBus.emit('selection:change', null);
 
-      const sel = window.getSelection();
-      if (!sel?.rangeCount) { this.tableFeature.hideContextToolbar(); return; }
-      const node = sel.anchorNode;
-      const el = node?.nodeType === Node.TEXT_NODE ? node.parentElement : node as Element;
+      const el = anchorNode?.nodeType === Node.TEXT_NODE
+        ? (anchorNode as Text).parentElement
+        : anchorNode as Element;
       const cell = el?.closest('td') ?? el?.closest('th');
       if (cell && this.editorElement.contains(cell)) {
         this.tableFeature.showContextToolbar(cell as HTMLTableCellElement);
@@ -615,46 +623,185 @@ export class RayEditor implements RayEditorInstance {
   private insertDateTime(): void {
     const sel = window.getSelection();
     if (!sel?.rangeCount) return;
+    const savedRange = sel.getRangeAt(0).cloneRange();
 
-    const range = sel.getRangeAt(0);
-    range.deleteContents();
+    // Auto-detect block vs inline: if cursor is in an empty paragraph, insert as block
+    const anchorEl = savedRange.startContainer.nodeType === Node.TEXT_NODE
+      ? (savedRange.startContainer as Text).parentElement
+      : savedRange.startContainer as Element;
+    const blockEl = anchorEl?.closest('p, h1, h2, h3, h4, h5, h6, div, li');
+    const cursorInEmptyBlock = !!blockEl && !blockEl.textContent?.trim();
 
     const now = new Date();
-    const formatted = now.toLocaleString();
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
 
-    // BUG FIX #4: custom modal instead of confirm()
-    this.showConfirmModal('Insert date/time on a new line?', (onNewLine) => {
-      const dateEl = document.createElement(onNewLine ? 'div' : 'span');
-      dateEl.textContent = formatted;
+    const toDateVal = (d: Date) => d.toISOString().slice(0, 10);
+    const toTimeVal = (d: Date) => d.toTimeString().slice(0, 5);
+
+    // Build popup
+    const popup = document.createElement('div');
+    popup.className = 'ray-datetime-popup';
+
+    // Quick-fill row
+    const quickRow = document.createElement('div');
+    quickRow.className = 'ray-dt-quick-row';
+
+    const dateInput = document.createElement('input');
+    dateInput.type = 'date';
+    dateInput.className = 'ray-dt-input';
+    dateInput.value = toDateVal(now);
+
+    const timeInput = document.createElement('input');
+    timeInput.type = 'time';
+    timeInput.className = 'ray-dt-input';
+    timeInput.value = toTimeVal(now);
+
+    const todayBtn = document.createElement('button');
+    todayBtn.type = 'button';
+    todayBtn.className = 'ray-dt-quick-btn';
+    todayBtn.textContent = '📅 Today';
+    todayBtn.onmousedown = (e) => { e.preventDefault(); dateInput.value = toDateVal(now); };
+
+    const yestBtn = document.createElement('button');
+    yestBtn.type = 'button';
+    yestBtn.className = 'ray-dt-quick-btn';
+    yestBtn.textContent = '📅 Yesterday';
+    yestBtn.onmousedown = (e) => { e.preventDefault(); dateInput.value = toDateVal(yesterday); };
+
+    quickRow.appendChild(todayBtn);
+    quickRow.appendChild(yestBtn);
+
+    // Date + Time inputs
+    const inputRow = document.createElement('div');
+    inputRow.className = 'ray-dt-input-row';
+    inputRow.appendChild(dateInput);
+    inputRow.appendChild(timeInput);
+
+    // Mode selector
+    const modeRow = document.createElement('div');
+    modeRow.className = 'ray-dt-mode-row';
+
+    const modes: Array<{ label: string; value: string }> = [
+      { label: 'Date + Time', value: 'datetime' },
+      { label: 'Date only', value: 'date' },
+      { label: 'Time only', value: 'time' },
+    ];
+    let selectedMode = 'datetime';
+
+    modes.forEach(m => {
+      const lbl = document.createElement('label');
+      lbl.className = 'ray-dt-mode-label';
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'ray-dt-mode';
+      radio.value = m.value;
+      radio.checked = m.value === 'datetime';
+      radio.onchange = () => { selectedMode = m.value; };
+      lbl.appendChild(radio);
+      lbl.append(' ' + m.label);
+      modeRow.appendChild(lbl);
+    });
+
+    // Single Insert button — position auto-detected
+    const actionRow = document.createElement('div');
+    actionRow.className = 'ray-dt-action-row';
+
+    const insertBtn = document.createElement('button');
+    insertBtn.type = 'button';
+    insertBtn.className = 'ray-dt-action-btn ray-dt-action-btn-primary';
+    insertBtn.textContent = cursorInEmptyBlock ? 'Insert' : 'Insert inline';
+
+    insertBtn.onmousedown = (e) => {
+      e.preventDefault();
+      const dv = dateInput.value;
+      const tv = timeInput.value;
+      let text = '';
+      if (selectedMode === 'datetime') text = `${dv} ${tv}`;
+      else if (selectedMode === 'date') text = dv;
+      else text = tv;
+
+      popup.remove();
+
+      const sel2 = window.getSelection();
+      sel2?.removeAllRanges();
+      sel2?.addRange(savedRange);
+      savedRange.deleteContents();
+
+      // Always use <span> — <p> inside <p> is invalid HTML.
+      // When cursor is in an empty block the span fills that line naturally.
+      const dateEl = document.createElement('span');
+      dateEl.textContent = text;
       dateEl.contentEditable = 'false';
       dateEl.className = 'ray-date-time';
-      Object.assign(dateEl.style, {
-        fontSize: '0.85em',
-        color: '#666',
-        margin: '0.5em 0',
-        display: onNewLine ? 'block' : 'inline',
-        userSelect: 'none',
-        cursor: 'pointer',
-      });
-      dateEl.title = 'Click to remove date/time';
 
-      // BUG FIX #5: custom modal for remove confirm
-      dateEl.addEventListener('click', () => {
-        this.showConfirmModal('Remove this date/time?', () => dateEl.remove());
-      });
+      savedRange.insertNode(dateEl);
 
-      const space = document.createTextNode('\u200B');
-      const frag = document.createDocumentFragment();
-      frag.appendChild(dateEl);
-      frag.appendChild(space);
-      range.insertNode(frag);
-
+      // Place cursor directly after the span — no zero-width space needed
       const newRange = document.createRange();
-      newRange.setStartAfter(space);
+      newRange.setStartAfter(dateEl);
       newRange.collapse(true);
-      sel.removeAllRanges();
-      sel.addRange(newRange);
+      sel2?.removeAllRanges();
+      sel2?.addRange(newRange);
+    };
+
+    actionRow.appendChild(insertBtn);
+
+    popup.appendChild(quickRow);
+    popup.appendChild(inputRow);
+    popup.appendChild(modeRow);
+    popup.appendChild(actionRow);
+    document.body.appendChild(popup);
+
+    // Position popup at cursor, fully within viewport
+    const rng = savedRange.cloneRange();
+    rng.collapse(true);
+    const cursorRect = rng.getBoundingClientRect();
+    const editorRect = this.editorElement.getBoundingClientRect();
+
+    // Default: below cursor
+    let top = cursorRect.bottom + window.scrollY + 6;
+    // Clamp left: prefer cursor-aligned, but keep inside editor + viewport
+    let left = Math.max(
+      editorRect.left + window.scrollX,
+      cursorRect.left + window.scrollX
+    );
+
+    popup.style.top = `${top}px`;
+    popup.style.left = `${left}px`;
+
+    requestAnimationFrame(() => {
+      const pr = popup.getBoundingClientRect();
+
+      // Right overflow: push left
+      if (pr.right > window.innerWidth - 8) {
+        left = window.innerWidth - pr.width - 8 + window.scrollX;
+        popup.style.left = `${left}px`;
+      }
+
+      // Bottom overflow: flip above cursor
+      if (pr.bottom > window.innerHeight - 8) {
+        top = cursorRect.top + window.scrollY - pr.height - 6;
+        popup.style.top = `${top}px`;
+      }
+
+      // Clamp left to at least 8px from viewport edge
+      const finalLeft = parseFloat(popup.style.left) - window.scrollX;
+      if (finalLeft < 8) {
+        popup.style.left = `${8 + window.scrollX}px`;
+      }
     });
+
+    // Close on outside click
+    setTimeout(() => {
+      const onOutside = (e: MouseEvent) => {
+        if (!popup.contains(e.target as Node)) {
+          popup.remove();
+          document.removeEventListener('mousedown', onOutside);
+        }
+      };
+      document.addEventListener('mousedown', onOutside);
+    }, 0);
   }
 
   private toggleSourceMode(): void {

@@ -138,8 +138,8 @@ export class TableFeature {
 
   showContextToolbar(cell: HTMLTableCellElement): void {
     if (this.activeCell === cell && this.contextToolbar) return;
+    this.hideContextToolbar();   // clears activeCell — must come BEFORE setting it
     this.activeCell = cell;
-    this.hideContextToolbar();
 
     const toolbar = document.createElement('div');
     toolbar.className = 'ray-table-context-toolbar';
@@ -150,6 +150,9 @@ export class TableFeature {
       { label: '↓ Row', title: 'Insert row below', action: () => this.insertRowBelow() },
       { label: '← Col', title: 'Insert column left', action: () => this.insertColumnLeft() },
       { label: '→ Col', title: 'Insert column right', action: () => this.insertColumnRight() },
+      { label: '↕ Up', title: 'Move row up', action: () => this.moveRowUp() },
+      { label: '↕ Dn', title: 'Move row down', action: () => this.moveRowDown() },
+      { label: 'TH', title: 'Toggle header row', action: () => this.toggleHeaderRow() },
       { label: '✕ Row', title: 'Delete row', action: () => this.deleteRow() },
       { label: '✕ Col', title: 'Delete column', action: () => this.deleteColumn() },
       { label: '🗑', title: 'Delete table', action: () => this.deleteTable() },
@@ -169,7 +172,18 @@ export class TableFeature {
     });
 
     document.body.appendChild(toolbar);
-    this.repositionContextToolbar();
+
+    // Highlight TH button if current row is already a header row
+    const tr = cell.closest('tr');
+    if (tr) {
+      const isHeaderRow = Array.from((tr as HTMLTableRowElement).cells)
+        .every(c => c.tagName.toLowerCase() === 'th');
+      const thBtn = toolbar.querySelector<HTMLButtonElement>('[title="Toggle header row"]');
+      if (thBtn && isHeaderRow) thBtn.classList.add('active');
+    }
+
+    // Wait for layout so offsetHeight/offsetWidth are accurate
+    requestAnimationFrame(() => this.repositionContextToolbar());
   }
 
   repositionContextToolbar(): void {
@@ -178,8 +192,27 @@ export class TableFeature {
     if (!table) { this.hideContextToolbar(); return; }
 
     const rect = table.getBoundingClientRect();
-    this.contextToolbar.style.top = `${rect.top + window.scrollY - this.contextToolbar.offsetHeight - 6}px`;
-    this.contextToolbar.style.left = `${rect.left + window.scrollX}px`;
+    const tbHeight = this.contextToolbar.offsetHeight || 36;
+    const spaceAbove = rect.top;
+    let top: number;
+
+    if (spaceAbove >= tbHeight + 8) {
+      // Preferred: above the table
+      top = rect.top + window.scrollY - tbHeight - 6;
+    } else {
+      // Fallback: below the table
+      top = rect.bottom + window.scrollY + 6;
+    }
+
+    // Clamp left so the toolbar stays within the viewport
+    let left = rect.left + window.scrollX;
+    const tbWidth = this.contextToolbar.offsetWidth || 400;
+    if (left + tbWidth > window.innerWidth - 8) {
+      left = Math.max(8 + window.scrollX, window.innerWidth - tbWidth - 8 + window.scrollX);
+    }
+
+    this.contextToolbar.style.top = `${top}px`;
+    this.contextToolbar.style.left = `${left}px`;
   }
 
   hideContextToolbar(): void {
@@ -260,6 +293,34 @@ export class TableFeature {
     const nextRow = (tr.nextElementSibling ?? tr.previousElementSibling) as HTMLTableRowElement | null;
     tr.remove();
     if (nextRow?.cells[0]) this.focusCell(nextRow.cells[0] as HTMLTableCellElement);
+  }
+
+  moveRowUp(): void {
+    const td = this.getActiveCell();
+    const tr = td?.closest('tr');
+    if (!tr) return;
+    const prevRow = tr.previousElementSibling as HTMLTableRowElement | null;
+    if (prevRow) tr.parentNode?.insertBefore(tr, prevRow);
+  }
+
+  moveRowDown(): void {
+    const td = this.getActiveCell();
+    const tr = td?.closest('tr');
+    if (!tr) return;
+    const nextRow = tr.nextElementSibling as HTMLTableRowElement | null;
+    if (nextRow) tr.parentNode?.insertBefore(nextRow, tr);
+  }
+
+  toggleHeaderRow(): void {
+    const td = this.getActiveCell();
+    const tr = td?.closest('tr');
+    if (!tr) return;
+    const isHeader = Array.from(tr.cells).every(c => c.tagName.toLowerCase() === 'th');
+    Array.from(tr.cells).forEach(cell => {
+      const newCell = document.createElement(isHeader ? 'td' : 'th');
+      newCell.innerHTML = cell.innerHTML;
+      tr.replaceChild(newCell, cell);
+    });
   }
 
   deleteColumn(): void {

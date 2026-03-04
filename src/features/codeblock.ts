@@ -132,10 +132,34 @@ export class CodeBlockFeature {
     const codeContent = elementNode.closest('.ray-code-content');
     if (!codeContent) return;
 
-    const text = (codeContent as HTMLElement).innerText.trim();
-    if (text === '') {
+    const sel = window.getSelection();
+    if (!sel?.rangeCount) return;
+    const range = sel.getRangeAt(0);
+
+    // Check if current line (before and after cursor) is empty
+    const preRange = document.createRange();
+    preRange.setStart(codeContent, 0);
+    preRange.setEnd(range.startContainer, range.startOffset);
+    const textBefore = preRange.toString();
+    const currentLine = textBefore.slice(textBefore.lastIndexOf('\n') + 1);
+
+    const postRange = document.createRange();
+    postRange.setStart(range.startContainer, range.startOffset);
+    postRange.setEnd(codeContent, codeContent.childNodes.length);
+    const textAfter = postRange.toString();
+    const nlIdx = textAfter.indexOf('\n');
+    const lineAfterCursor = nlIdx === -1 ? textAfter : textAfter.slice(0, nlIdx);
+
+    if (currentLine === '' && lineAfterCursor === '') {
       e.preventDefault();
-      codeContent.innerHTML = '';
+
+      // Remove the trailing empty line from the code block
+      if (textBefore.endsWith('\n')) {
+        const preRange2 = document.createRange();
+        preRange2.setStart(codeContent, 0);
+        preRange2.setEnd(range.startContainer, range.startOffset);
+        preRange2.deleteContents();
+      }
 
       const newPara = document.createElement('p');
       newPara.innerHTML = '<br>';
@@ -144,12 +168,11 @@ export class CodeBlockFeature {
       if (codeBlock) {
         codeBlock.parentNode?.insertBefore(newPara, codeBlock.nextSibling);
 
-        const range = document.createRange();
-        range.selectNodeContents(newPara);
-        range.collapse(true);
-        const sel = window.getSelection();
-        sel?.removeAllRanges();
-        sel?.addRange(range);
+        const newRange = document.createRange();
+        newRange.selectNodeContents(newPara);
+        newRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(newRange);
       }
     }
   }
