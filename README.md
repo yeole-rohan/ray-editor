@@ -2,11 +2,11 @@
 
 > Lightweight, dependency-free WYSIWYG rich text editor — free alternative to TinyMCE & CKEditor.
 
-[![npm version](https://img.shields.io/npm/v/ray-editor.svg)](https://www.npmjs.com/package/@rohanyeole/ray-editor)
+[![npm version](https://img.shields.io/npm/v/@rohanyeole/ray-editor.svg)](https://www.npmjs.com/package/@rohanyeole/ray-editor)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Bundle Size](https://img.shields.io/badge/bundle-~45KB-blue)](https://bundlephobia.com/package/ray-editor)
+[![Bundle Size](https://img.shields.io/badge/bundle-~45KB-blue)](https://bundlephobia.com/package/@rohanyeole/ray-editor)
 
-**[Demo](https://github.com/yeole-rohan/ray-editor)** · **[Issues](https://github.com/yeole-rohan/ray-editor/issues)** · **[npm](https://www.npmjs.com/package/ray-editor)**
+**[Demo](https://github.com/yeole-rohan/ray-editor)** · **[Issues](https://github.com/yeole-rohan/ray-editor/issues)** · **[npm](https://www.npmjs.com/package/@rohanyeole/ray-editor)**
 
 ![RayEditor preview](https://github.com/user-attachments/assets/d9f38163-fdfa-4f57-9d16-1234e6d78b7c)
 
@@ -40,11 +40,9 @@
 
 ```html
 <!-- CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ray-editor@2/dist/ray-editor.css">
-<!-- Optional: dark theme -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ray-editor@2/dist/ray-editor.dark.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rohanyeole/ray-editor@2/dist/ray-editor.css">
 <!-- JS — exposes window.RayEditor -->
-<script src="https://cdn.jsdelivr.net/npm/ray-editor@2/dist/ray-editor.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@rohanyeole/ray-editor@2/dist/ray-editor.umd.min.js"></script>
 
 <div id="editor"></div>
 <script>
@@ -60,12 +58,12 @@
 ## Install via npm
 
 ```bash
-npm install ray-editor
+npm install @rohanyeole/ray-editor
 ```
 
 ```js
-import { RayEditor } from 'ray-editor';
-import 'ray-editor/css';
+import { RayEditor } from '@rohanyeole/ray-editor';
+import '@rohanyeole/ray-editor/css';
 
 const editor = new RayEditor('editor', { theme: 'light' });
 ```
@@ -77,12 +75,12 @@ const editor = new RayEditor('editor', { theme: 'light' });
 ### React
 
 ```bash
-npm install ray-editor @ray-editor/react
+npm install @rohanyeole/ray-editor
 ```
 
 ```tsx
-import { RayEditorComponent } from '@ray-editor/react';
-import 'ray-editor/css';
+import { RayEditorComponent } from '@rohanyeole/ray-editor/react';
+import '@rohanyeole/ray-editor/css';
 
 function App() {
   const [html, setHtml] = React.useState('');
@@ -99,14 +97,14 @@ function App() {
 ### Vue 3
 
 ```bash
-npm install ray-editor @ray-editor/vue
+npm install @rohanyeole/ray-editor
 ```
 
 ```vue
 <script setup>
 import { ref } from 'vue';
-import { RayEditorVue } from '@ray-editor/vue';
-import 'ray-editor/css';
+import { RayEditorVue } from '@rohanyeole/ray-editor/vue';
+import '@rohanyeole/ray-editor/css';
 const content = ref('');
 </script>
 <template>
@@ -117,12 +115,12 @@ const content = ref('');
 ### Angular
 
 ```bash
-npm install ray-editor @ray-editor/angular
+npm install @rohanyeole/ray-editor
 ```
 
 ```typescript
 // app.component.ts
-import { RayEditorAngularComponent } from '@ray-editor/angular';
+import { RayEditorAngularComponent } from '@rohanyeole/ray-editor/angular';
 
 @Component({
   standalone: true,
@@ -137,13 +135,13 @@ export class AppComponent {
 ### Svelte
 
 ```bash
-npm install ray-editor @ray-editor/svelte
+npm install @rohanyeole/ray-editor
 ```
 
 ```svelte
 <script>
-  import RayEditor from '@ray-editor/svelte/src/RayEditor.svelte';
-  import 'ray-editor/css';
+  import RayEditor from '@rohanyeole/ray-editor/svelte';
+  import '@rohanyeole/ray-editor/css';
   let content = '';
 </script>
 <RayEditor bind:value={content} />
