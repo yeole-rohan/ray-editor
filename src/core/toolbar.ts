@@ -74,7 +74,6 @@ export class ToolbarManager {
   private createButton(key: string, config: any): HTMLButtonElement {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.id = `ray-btn-${key}`;
     const title = this.formatTitle(key);
     btn.title = title;
     btn.setAttribute('data-tooltip', title);
@@ -144,13 +143,13 @@ export class ToolbarManager {
     activeChecks.forEach(({ tags, btnId }) => {
       const isActive = tags.some(tag => this.isInTag(parent, tag));
       if (isActive) {
-        document.getElementById(btnId)?.classList.add('active');
+        this.toolbar.querySelector(`.${btnId}`)?.classList.add('active');
       }
     });
 
     // Code block
     if (parent.closest('.ray-code-block')) {
-      document.getElementById('ray-btn-codeBlock')?.classList.add('active');
+      this.toolbar.querySelector('.ray-btn-codeBlock')?.classList.add('active');
     }
 
     // Update heading dropdown
@@ -163,9 +162,10 @@ export class ToolbarManager {
     const fontSelect = this.toolbar.querySelector<HTMLSelectElement>('.ray-dropdown-fonts');
     if (fontSelect) {
       const currentFont = this.getCurrentFont(parent);
-      const fonts = ['Arial', 'Georgia', 'Verdana'];
-      const matched = fonts.find(f => currentFont.toLowerCase().includes(f.toLowerCase())) || 'Arial';
-      fontSelect.value = matched;
+      const allFonts = Array.from(fontSelect.options).map(o => o.value);
+      const matched = allFonts.find(f => currentFont.toLowerCase().includes(f.toLowerCase()))
+        ?? fontSelect.options[0]?.value ?? '';
+      if (matched) fontSelect.value = matched;
     }
 
     // Update alignment dropdown
@@ -185,6 +185,13 @@ export class ToolbarManager {
   }
 
   private getCurrentFont(el: Element | null): string {
+    // Primary: queryCommandValue is most accurate for execCommand-set fonts
+    try {
+      const cmdFont = document.queryCommandValue('fontName');
+      if (cmdFont) return cmdFont.replace(/['"]/g, '').trim();
+    } catch (_) { /* ignore */ }
+
+    // Fallback: walk computed style
     let node: Element | null = el;
     while (node && node !== document.body) {
       const font = window.getComputedStyle(node).fontFamily;
