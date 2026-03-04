@@ -2,7 +2,7 @@
 
 > Lightweight, dependency-free WYSIWYG rich text editor — free alternative to TinyMCE & CKEditor.
 
-[![npm version](https://img.shields.io/npm/v/ray-editor.svg)](https://www.npmjs.com/package/ray-editor)
+[![npm version](https://img.shields.io/npm/v/ray-editor.svg)](https://www.npmjs.com/package/@rohanyeole/ray-editor)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Bundle Size](https://img.shields.io/badge/bundle-~45KB-blue)](https://bundlephobia.com/package/ray-editor)
 
