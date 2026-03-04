@@ -416,9 +416,11 @@ export class RayEditor implements RayEditorInstance {
       case 'fileUpload':
         this.fileFeature?.triggerUpload();
         break;
-      case 'table':
-        this.tableFeature.openTableModal();
+      case 'table': {
+        const tableBtn = this.toolbarElement.querySelector<HTMLElement>('.ray-btn-table');
+        if (tableBtn) this.tableFeature.showTablePicker(tableBtn);
         break;
+      }
       case 'hr':
         this.insertHr();
         break;
@@ -432,6 +434,12 @@ export class RayEditor implements RayEditorInstance {
         this.fullscreenFeature?.toggle();
         break;
       case 'print':
+        this.wrapper?.setAttribute('data-ray-print-target', '');
+        document.body.setAttribute('data-ray-printing', '');
+        window.addEventListener('afterprint', () => {
+          this.wrapper?.removeAttribute('data-ray-print-target');
+          document.body.removeAttribute('data-ray-printing');
+        }, { once: true });
         window.print();
         break;
       case 'emoji': {
@@ -475,6 +483,7 @@ export class RayEditor implements RayEditorInstance {
             sel,
             elementNode
           );
+          this.tableFeature.handleKeydown(event as KeyboardEvent);
 
           // Custom undo/redo via history manager (Ctrl+Z / Ctrl+Y)
           const isMac = navigator.platform.toLowerCase().includes('mac');
@@ -529,13 +538,7 @@ export class RayEditor implements RayEditorInstance {
         }
 
         if (evt === 'click' || evt === 'keyup') {
-          // Remove table highlight if clicking outside table
-          const table = (event.target as HTMLElement).closest('table');
-          if (!table) {
-            document.querySelectorAll('.ray-editor-table-highlighted').forEach(t => {
-              t.classList.remove('ray-editor-table-highlighted');
-            });
-          }
+          this.tableFeature.repositionContextToolbar();
         }
       });
     });
@@ -546,10 +549,21 @@ export class RayEditor implements RayEditorInstance {
       this.dispatchCommand(command);
     });
 
-    // Selection change
+    // Selection change — also drives table context toolbar
     document.addEventListener('selectionchange', () => {
       if (!this.editorElement.contains(document.activeElement)) return;
       this.eventBus.emit('selection:change', null);
+
+      const sel = window.getSelection();
+      if (!sel?.rangeCount) { this.tableFeature.hideContextToolbar(); return; }
+      const node = sel.anchorNode;
+      const el = node?.nodeType === Node.TEXT_NODE ? node.parentElement : node as Element;
+      const cell = el?.closest('td') ?? el?.closest('th');
+      if (cell && this.editorElement.contains(cell)) {
+        this.tableFeature.showContextToolbar(cell as HTMLTableCellElement);
+      } else {
+        this.tableFeature.hideContextToolbar();
+      }
     });
 
     // Focus/blur

@@ -86,17 +86,4 @@ export default defineConfig([
       postcss({ extract: false }),
     ],
   },
-  // Dark theme CSS
-  {
-    input: 'src/themes/dark.css',
-    output: {
-      file: 'dist/ray-editor.dark.css',
-    },
-    plugins: [
-      postcss({
-        extract: true,
-        minimize: false,
-      }),
-    ],
-  },
 ]);

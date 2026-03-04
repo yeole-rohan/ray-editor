@@ -1,5 +1,34 @@
-/* Import themes */
-@import '../themes/light.css';
+/* ─── Light Theme (default) ───────────────────────────────────────────────── */
+
+.ray-editor-wrapper {
+  --ray-bg: #ffffff;
+  --ray-toolbar-bg: #f8f9fa;
+  --ray-border: #e2e8f0;
+  --ray-text: #1a202c;
+  --ray-btn-bg: #ffffff;
+  --ray-btn-hover: #edf2f7;
+  --ray-btn-active-bg: #CDF6E4;
+  --ray-btn-active-border: #4a90e2;
+  --ray-btn-active-text: #1a73e8;
+  --ray-accent: #3b82f6;
+  --ray-code-bg: #1e1e1e;
+  --ray-code-text: #d4d4d4;
+  --ray-modal-bg: #ffffff;
+  --ray-modal-overlay: rgba(0, 0, 0, 0.5);
+  --ray-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --ray-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --ray-link-color: hsl(220, 100%, 50%);
+  --ray-link-bg: hsl(220, 100%, 96%);
+  --ray-blockquote-border: #ccc;
+  --ray-blockquote-text: #555;
+  --ray-watermark-text: #999;
+  --ray-placeholder-bg: #f5f5f5;
+  --ray-placeholder-text: #555;
+  --ray-slash-bg: #ffffff;
+  --ray-slash-hover: #f0f4ff;
+  --ray-find-bg: #f8f9fa;
+  --ray-find-border: #dee2e6;
+}
 
 /* ─── Editor Wrapper ──────────────────────────────────────────────────────── */
 
@@ -173,12 +202,55 @@
 .ray-code-block {
   background-color: var(--ray-code-bg, #1e1e1e);
   color: var(--ray-code-text, #d4d4d4);
-  padding: 1em;
   border-radius: 8px;
-  overflow-x: auto;
+  overflow: hidden;
   margin: 1em 0;
   font-family: Consolas, Monaco, 'Courier New', monospace;
   position: relative;
+}
+
+.ray-code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  user-select: none;
+}
+
+.ray-code-lang-select {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  padding: 0 4px;
+}
+.ray-code-lang-select option {
+  background: #2d2d2d;
+  color: #cdd6f4;
+}
+.ray-code-lang-select:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ray-code-delete-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 4px;
+  line-height: 1;
+  border-radius: 3px;
+  transition: color 0.15s, background 0.15s;
+}
+.ray-code-delete-btn:hover {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
 }
 
 .ray-code-block pre code {
@@ -189,9 +261,11 @@
   outline: none;
   white-space: pre-wrap;
   font-size: 14px;
-  min-height: 1em;
-  margin-bottom: 0;
+  min-height: 2em;
+  margin: 0;
+  padding: 1em;
   color: var(--ray-code-text, #d4d4d4);
+  overflow-x: auto;
 }
 
 .ray-code-block::-webkit-scrollbar {
@@ -200,6 +274,123 @@
 .ray-code-block::-webkit-scrollbar-thumb {
   background: #444;
   border-radius: 3px;
+}
+
+/* ─── Table Styles ────────────────────────────────────────────────────────── */
+
+.ray-table-wrapper {
+  overflow-x: auto;
+  margin: 1em 0;
+  width: 100%;
+}
+
+.ray-table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+}
+
+.ray-table td,
+.ray-table th {
+  border: 1px solid var(--ray-border, #e2e8f0);
+  padding: 8px 12px;
+  min-width: 80px;
+  vertical-align: top;
+  outline: none;
+}
+
+.ray-table td:focus,
+.ray-table th:focus {
+  background: rgba(59, 130, 246, 0.05);
+  outline: 2px solid var(--ray-accent, #3b82f6);
+  outline-offset: -2px;
+}
+
+/* ── Grid Picker ─────────────────────────────────────────────────────────── */
+
+.ray-table-picker {
+  position: absolute;
+  z-index: 10000;
+  background: var(--ray-modal-bg, #fff);
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  user-select: none;
+}
+
+.ray-table-picker-label {
+  font-size: 12px;
+  color: var(--ray-text, #1a202c);
+  opacity: 0.6;
+  text-align: center;
+  margin-bottom: 8px;
+  min-height: 16px;
+}
+
+.ray-table-picker-grid {
+  display: grid;
+  gap: 3px;
+}
+
+.ray-table-picker-cell {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-radius: 2px;
+  background: var(--ray-btn-bg, #fff);
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.ray-table-picker-cell.active {
+  background: var(--ray-accent, #3b82f6);
+  border-color: var(--ray-accent, #3b82f6);
+  opacity: 0.7;
+}
+
+.ray-table-picker-cell:hover {
+  border-color: var(--ray-accent, #3b82f6);
+}
+
+/* ── Floating Context Toolbar ─────────────────────────────────────────────── */
+
+.ray-table-context-toolbar {
+  position: absolute;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--ray-modal-bg, #fff);
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-radius: 6px;
+  padding: 4px 6px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+}
+
+.ray-table-ctx-btn {
+  background: none;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--ray-text, #1a202c);
+  transition: background 0.12s;
+  white-space: nowrap;
+}
+
+.ray-table-ctx-btn:hover {
+  background: var(--ray-btn-hover, #edf2f7);
+}
+
+.ray-table-ctx-btn:last-child {
+  color: #ef4444;
+}
+
+.ray-table-ctx-btn:last-child:hover {
+  background: rgba(239, 68, 68, 0.08);
 }
 
 /* ─── Link Styles ─────────────────────────────────────────────────────────── */
@@ -836,6 +1027,28 @@ table.ray-editor-table-highlighted {
 /* ─── Print Styles ────────────────────────────────────────────────────────── */
 
 @media print {
+  /* When printing via RayEditor's print button, hide everything except the editor content */
+  body[data-ray-printing] * {
+    visibility: hidden !important;
+  }
+
+  body[data-ray-printing] .ray-editor-wrapper[data-ray-print-target] .ray-editor-content,
+  body[data-ray-printing] .ray-editor-wrapper[data-ray-print-target] .ray-editor-content * {
+    visibility: visible !important;
+  }
+
+  body[data-ray-printing] .ray-editor-wrapper[data-ray-print-target] .ray-editor-content {
+    position: fixed !important;
+    inset: 0;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    border: none !important;
+    padding: 24px !important;
+    box-shadow: none !important;
+  }
+
+  /* Fallback: when printing the page directly (Ctrl+P without button) */
   .ray-editor-toolbar,
   .ray-word-count-bar,
   .ray-find-panel,
@@ -849,3 +1062,6 @@ table.ray-editor-table-highlighted {
     box-shadow: none !important;
   }
 }
+
+/* ─── Dark Theme ──────────────────────────────────────────────────────────── */
+@import '../themes/dark.css';
