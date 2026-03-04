@@ -3,9 +3,12 @@ import typescript from '@rollup/plugin-typescript';
 import terser from '@rollup/plugin-terser';
 import postcss from 'rollup-plugin-postcss';
 import resolve from '@rollup/plugin-node-resolve';
+import { createRequire } from 'module';
+
+const { version } = createRequire(import.meta.url)('./package.json');
 
 const banner = `/*!
- * RayEditor v2.0.0
+ * RayEditor v${version}
  * https://github.com/yeole-rohan/ray-editor
  * MIT License - © Rohan Yeole
  */`;
