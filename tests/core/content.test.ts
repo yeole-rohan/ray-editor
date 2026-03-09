@@ -30,13 +30,15 @@ describe('ContentManager', () => {
     expect(pre?.getAttribute('contenteditable')).toBe('true');
   });
 
-  it('getContent strips code block UI chrome and adds data-lang', () => {
+  it('getContent unwraps code block to bare <pre data-lang>', () => {
     editorArea.innerHTML =
       '<div class="ray-code-block" data-lang="javascript"><div class="ray-code-header"><select class="ray-code-lang-select"></select></div><pre class="ray-code-content" contenteditable="true"><code>code</code></pre></div>';
     const html = contentManager.getContent();
     expect(html).not.toContain('ray-code-header');
+    expect(html).not.toContain('ray-code-block');
     expect(html).not.toContain('contenteditable');
     expect(html).toContain('data-lang="javascript"');
+    expect(html).toContain('<pre');
   });
 
   it('getContent removes empty inline elements', () => {
