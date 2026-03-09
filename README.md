@@ -233,6 +233,9 @@ const editor = new RayEditor('editor', {
 | `showSource` | Toggle HTML source view |
 | `fullscreen` | Fullscreen mode |
 | `print` | Print editor content |
+| `markdownToggle` | Switch Rich Text ↔ Markdown mode |
+| `importMarkdown` | Import a `.md` file |
+| `exportMarkdown` | Export as `.md` file |
 
 ---
 
@@ -383,6 +386,48 @@ Override any CSS variable to create a custom theme:
   /* ... see full list in src/themes/light.css */
 }
 ```
+
+---
+
+## Markdown Mode
+
+RayEditor supports full bidirectional Markdown editing — switch between rich text and raw Markdown at any time without losing content. Most editors charge for this.
+
+### Toolbar buttons
+
+| Key | Description |
+|-----|-------------|
+| `markdownToggle` | Switch between Rich Text ↔ Markdown mode |
+| `importMarkdown` | Import a `.md` file — opens file picker, converts to rich text |
+| `exportMarkdown` | Export current content as a `.md` file download |
+
+```js
+const editor = new RayEditor('editor', {
+  toolbar: [
+    ['bold', 'italic', 'headings'],
+    ['markdownToggle', 'importMarkdown', 'exportMarkdown'],
+  ],
+});
+```
+
+### What converts
+
+| Markdown | Rich Text |
+|----------|-----------|
+| `# Heading` | `<h1>` |
+| `**bold**` / `__bold__` | `<strong>` |
+| `*italic*` / `_italic_` | `<em>` |
+| `~~strike~~` | `<s>` |
+| `` `code` `` | `<code>` |
+| ` ```lang ` fenced block | Code block with language selector |
+| `> blockquote` | `<blockquote>` |
+| `- item` / `1. item` | `<ul>` / `<ol>` |
+| `[text](url)` | `<a href="url">` |
+| `![alt](url)` | `<img>` |
+| `---` | `<hr>` |
+| Tables (`\| col \| col \|`) | `<table>` |
+
+`getContent()` always returns HTML regardless of which mode is active.
 
 ---
 
