@@ -128,6 +128,43 @@ export function markdownToHtml(markdown: string): string {
       continue;
     }
 
+    // Table — lines starting and ending with |
+    if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
+      closePara();
+      const tableLines: string[] = [];
+      while (i < lines.length && lines[i].trim().startsWith('|')) {
+        tableLines.push(lines[i]);
+        i++;
+      }
+      // Separate header, separator and body rows
+      const parseRow = (l: string) => l.split('|').slice(1, -1).map(c => c.trim());
+      const isSeparator = (l: string) => /^\s*\|[\s\-:|]+\|\s*$/.test(l);
+      const sepIdx = tableLines.findIndex(isSeparator);
+      const headerLine = sepIdx > 0 ? tableLines[sepIdx - 1] : tableLines[0];
+      const bodyLines = tableLines.filter((_, idx) => idx !== sepIdx && tableLines[idx] !== headerLine);
+
+      const headerCells = parseRow(headerLine);
+      let table = '<table><thead><tr>';
+      headerCells.forEach(cell => {
+        table += `<th>${processInline(cell, inlineCodes)}</th>`;
+      });
+      table += '</tr></thead>';
+      if (bodyLines.length > 0) {
+        table += '<tbody>';
+        bodyLines.forEach(rowLine => {
+          table += '<tr>';
+          parseRow(rowLine).forEach(cell => {
+            table += `<td>${processInline(cell, inlineCodes)}</td>`;
+          });
+          table += '</tr>';
+        });
+        table += '</tbody>';
+      }
+      table += '</table>';
+      out.push(table);
+      continue;
+    }
+
     // Empty line — close current paragraph
     if (line.trim() === '') {
       closePara();
@@ -149,7 +186,9 @@ export function markdownToHtml(markdown: string): string {
 
 function nodeToMd(node: Node, listDepth = 0): string {
   if (node.nodeType === Node.TEXT_NODE) {
-    return node.textContent ?? '';
+    // Normalize whitespace — collapse newlines and multiple spaces to a single space.
+    // This eliminates indentation artifacts from HTML source formatting.
+    return (node.textContent ?? '').replace(/\s+/g, ' ');
   }
   if (node.nodeType !== Node.ELEMENT_NODE) return '';
 
@@ -159,17 +198,17 @@ function nodeToMd(node: Node, listDepth = 0): string {
     Array.from(el.childNodes).map(n => nodeToMd(n, depth)).join('');
 
   switch (tag) {
-    case 'h1': return `# ${inner()}\n\n`;
-    case 'h2': return `## ${inner()}\n\n`;
-    case 'h3': return `### ${inner()}\n\n`;
-    case 'h4': return `#### ${inner()}\n\n`;
-    case 'h5': return `##### ${inner()}\n\n`;
-    case 'h6': return `###### ${inner()}\n\n`;
+    case 'h1': return `# ${inner().trim()}\n\n`;
+    case 'h2': return `## ${inner().trim()}\n\n`;
+    case 'h3': return `### ${inner().trim()}\n\n`;
+    case 'h4': return `#### ${inner().trim()}\n\n`;
+    case 'h5': return `##### ${inner().trim()}\n\n`;
+    case 'h6': return `###### ${inner().trim()}\n\n`;
 
     case 'p': {
-      const content = inner();
+      const content = inner().trim();
       // Skip empty paragraphs (just <br>)
-      if (!content.trim() || content === '\n') return '';
+      if (!content || content === '\n') return '';
       return `${content}\n\n`;
     }
 
@@ -272,7 +311,9 @@ function nodeToMd(node: Node, listDepth = 0): string {
 export function htmlToMarkdown(html: string): string {
   const div = document.createElement('div');
   div.innerHTML = html;
-  return Array.from(div.childNodes).map(n => nodeToMd(n)).join('').trim();
+  const raw = Array.from(div.childNodes).map(n => nodeToMd(n)).join('');
+  // Collapse 3+ consecutive newlines to 2, then trim
+  return raw.replace(/\n{3,}/g, '\n\n').trim();
 }
 
 // ─── MarkdownFeature class ───────────────────────────────────────────────────
