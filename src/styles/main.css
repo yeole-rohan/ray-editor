@@ -287,14 +287,14 @@
   width: 100%;
 }
 
-.ray-table {
+.ray-editor-content table {
   border-collapse: collapse;
   width: 100%;
   table-layout: auto;
 }
 
-.ray-table td,
-.ray-table th {
+.ray-editor-content td,
+.ray-editor-content th {
   border: 1px solid var(--ray-border, #e2e8f0);
   padding: 8px 12px;
   min-width: 80px;
@@ -302,8 +302,8 @@
   outline: none;
 }
 
-.ray-table td:focus,
-.ray-table th:focus {
+.ray-editor-content td:focus,
+.ray-editor-content th:focus {
   background: rgba(59, 130, 246, 0.05);
   outline: 2px solid var(--ray-accent, #3b82f6);
   outline-offset: -2px;
@@ -525,23 +525,6 @@
 
 /* ─── Table ───────────────────────────────────────────────────────────────── */
 
-.ray-editor-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 12px 0;
-}
-
-.ray-editor-table td,
-.ray-editor-table th {
-  border: 1px solid var(--ray-border, #ccc);
-  padding: 8px 10px;
-  min-width: 60px;
-}
-
-table.ray-editor-table-highlighted {
-  border: 2px solid var(--ray-accent, #007BFF);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-}
 
 .ray-editor-table-modal {
   position: fixed;

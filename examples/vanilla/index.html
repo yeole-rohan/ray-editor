@@ -201,6 +201,14 @@
         <li>Plugin API &amp; slash commands</li>
         <li>Dark mode + CSS variables</li>
       </ul>
+      <table>
+        <thead><tr><th>Feature</th><th>RayEditor</th><th>TinyMCE Free</th></tr></thead>
+        <tbody>
+          <tr><td>Zero dependencies</td><td>✅</td><td>❌</td></tr>
+          <tr><td>Dark mode (free)</td><td>✅</td><td>Paid</td></tr>
+          <tr><td>Markdown mode</td><td>✅</td><td>Paid</td></tr>
+        </tbody>
+      </table>
       <p>Type <code>/</code> at the start of a line to open the slash command palette.</p>
     `);
 
@@ -234,6 +242,14 @@
       editor1.setContent(`
         <h1>Hello from RayEditor!</h1>
         <p>This content was <strong>set programmatically</strong> using <code>editor.setContent()</code>.</p>
+        <table>
+          <thead><tr><th>Column A</th><th>Column B</th><th>Column C</th></tr></thead>
+          <tbody>
+            <tr><td>Row 1, A</td><td>Row 1, B</td><td>Row 1, C</td></tr>
+            <tr><td>Row 2, A</td><td>Row 2, B</td><td>Row 2, C</td></tr>
+          </tbody>
+        </table>
+        <p>Click <strong>Get HTML</strong> to see clean output — no editor-specific classes on the table.</p>
       `);
     }
     function toggleTheme1() {
