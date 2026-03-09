@@ -141,43 +141,53 @@ export class CodeBlockFeature {
     const tmp = document.createElement('div');
     tmp.innerHTML = html;
 
-    // Only intercept if there's a <pre> in the pasted content
-    const preElements = Array.from(tmp.querySelectorAll('pre'));
-    if (preElements.length === 0) return false;
+    // Only intercept if there's a <pre> or ray-code-block in the pasted content
+    if (!tmp.querySelector('pre, .ray-code-block')) return false;
+
+    // Check selection before swallowing the event
+    const sel = window.getSelection();
+    if (!sel?.rangeCount || !this.editorArea.contains(sel.anchorNode)) return false;
 
     e.preventDefault();
 
-    const sel = window.getSelection();
-    if (!sel?.rangeCount || !this.editorArea.contains(sel.anchorNode)) return false;
     const range = sel.getRangeAt(0);
     range.deleteContents();
 
-    // Build fragment: convert each <pre> to a code block, keep surrounding text
     const fragment = document.createDocumentFragment();
 
     const processNode = (node: Node) => {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        const el = node as Element;
-        if (el.tagName === 'PRE') {
-          const lang = detectLang(el);
-          const block = buildCodeBlock(lang, el.innerHTML);
-          fragment.appendChild(block);
-          return;
-        }
-        // Unwrap container divs that only exist to wrap <pre> (GitHub-style)
-        if ((el.tagName === 'DIV' || el.tagName === 'TD') && el.querySelector('pre')) {
-          el.childNodes.forEach(processNode);
-          return;
-        }
+      if (node.nodeType !== Node.ELEMENT_NODE) {
+        fragment.appendChild(node.cloneNode(true));
+        return;
       }
+      const el = node as Element;
+
+      // Already a ray-code-block (copied from editor) — rebuild with live handlers
+      if (el.classList.contains('ray-code-block')) {
+        const lang = el.getAttribute('data-lang') ?? 'plaintext';
+        const pre = el.querySelector('.ray-code-content');
+        fragment.appendChild(buildCodeBlock(lang, pre?.innerHTML ?? '<br>'));
+        return;
+      }
+
+      // Raw <pre> from external source (GitHub, SO, MDN, etc.)
+      if (el.tagName === 'PRE') {
+        fragment.appendChild(buildCodeBlock(detectLang(el), el.innerHTML));
+        return;
+      }
+
+      // Container elements wrapping code — recurse into children
+      if (el.querySelector('pre, .ray-code-block')) {
+        el.childNodes.forEach(processNode);
+        return;
+      }
+
+      // Everything else — keep as-is
       fragment.appendChild(node.cloneNode(true));
     };
 
     tmp.childNodes.forEach(processNode);
-
     range.insertNode(fragment);
-
-    // Move cursor after inserted content
     sel.collapseToEnd();
     return true;
   }
