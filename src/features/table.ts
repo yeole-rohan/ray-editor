@@ -91,7 +91,6 @@ export class TableFeature {
     wrapper.className = 'ray-table-wrapper';
 
     const table = document.createElement('table');
-    table.className = 'ray-table';
 
     const tbody = document.createElement('tbody');
     for (let r = 0; r < rows; r++) {

@@ -2,6 +2,7 @@ import { defineConfig } from 'rollup';
 import typescript from '@rollup/plugin-typescript';
 import terser from '@rollup/plugin-terser';
 import postcss from 'rollup-plugin-postcss';
+import postcssImport from 'postcss-import';
 import resolve from '@rollup/plugin-node-resolve';
 import { createRequire } from 'module';
 
@@ -28,7 +29,7 @@ export default defineConfig([
     plugins: [
       resolve(),
       typescript({ ...tsBase, declaration: true, declarationDir: 'dist', sourceMap: true, inlineSources: true }),
-      postcss({ extract: 'ray-editor.css', minimize: false }),
+      postcss({ extract: 'ray-editor.css', minimize: false, plugins: [postcssImport()] }),
     ],
   },
   // ESM minified — no sourcemap
