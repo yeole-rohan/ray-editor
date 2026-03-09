@@ -30,6 +30,7 @@ import { FullscreenFeature } from './features/fullscreen';
 import { MarkdownShortcutsFeature } from './features/markdown-shortcuts';
 import { EmojiFeature } from './features/emoji';
 import { PluginManager } from './plugins/plugin-manager';
+import { MarkdownFeature } from './features/markdown';
 
 export class RayEditor implements RayEditorInstance {
   // DOM
@@ -64,6 +65,7 @@ export class RayEditor implements RayEditorInstance {
   private fullscreenFeature?: FullscreenFeature;
   private markdownShortcutsFeature?: MarkdownShortcutsFeature;
   private emojiFeature?: EmojiFeature;
+  private markdownFeature!: MarkdownFeature;
 
   // Plugin manager
   private pluginManager: PluginManager;
@@ -144,6 +146,7 @@ export class RayEditor implements RayEditorInstance {
     this.linkFeature = new LinkFeature(this.editorElement, this.selectionManager);
     this.tableFeature = new TableFeature(this.editorElement, this.selectionManager);
     this.youtubeFeature = new YouTubeFeature();
+    this.markdownFeature = new MarkdownFeature(this.editorElement, this.wrapper, this.toolbarElement);
 
     // Optional features
     const imgOpts = this.resolveImageUploadOpts();
@@ -237,8 +240,10 @@ export class RayEditor implements RayEditorInstance {
 
   // ─── Public API ────────────────────────────────────────────────────────────
 
-  /** Get cleaned HTML content */
+  /** Get cleaned HTML content (works in both rich text and markdown mode) */
   getContent(): string {
+    const mdHtml = this.markdownFeature?.getContentHtml();
+    if (mdHtml !== null && mdHtml !== undefined) return mdHtml;
     return this.contentManager.getContent();
   }
 
@@ -348,6 +353,7 @@ export class RayEditor implements RayEditorInstance {
     this.wordCountFeature?.destroy();
     this.fullscreenFeature?.destroy();
     this.emojiFeature?.destroy();
+    this.markdownFeature?.destroy();
     this.eventBus.destroy();
 
     this.wrapper.remove();
@@ -430,6 +436,23 @@ export class RayEditor implements RayEditorInstance {
       case 'insertDateTime':
         this.insertDateTime();
         break;
+      case 'markdownToggle':
+        this.markdownFeature.toggle();
+        if (!this.markdownFeature.isMarkdownMode && this.markdownFeature._pendingHtml !== null) {
+          this.setContent(this.markdownFeature._pendingHtml);
+          this.markdownFeature._pendingHtml = null;
+        }
+        return; // skip history push — markdown mode manages its own state
+      case 'importMarkdown':
+        this.markdownFeature.importFile((html) => {
+          this.setContent(html);
+          this.historyManager.push(this.editorElement.innerHTML);
+          this.eventBus.emit('content:change', { html: this.getContent() });
+        });
+        return;
+      case 'exportMarkdown':
+        this.markdownFeature.exportFile(this.getContent());
+        return;
       case 'showSource':
         this.toggleSourceMode();
         break;
