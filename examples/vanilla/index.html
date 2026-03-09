@@ -178,6 +178,16 @@
       slashCommands: true,
       findReplace: true,
       markdownShortcuts: true,
+      toolbar: [
+        ['bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript'],
+        ['headings', 'blockquote'],
+        ['orderedList', 'unorderedList', 'indent', 'outdent'],
+        ['textColor', 'backgroundColor', 'fonts', 'textAlignment'],
+        ['link', 'imageUpload', 'table', 'emoji', 'insertDateTime', 'hr'],
+        ['codeBlock', 'codeInline'],
+        ['markdownToggle', 'importMarkdown', 'exportMarkdown'],
+        ['undo', 'redo', 'removeFormat', 'showSource', 'fullscreen', 'print'],
+      ],
       onChange: () => updateWordCount1(),
     });
 
