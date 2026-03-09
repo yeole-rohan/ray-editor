@@ -520,6 +520,7 @@ export class RayEditor implements RayEditorInstance {
         }
 
         if (evt === 'paste') {
+          this.codeBlockFeature.handlePaste(event as ClipboardEvent);
           this.youtubeFeature.handlePaste(event as ClipboardEvent);
           // Push to history after paste
           setTimeout(() => {

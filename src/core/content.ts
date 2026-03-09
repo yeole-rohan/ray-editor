@@ -1,3 +1,5 @@
+import { buildCodeBlock } from '../features/codeblock.js';
+
 /**
  * Content get/set/clean logic.
  */
@@ -64,14 +66,16 @@ export class ContentManager {
       div.parentNode?.replaceChild(p, div);
     });
 
-    // Clean up code blocks: remove UI chrome (header bar), add data-lang, strip contenteditable
+    // Clean up code blocks: strip UI chrome, unwrap outer div, output bare <pre data-lang>
     tempDiv.querySelectorAll('.ray-code-block').forEach(block => {
-      block.querySelector('.ray-code-header')?.remove();
       const lang = block.getAttribute('data-lang') ?? 'plaintext';
       const pre = block.querySelector<HTMLElement>('.ray-code-content');
       if (pre) {
         pre.setAttribute('data-lang', lang);
         pre.removeAttribute('contenteditable');
+        block.parentNode?.replaceChild(pre, block);
+      } else {
+        block.remove();
       }
     });
 
@@ -99,7 +103,16 @@ export class ContentManager {
     const temp = document.createElement('div');
     temp.innerHTML = html;
 
-    // Make code blocks editable inside editor
+    // Rebuild full code block UI from bare <pre data-lang> (getContent output)
+    // Also handles <pre><code> from external HTML
+    temp.querySelectorAll('pre').forEach(pre => {
+      if (pre.closest('.ray-code-block')) return; // already wrapped
+      const lang = pre.getAttribute('data-lang') ?? 'plaintext';
+      const block = buildCodeBlock(lang, pre.innerHTML);
+      pre.parentNode?.replaceChild(block, pre);
+    });
+
+    // If already wrapped (editor format), just re-enable contenteditable
     temp.querySelectorAll('.ray-code-content').forEach(pre => {
       pre.setAttribute('contenteditable', 'true');
       pre.setAttribute('spellcheck', 'false');

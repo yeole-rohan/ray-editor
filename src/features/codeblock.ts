@@ -9,6 +9,99 @@ const LANGUAGES = [
   { value: 'bash', label: 'Bash' },
 ];
 
+// Language aliases from common paste sources (GitHub, SO, MDN, Prism, Highlight.js)
+const LANG_ALIASES: Record<string, string> = {
+  js: 'javascript', jsx: 'javascript', mjs: 'javascript', cjs: 'javascript',
+  ts: 'typescript', tsx: 'typescript',
+  py: 'python', python3: 'python',
+  sh: 'bash', shell: 'bash', zsh: 'bash', console: 'bash',
+  htm: 'html', xml: 'html', svg: 'html',
+  scss: 'css', sass: 'css', less: 'css',
+  jsonc: 'json',
+};
+
+function detectLang(el: Element): string {
+  // data-lang / lang attributes
+  const direct = el.getAttribute('data-lang') ?? el.getAttribute('lang') ?? '';
+  if (direct) return normalizeLang(direct);
+
+  // class names: language-js, lang-js, brush: js, highlight-source-js
+  const cls = el.className ?? '';
+  const m = cls.match(/(?:language-|lang-|brush:\s*|highlight-source-)([a-z0-9+#.-]+)/i);
+  if (m) return normalizeLang(m[1]);
+
+  // Check first child <code> element too
+  const code = el.querySelector('code');
+  if (code) return detectLang(code);
+
+  return 'plaintext';
+}
+
+function normalizeLang(raw: string): string {
+  const key = raw.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return LANG_ALIASES[key] ?? (LANGUAGES.some(l => l.value === key) ? key : 'plaintext');
+}
+
+export function buildCodeBlock(lang: string, codeHtml: string): HTMLDivElement {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'ray-code-block';
+  wrapper.setAttribute('data-lang', lang);
+
+  const header = document.createElement('div');
+  header.className = 'ray-code-header';
+  header.contentEditable = 'false';
+
+  const select = document.createElement('select');
+  select.className = 'ray-code-lang-select';
+  LANGUAGES.forEach(({ value, label }) => {
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = label;
+    if (value === lang) opt.selected = true;
+    select.appendChild(opt);
+  });
+  select.onchange = () => wrapper.setAttribute('data-lang', select.value);
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'ray-code-delete-btn';
+  deleteBtn.type = 'button';
+  deleteBtn.title = 'Remove code block';
+  deleteBtn.textContent = '✕';
+  deleteBtn.onmousedown = (e) => {
+    e.preventDefault();
+    const newPara = document.createElement('p');
+    newPara.innerHTML = '<br>';
+    wrapper.parentNode?.insertBefore(newPara, wrapper);
+    wrapper.remove();
+    const r = document.createRange();
+    r.selectNodeContents(newPara);
+    r.collapse(true);
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(r);
+  };
+
+  header.appendChild(select);
+  header.appendChild(deleteBtn);
+
+  const pre = document.createElement('pre');
+  pre.className = 'ray-code-content';
+  pre.setAttribute('contenteditable', 'true');
+  pre.setAttribute('spellcheck', 'false');
+
+  const code = document.createElement('code');
+  // If codeHtml already has a wrapping <code>, unwrap it
+  const tmp = document.createElement('div');
+  tmp.innerHTML = codeHtml;
+  const innerCode = tmp.querySelector('code');
+  code.innerHTML = innerCode ? innerCode.innerHTML : (tmp.innerHTML || '<br>');
+
+  pre.appendChild(code);
+  wrapper.appendChild(header);
+  wrapper.appendChild(pre);
+  return wrapper;
+}
+
 /**
  * Code block and inline code features.
  */
@@ -25,77 +118,68 @@ export class CodeBlockFeature {
     if (!this.editorArea.contains(selection.anchorNode)) return;
 
     const range = selection.getRangeAt(0);
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'ray-code-block';
-    wrapper.setAttribute('data-lang', 'javascript');
-
-    // ── Header bar ──────────────────────────────────────────────────────────
-    const header = document.createElement('div');
-    header.className = 'ray-code-header';
-    header.contentEditable = 'false';
-
-    const select = document.createElement('select');
-    select.className = 'ray-code-lang-select';
-    LANGUAGES.forEach(({ value, label }) => {
-      const opt = document.createElement('option');
-      opt.value = value;
-      opt.textContent = label;
-      if (value === 'javascript') opt.selected = true;
-      select.appendChild(opt);
-    });
-    select.onchange = () => {
-      wrapper.setAttribute('data-lang', select.value);
-    };
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'ray-code-delete-btn';
-    deleteBtn.type = 'button';
-    deleteBtn.title = 'Remove code block';
-    deleteBtn.textContent = '✕';
-    deleteBtn.onmousedown = (e) => {
-      e.preventDefault();
-      const newPara = document.createElement('p');
-      newPara.innerHTML = '<br>';
-      wrapper.parentNode?.insertBefore(newPara, wrapper);
-      wrapper.remove();
-      const r = document.createRange();
-      r.selectNodeContents(newPara);
-      r.collapse(true);
-      const sel = window.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(r);
-    };
-
-    header.appendChild(select);
-    header.appendChild(deleteBtn);
-
-    // ── Code area ────────────────────────────────────────────────────────────
-    const pre = document.createElement('pre');
-    pre.className = 'ray-code-content';
-    pre.setAttribute('contenteditable', 'true');
-    pre.setAttribute('spellcheck', 'false');
-
-    const code = document.createElement('code');
-    code.innerHTML = '<br>';
-
-    pre.appendChild(code);
-    wrapper.appendChild(header);
-    wrapper.appendChild(pre);
-
+    const wrapper = buildCodeBlock('javascript', '<br>');
     range.deleteContents();
     range.insertNode(wrapper);
 
     // Place cursor inside code
     setTimeout(() => {
+      const code = wrapper.querySelector('code')!;
       const newRange = document.createRange();
       newRange.selectNodeContents(code);
       newRange.collapse(true);
-
       const sel = window.getSelection();
       sel?.removeAllRanges();
       sel?.addRange(newRange);
     }, 0);
+  }
+
+  handlePaste(e: ClipboardEvent): boolean {
+    const html = e.clipboardData?.getData('text/html') ?? '';
+    if (!html) return false;
+
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+
+    // Only intercept if there's a <pre> in the pasted content
+    const preElements = Array.from(tmp.querySelectorAll('pre'));
+    if (preElements.length === 0) return false;
+
+    e.preventDefault();
+
+    const sel = window.getSelection();
+    if (!sel?.rangeCount || !this.editorArea.contains(sel.anchorNode)) return false;
+    const range = sel.getRangeAt(0);
+    range.deleteContents();
+
+    // Build fragment: convert each <pre> to a code block, keep surrounding text
+    const fragment = document.createDocumentFragment();
+
+    const processNode = (node: Node) => {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const el = node as Element;
+        if (el.tagName === 'PRE') {
+          const lang = detectLang(el);
+          const block = buildCodeBlock(lang, el.innerHTML);
+          fragment.appendChild(block);
+          return;
+        }
+        // Unwrap container divs that only exist to wrap <pre> (GitHub-style)
+        if ((el.tagName === 'DIV' || el.tagName === 'TD') && el.querySelector('pre')) {
+          el.childNodes.forEach(processNode);
+          return;
+        }
+      }
+      fragment.appendChild(node.cloneNode(true));
+    };
+
+    tmp.childNodes.forEach(processNode);
+
+    range.insertNode(fragment);
+
+    // Move cursor after inserted content
+    sel.collapseToEnd();
+    return true;
   }
 
   insertInlineCode(): void {
