@@ -224,7 +224,7 @@ const editor = new RayEditor('editor', {
 | `link` | Insert / edit link |
 | `imageUpload` | Upload & insert image |
 | `fileUpload` | Upload & insert file link |
-| `table` | Insert table (right-click for context menu) |
+| `table` | Insert table (grid picker) — click inside any cell for the floating context toolbar |
 | `emoji` | Emoji picker |
 | `insertDateTime` | Insert current date & time |
 | `undo` | Undo |
@@ -366,10 +366,13 @@ editor.registerSlashCommand({
 
 ## Dark Mode & CSS Variables
 
+Dark mode is **bundled inside `ray-editor.css`** — no separate stylesheet needed. Just call `setTheme()`:
+
 ```js
 editor.setTheme('dark');
 editor.setTheme('light');
-// or auto-detect: theme: 'auto'
+// or auto-detect OS preference:
+new RayEditor('container', { theme: 'auto' });
 ```
 
 Override any CSS variable to create a custom theme:
@@ -449,6 +452,11 @@ Disable: `markdownShortcuts: false`
 ---
 
 ## Public API
+
+`getContent()` returns clean, portable HTML — all editor UI chrome is stripped:
+- Tables output as plain `<table>` with no CSS classes
+- Code blocks output as `<pre data-lang="js"><code>…</code></pre>`
+- `setContent()` accepts the same clean HTML and rebuilds the full interactive editor UI
 
 ```ts
 editor.getContent(): string

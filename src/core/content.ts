@@ -66,6 +66,16 @@ export class ContentManager {
       div.parentNode?.replaceChild(p, div);
     });
 
+    // Unwrap .ray-table-wrapper: output bare <table> for clean HTML
+    tempDiv.querySelectorAll('.ray-table-wrapper').forEach(wrapper => {
+      const table = wrapper.querySelector('table');
+      if (table) {
+        wrapper.parentNode?.replaceChild(table, wrapper);
+      } else {
+        wrapper.remove();
+      }
+    });
+
     // Clean up code blocks: strip UI chrome, unwrap outer div, output bare <pre data-lang>
     tempDiv.querySelectorAll('.ray-code-block').forEach(block => {
       const lang = block.getAttribute('data-lang') ?? 'plaintext';
@@ -102,6 +112,15 @@ export class ContentManager {
   setContent(html: string): void {
     const temp = document.createElement('div');
     temp.innerHTML = html;
+
+    // Wrap bare <table> in .ray-table-wrapper for overflow-x scroll
+    temp.querySelectorAll('table').forEach(table => {
+      if (table.closest('.ray-table-wrapper')) return; // already wrapped
+      const wrapper = document.createElement('div');
+      wrapper.className = 'ray-table-wrapper';
+      table.parentNode?.insertBefore(wrapper, table);
+      wrapper.appendChild(table);
+    });
 
     // Rebuild full code block UI from bare <pre data-lang> (getContent output)
     // Also handles <pre><code> from external HTML
