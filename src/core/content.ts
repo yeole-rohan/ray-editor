@@ -162,11 +162,11 @@ export class ContentManager {
 
     // Restore callout contenteditable
     container.querySelectorAll<HTMLElement>('.ray-callout').forEach(callout => {
-      callout.contentEditable = 'false';
+      callout.setAttribute('contenteditable', 'false');
       const body = callout.querySelector<HTMLElement>('.ray-callout-body');
-      if (body) body.contentEditable = 'true';
+      if (body) body.setAttribute('contenteditable', 'true');
       const icon = callout.querySelector<HTMLElement>('.ray-callout-icon');
-      if (icon) icon.contentEditable = 'false';
+      if (icon) icon.setAttribute('contenteditable', 'false');
     });
   }
 }
