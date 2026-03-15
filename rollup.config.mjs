@@ -3,6 +3,7 @@ import typescript from '@rollup/plugin-typescript';
 import terser from '@rollup/plugin-terser';
 import postcss from 'rollup-plugin-postcss';
 import postcssImport from 'postcss-import';
+import cssnano from 'cssnano';
 import resolve from '@rollup/plugin-node-resolve';
 import { createRequire } from 'module';
 
@@ -44,8 +45,8 @@ export default defineConfig([
     plugins: [
       resolve(),
       typescript({ ...tsBase, sourceMap: false }),
-      postcss({ extract: false }),
-      terser(),
+      postcss({ extract: false, plugins: [postcssImport(), cssnano()] }),
+      terser({ compress: { passes: 2 } }),
     ],
   },
   // CJS build
@@ -95,8 +96,8 @@ export default defineConfig([
     plugins: [
       resolve(),
       typescript({ ...tsBase, sourceMap: false }),
-      postcss({ extract: false }),
-      terser(),
+      postcss({ extract: false, plugins: [postcssImport(), cssnano()] }),
+      terser({ compress: { passes: 2 } }),
     ],
   },
 ]);
