@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Bundle Size](https://img.shields.io/badge/bundle-~45KB-blue)](https://bundlephobia.com/package/@rohanyeole/ray-editor)
 
-**[Demo](https://github.com/yeole-rohan/ray-editor)** · **[Issues](https://github.com/yeole-rohan/ray-editor/issues)** · **[npm](https://www.npmjs.com/package/@rohanyeole/ray-editor)**
+**[Live Demo](https://ray-editor.rohanyeole.com)** · **[Issues](https://github.com/yeole-rohan/ray-editor/issues)** · **[npm](https://www.npmjs.com/package/@rohanyeole/ray-editor)**
 
 ![RayEditor preview](https://github.com/user-attachments/assets/d9f38163-fdfa-4f57-9d16-1234e6d78b7c)
 
@@ -26,10 +26,16 @@
 | Slash commands (/) | ❌ | ❌ | ❌ | ✅ |
 | Dark mode | Paid | ❌ | Paid | ✅ Free |
 | CSS variable theming | ❌ | ❌ | Limited | ✅ |
+| Markdown mode (bidirectional) | Paid | ❌ | ✅ | ✅ Free |
 | Markdown shortcuts | Paid | ❌ | Paid | ✅ Free |
 | Find & Replace | Paid | ❌ | Paid | ✅ Free |
 | Word count | Paid | ❌ | Paid | ✅ Free |
 | Fullscreen mode | Paid | ❌ | Paid | ✅ Free |
+| Task lists | Paid | ❌ | ✅ | ✅ Free |
+| Callout blocks | ❌ | ❌ | ❌ | ✅ Free |
+| Paste normalization (Word/GDocs) | ✅ | ❌ | ✅ | ✅ Free |
+| Syntax highlighting (code blocks) | Paid | ❌ | ✅ | ✅ Free |
+| Special characters picker | Paid | ❌ | ✅ | ✅ Free |
 | Toolbar array config | ❌ | ❌ | ✅ | ✅ |
 | Bundle size (min+gzip) | ~260KB | ~100KB | ~270KB+ | **~45KB target** |
 | License cost | Freemium | Free | Freemium | **100% Free** |
@@ -200,10 +206,11 @@ const editor = new RayEditor('editor', {
 
 | Key | Description |
 |-----|-------------|
-| `bold` | Bold |
-| `italic` | Italic |
-| `underline` | Underline |
+| `bold` | Bold (`Ctrl+B`) |
+| `italic` | Italic (`Ctrl+I`) |
+| `underline` | Underline (`Ctrl+U`) |
 | `strikethrough` | Strikethrough |
+| `highlight` | Highlight text with `<mark>` ✨ v2.0.5 |
 | `superscript` | Superscript (x²) |
 | `subscript` | Subscript (x₂) |
 | `uppercase` | Transform to uppercase |
@@ -211,28 +218,33 @@ const editor = new RayEditor('editor', {
 | `toggleCase` | Toggle case |
 | `textColor` | Text color picker |
 | `backgroundColor` | Background color picker |
+| `fontSize` | Font size dropdown (10–64 px) ✨ v2.0.5 |
 | `fonts` | Font family dropdown |
 | `headings` | Heading dropdown (H1–H6, Blockquote, Paragraph) |
+| `blockquote` | Blockquote |
+| `callout` | Callout block picker (Info / Warning / Success / Error) ✨ v2.0.5 |
 | `orderedList` | Ordered list |
 | `unorderedList` | Unordered list |
+| `taskList` | Interactive checkbox task list ✨ v2.0.5 |
 | `indent` | Indent |
 | `outdent` | Outdent |
 | `textAlignment` | Alignment dropdown (Left/Center/Right/Justify) |
 | `hr` | Horizontal rule |
-| `codeBlock` | Code block |
+| `codeBlock` | Fenced code block with language selector + syntax highlighting |
 | `codeInline` | Inline code |
 | `link` | Insert / edit link |
-| `imageUpload` | Upload & insert image |
-| `fileUpload` | Upload & insert file link |
+| `imageUpload` | Upload & insert image (requires `imageUpload.imageUploadUrl`) |
+| `fileUpload` | Upload & insert file link (requires `fileUpload.fileUploadUrl`) |
 | `table` | Insert table (grid picker) — click inside any cell for the floating context toolbar |
 | `emoji` | Emoji picker |
-| `insertDateTime` | Insert current date & time |
-| `undo` | Undo |
-| `redo` | Redo |
+| `specialChars` | Special characters grid — 90+ symbols in 6 categories ✨ v2.0.5 |
+| `insertDateTime` | Date/time picker popup |
+| `undo` | Undo (`Ctrl+Z`) |
+| `redo` | Redo (`Ctrl+Y`) |
 | `removeFormat` | Clear all formatting |
 | `showSource` | Toggle HTML source view |
 | `fullscreen` | Fullscreen mode |
-| `print` | Print editor content |
+| `print` | Print editor content only |
 | `markdownToggle` | Switch Rich Text ↔ Markdown mode |
 | `importMarkdown` | Import a `.md` file |
 | `exportMarkdown` | Export as `.md` file |
@@ -480,6 +492,8 @@ editor.execCommand(name: string, value?: string): void
 editor.setTheme('light' | 'dark'): void
 editor.setReadOnly(readOnly: boolean): void
 editor.getWordCount(): { words: number; chars: number }
+editor.exportHtml(): void   // download editor content as .html file
+editor.exportText(): void   // download editor content as .txt file
 editor.destroy(): void
 
 editor.editorElement: HTMLElement  // the contenteditable div
@@ -517,6 +531,64 @@ editor.toolbarElement: HTMLElement // the toolbar div
 | `Shift+Tab` | Outdent |
 | `Escape` | Exit fullscreen / close palette |
 | `/` | Slash command palette |
+
+---
+
+## Task Lists ✨ v2.0.5
+
+Add `taskList` to your toolbar to insert interactive checkbox lists. Checkboxes are clickable inside the editor. `getContent()` outputs clean, portable HTML:
+
+```html
+<ul class="ray-task-list">
+  <li data-type="taskItem" data-checked="false">Buy groceries</li>
+  <li data-type="taskItem" data-checked="true">Call the bank</li>
+</ul>
+```
+
+`setContent()` automatically rebuilds the interactive checkbox UI from this format.
+
+---
+
+## Callout Blocks ✨ v2.0.5
+
+Add `callout` to your toolbar. A picker lets you choose from four types:
+
+| Type | Icon | Class |
+|------|------|-------|
+| Info | ℹ️ | `ray-callout-info` |
+| Warning | ⚠️ | `ray-callout-warning` |
+| Success | ✅ | `ray-callout-success` |
+| Error | ❌ | `ray-callout-error` |
+
+The callout body is fully editable rich text. Clean HTML output:
+
+```html
+<div class="ray-callout ray-callout-info">
+  <span class="ray-callout-icon">ℹ️</span>
+  <div class="ray-callout-body">Your note here.</div>
+</div>
+```
+
+---
+
+## Paste Normalization ✨ v2.0.5
+
+HTML pasted from Word, Google Docs, GitHub, Stack Overflow, or any webpage is automatically cleaned. The pipeline:
+
+1. **Sandbox** — parsed in a detached DOMParser context; no scripts execute
+2. **Strip dangerous** — `<script>`, `<iframe>`, `<object>`, event attributes (`onclick` etc.), `javascript:` hrefs
+3. **Remove MSO** — Word/Outlook conditional comments and proprietary styles
+4. **GDocs unwrap** — Google Docs outer wrapper `<div class="docs-…">` removed, children kept
+5. **Tag morphing** — `<b>` → `<strong>`, `<i>` → `<em>`
+6. **Span promotion** — `font-weight:700` span → `<strong>`, highlight `background-color` → `<mark>`
+7. **Style filter** — only `color`, `background-color`, `font-size`, `font-family`, `text-align` survive
+8. **Structure rebuild** — `<pre>` → code block UI, `<table>` → wrapper, task-list `<li>` → checkboxes
+
+---
+
+## Special Characters ✨ v2.0.5
+
+Add `specialChars` to your toolbar. A popup grid of 90+ symbols in 6 categories: punctuation, currency, math, arrows, Greek, and miscellaneous. Click any symbol to insert it at the cursor.
 
 ---
 
