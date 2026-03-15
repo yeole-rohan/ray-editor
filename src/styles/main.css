@@ -121,10 +121,6 @@
   border-right: none;
 }
 
-.ray-editor-toolbar-inline {
-  display: none;
-}
-
 .ray-editor-toolbar select {
   padding: 5px 8px;
   border: 1px solid var(--ray-border, #ccc);
@@ -527,87 +523,6 @@
 }
 
 /* ─── Table ───────────────────────────────────────────────────────────────── */
-
-
-.ray-editor-table-modal {
-  position: fixed;
-  inset: 0;
-  background: var(--ray-modal-overlay, rgba(0, 0, 0, 0.5));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.ray-editor-table-modal-content {
-  background: var(--ray-modal-bg, #fff);
-  color: var(--ray-text, #1a202c);
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: var(--ray-shadow-lg);
-}
-
-.ray-editor-table-modal-content label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 13px;
-}
-
-.ray-editor-table-modal-content input {
-  padding: 6px 8px;
-  margin-left: 8px;
-  border: 1px solid var(--ray-border, #ccc);
-  border-radius: 4px;
-  width: 60px;
-  background: var(--ray-btn-bg, #fff);
-  color: var(--ray-text, #1a202c);
-}
-
-.ray-editor-table-modal-content button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-#ray-insert-table {
-  background-color: var(--ray-accent, #3b82f6);
-  color: white;
-}
-
-#ray-cancel-table {
-  background-color: var(--ray-btn-hover, #eee);
-  color: var(--ray-text, #333);
-}
-
-.ray-table-context-menu {
-  position: fixed;
-  background: var(--ray-modal-bg, #fff);
-  border: 1px solid var(--ray-border, #ccc);
-  box-shadow: var(--ray-shadow-lg);
-  padding: 4px 0;
-  z-index: 99999;
-  display: flex;
-  flex-direction: column;
-  border-radius: 6px;
-  min-width: 160px;
-}
-
-.ray-table-context-menu button {
-  padding: 8px 14px;
-  background: none;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--ray-text, #1a202c);
-}
-
-.ray-table-context-menu button:hover {
-  background: var(--ray-btn-hover, #f0f0f0);
-}
 
 /* ─── Watermark ───────────────────────────────────────────────────────────── */
 
@@ -1300,12 +1215,6 @@ p.ray-date-time {
 [data-ray-theme="dark"] .ray-editor-content mark {
   background: #854d0e;
   color: #fef9c3;
-}
-
-/* ─── Font Size Dropdown ─────────────────────────────────────────────────── */
-
-.ray-dropdown-fontSize {
-  min-width: 70px;
 }
 
 /* ─── Task / To-Do List ──────────────────────────────────────────────────── */

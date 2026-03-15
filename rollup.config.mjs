@@ -30,7 +30,7 @@ export default defineConfig([
     plugins: [
       resolve(),
       typescript({ ...tsBase, declaration: true, declarationDir: 'dist', sourceMap: true, inlineSources: true }),
-      postcss({ extract: 'ray-editor.css', minimize: false, plugins: [postcssImport()] }),
+      postcss({ extract: 'ray-editor.css', minimize: true, plugins: [postcssImport(), cssnano()] }),
     ],
   },
   // ESM minified — no sourcemap

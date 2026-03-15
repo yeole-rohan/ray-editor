@@ -67,15 +67,13 @@
 }
 
 [data-ray-theme="dark"] .ray-editor-link-modal .modal-content,
-[data-ray-theme="dark"] .ray-editor-table-modal-content,
 [data-ray-theme="dark"] .ray-img-editor-modal {
   background-color: var(--ray-modal-bg);
   color: var(--ray-text);
 }
 
 [data-ray-theme="dark"] .ray-editor-link-modal input,
-[data-ray-theme="dark"] .ray-editor-link-modal select,
-[data-ray-theme="dark"] .ray-editor-table-modal-content input {
+[data-ray-theme="dark"] .ray-editor-link-modal select {
   background-color: var(--ray-btn-bg);
   color: var(--ray-text);
   border-color: var(--ray-border);
