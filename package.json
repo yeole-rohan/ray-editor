@@ -1,7 +1,7 @@
 {
   "name": "@rohanyeole/ray-editor",
   "version": "2.0.6",
-  "description": "Lightweight, dependency-free WYSIWYG rich text editor. Free alternative to TinyMCE & CKEditor.",
+  "description": "Free, lightweight, dependency-free WYSIWYG rich text editor for JavaScript, TypeScript, React, Vue, Angular & Svelte. Slash commands, dark mode, markdown, task lists, callouts, tables, find & replace, plugin API, syntax highlighting. MIT licensed.",
   "main": "dist/ray-editor.cjs.js",
   "module": "dist/ray-editor.esm.js",
   "types": "dist/index.d.ts",
@@ -33,12 +33,27 @@
     "rich-text-editor",
     "editor",
     "text-editor",
-    "content-editable",
+    "contenteditable",
     "tinymce-alternative",
     "quill-alternative",
     "ckeditor-alternative",
     "vanilla-js",
-    "zero-dependencies"
+    "typescript",
+    "react-editor",
+    "vue-editor",
+    "angular-editor",
+    "svelte-editor",
+    "markdown",
+    "markdown-editor",
+    "slash-commands",
+    "dark-mode",
+    "task-list",
+    "syntax-highlighting",
+    "zero-dependencies",
+    "mit-license",
+    "plugin-api",
+    "find-replace",
+    "javascript-editor"
   ],
   "author": "Rohan Yeole",
   "license": "MIT",
@@ -46,7 +61,7 @@
     "type": "git",
     "url": "https://github.com/yeole-rohan/ray-editor"
   },
-  "homepage": "https://github.com/yeole-rohan/ray-editor",
+  "homepage": "https://ray-editor.rohanyeole.com",
   "bugs": {
     "url": "https://github.com/yeole-rohan/ray-editor/issues"
   },
