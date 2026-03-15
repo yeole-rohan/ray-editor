@@ -35,7 +35,7 @@ jobs:
 
       - name: Deploy via rsync
         run: |
-          rsync -avz --delete \
+          rsync -avz \
             --exclude '/vanilla/' \
             examples/ \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_TARGET_DIR }}
