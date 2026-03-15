@@ -6,4 +6,4 @@ dist/
 .env.local
 coverage/
 .vitest/
-.claude/
+.claude/DEPLOYMENT.md
