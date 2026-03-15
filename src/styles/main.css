@@ -623,7 +623,7 @@
 }
 
 #ray-editor-watermark a:hover {
-  color: var(--ray-text, #000);
+  color: blueviolet;
 }
 
 /* ─── Upload Placeholder ──────────────────────────────────────────────────── */
