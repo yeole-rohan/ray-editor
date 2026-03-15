@@ -37,6 +37,8 @@ export class ToolbarManager {
 
   build(groups: ToolbarGroup[]): void {
     this.toolbar.innerHTML = '';
+    this.toolbar.setAttribute('role', 'toolbar');
+    this.toolbar.setAttribute('aria-label', 'Formatting toolbar');
 
     const allConfigs = BUTTON_CONFIGS;
 
@@ -44,6 +46,7 @@ export class ToolbarManager {
       // Group wrapper
       const groupEl = document.createElement('div');
       groupEl.className = 'ray-toolbar-group';
+      groupEl.setAttribute('role', 'group');
       groupEl.setAttribute('data-group', String(gi));
 
       group.forEach(key => {
@@ -76,7 +79,9 @@ export class ToolbarManager {
     btn.type = 'button';
     const title = this.formatTitle(key);
     btn.title = title;
+    btn.setAttribute('aria-label', title);
     btn.setAttribute('data-tooltip', title);
+    btn.setAttribute('aria-pressed', 'false');
     btn.innerHTML = config.label;
     btn.className = `ray-btn ray-btn-${key}`;
 
@@ -91,6 +96,7 @@ export class ToolbarManager {
     const select = document.createElement('select');
     select.className = `ray-dropdown ray-dropdown-${key}`;
     select.title = this.formatTitle(key);
+    select.setAttribute('aria-label', this.formatTitle(key));
 
     Object.entries(config.dropdownOptions).forEach(([, opt]: [string, any]) => {
       const option = document.createElement('option');
@@ -103,8 +109,23 @@ export class ToolbarManager {
       const selectedOpt = Object.values(config.dropdownOptions).find(
         (opt: any) => opt.value === select.value
       ) as any;
-      if (selectedOpt?.cmd) {
-        // execCommand is dispatched via keyname with extra value
+      if (!selectedOpt) return;
+
+      // fontSize dropdown: wrap selection in <span style="font-size:Npx">
+      if (key === 'fontSize') {
+        const px = selectedOpt.value;
+        if (px) {
+          const sel = window.getSelection();
+          if (sel && sel.rangeCount && !sel.isCollapsed) {
+            document.execCommand('insertHTML', false,
+              `<span style="font-size:${px}px">${sel.toString()}</span>`);
+          }
+        }
+        this.editorArea.focus();
+        return;
+      }
+
+      if (selectedOpt.cmd) {
         document.execCommand(selectedOpt.cmd, false, selectedOpt.value);
         this.editorArea.focus();
       }
@@ -123,9 +144,10 @@ export class ToolbarManager {
 
     const parent = sel.getRangeAt(0).startContainer.parentElement;
 
-    // Reset all active states
+    // Reset all active states + aria-pressed
     this.toolbar.querySelectorAll('.ray-btn').forEach(btn => {
       btn.classList.remove('active');
+      btn.setAttribute('aria-pressed', 'false');
     });
 
     if (!parent) return;
@@ -138,18 +160,23 @@ export class ToolbarManager {
       { tags: ['sub'], btnId: 'ray-btn-subscript' },
       { tags: ['sup'], btnId: 'ray-btn-superscript' },
       { tags: ['code'], btnId: 'ray-btn-codeInline' },
+      { tags: ['mark'], btnId: 'ray-btn-highlight' },
     ];
 
     activeChecks.forEach(({ tags, btnId }) => {
       const isActive = tags.some(tag => this.isInTag(parent, tag));
       if (isActive) {
-        this.toolbar.querySelector(`.${btnId}`)?.classList.add('active');
+        const btn = this.toolbar.querySelector(`.${btnId}`);
+        btn?.classList.add('active');
+        btn?.setAttribute('aria-pressed', 'true');
       }
     });
 
     // Code block
     if (parent.closest('.ray-code-block')) {
-      this.toolbar.querySelector('.ray-btn-codeBlock')?.classList.add('active');
+      const btn = this.toolbar.querySelector('.ray-btn-codeBlock');
+      btn?.classList.add('active');
+      btn?.setAttribute('aria-pressed', 'true');
     }
 
     // Update heading dropdown

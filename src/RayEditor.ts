@@ -9,6 +9,7 @@ import type {
 } from './types/plugin';
 import { DEFAULT_TOOLBAR } from './types/options';
 import { applySanitizedHTML, sanitizeUrl } from './core/sanitize';
+import { normalizePastedHTML } from './core/paste-normalizer';
 import { EventBus } from './core/events';
 import { SelectionManager } from './core/selection';
 import { CommandManager } from './core/commands';
@@ -30,6 +31,10 @@ import { FullscreenFeature } from './features/fullscreen';
 import { MarkdownShortcutsFeature } from './features/markdown-shortcuts';
 import { EmojiFeature } from './features/emoji';
 import { PluginManager } from './plugins/plugin-manager';
+import { MarkdownFeature } from './features/markdown';
+import { TaskListFeature } from './features/tasklist';
+import { CalloutFeature } from './features/callout';
+import { SpecialCharsFeature } from './features/special-chars';
 
 export class RayEditor implements RayEditorInstance {
   // DOM
@@ -64,6 +69,10 @@ export class RayEditor implements RayEditorInstance {
   private fullscreenFeature?: FullscreenFeature;
   private markdownShortcutsFeature?: MarkdownShortcutsFeature;
   private emojiFeature?: EmojiFeature;
+  private markdownFeature!: MarkdownFeature;
+  private taskListFeature!: TaskListFeature;
+  private calloutFeature!: CalloutFeature;
+  private specialCharsFeature!: SpecialCharsFeature;
 
   // Plugin manager
   private pluginManager: PluginManager;
@@ -144,6 +153,7 @@ export class RayEditor implements RayEditorInstance {
     this.linkFeature = new LinkFeature(this.editorElement, this.selectionManager);
     this.tableFeature = new TableFeature(this.editorElement, this.selectionManager);
     this.youtubeFeature = new YouTubeFeature();
+    this.markdownFeature = new MarkdownFeature(this.editorElement, this.wrapper, this.toolbarElement);
 
     // Optional features
     const imgOpts = this.resolveImageUploadOpts();
@@ -180,6 +190,9 @@ export class RayEditor implements RayEditorInstance {
     }
 
     this.emojiFeature = new EmojiFeature(this.editorElement);
+    this.taskListFeature = new TaskListFeature(this.editorElement);
+    this.calloutFeature = new CalloutFeature(this.editorElement);
+    this.specialCharsFeature = new SpecialCharsFeature();
 
     // Toolbar
     this.toolbarManager = new ToolbarManager(
@@ -233,12 +246,19 @@ export class RayEditor implements RayEditorInstance {
 
     // defaultParagraphSeparator
     document.execCommand('defaultParagraphSeparator', false, 'p');
+
+    // ARIA on editor element
+    this.editorElement.setAttribute('role', 'textbox');
+    this.editorElement.setAttribute('aria-multiline', 'true');
+    this.editorElement.setAttribute('aria-label', 'Rich text editor');
   }
 
   // ─── Public API ────────────────────────────────────────────────────────────
 
-  /** Get cleaned HTML content */
+  /** Get cleaned HTML content (works in both rich text and markdown mode) */
   getContent(): string {
+    const mdHtml = this.markdownFeature?.getContentHtml();
+    if (mdHtml !== null && mdHtml !== undefined) return mdHtml;
     return this.contentManager.getContent();
   }
 
@@ -336,6 +356,27 @@ export class RayEditor implements RayEditorInstance {
     return this.wordCountFeature?.getWordCount() ?? { words: 0, chars: 0 };
   }
 
+  /** Download the editor content as an HTML file */
+  exportHtml(filename = 'document.html'): void {
+    const html = `<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8"><title>Document</title></head>\n<body>\n${this.getContent()}\n</body>\n</html>`;
+    this._downloadBlob(html, filename, 'text/html');
+  }
+
+  /** Download the editor content as a plain-text file */
+  exportText(filename = 'document.txt'): void {
+    const div = document.createElement('div');
+    div.innerHTML = this.getContent();
+    this._downloadBlob(div.textContent ?? '', filename, 'text/plain');
+  }
+
+  private _downloadBlob(content: string, filename: string, type: string): void {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([content], { type }));
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
   /** Destroy the editor and clean up all resources */
   destroy(): void {
     if (this.destroyed) return;
@@ -348,6 +389,7 @@ export class RayEditor implements RayEditorInstance {
     this.wordCountFeature?.destroy();
     this.fullscreenFeature?.destroy();
     this.emojiFeature?.destroy();
+    this.markdownFeature?.destroy();
     this.eventBus.destroy();
 
     this.wrapper.remove();
@@ -430,6 +472,23 @@ export class RayEditor implements RayEditorInstance {
       case 'insertDateTime':
         this.insertDateTime();
         break;
+      case 'markdownToggle':
+        this.markdownFeature.toggle();
+        if (!this.markdownFeature.isMarkdownMode && this.markdownFeature._pendingHtml !== null) {
+          this.setContent(this.markdownFeature._pendingHtml);
+          this.markdownFeature._pendingHtml = null;
+        }
+        return; // skip history push — markdown mode manages its own state
+      case 'importMarkdown':
+        this.markdownFeature.importFile((html) => {
+          this.setContent(html);
+          this.historyManager.push(this.editorElement.innerHTML);
+          this.eventBus.emit('content:change', { html: this.getContent() });
+        });
+        return;
+      case 'exportMarkdown':
+        this.markdownFeature.exportFile(this.getContent());
+        return;
       case 'showSource':
         this.toggleSourceMode();
         break;
@@ -448,6 +507,40 @@ export class RayEditor implements RayEditorInstance {
       case 'emoji': {
         const emojiBtn = this.toolbarElement.querySelector<HTMLElement>('.ray-btn-emoji');
         this.emojiFeature?.toggle(emojiBtn ?? undefined);
+        break;
+      }
+      case 'highlight': {
+        // Toggle yellow highlight using backColor. If already highlighted, remove it.
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount && !sel.isCollapsed) {
+          const range = sel.getRangeAt(0);
+          const ancestor = range.commonAncestorContainer;
+          const el = ancestor.nodeType === Node.TEXT_NODE ? ancestor.parentElement : ancestor as HTMLElement;
+          const inMark = el?.closest('mark');
+          if (inMark) {
+            // Unwrap the mark
+            const parent = inMark.parentNode!;
+            while (inMark.firstChild) parent.insertBefore(inMark.firstChild, inMark);
+            parent.removeChild(inMark);
+          } else {
+            document.execCommand('insertHTML', false,
+              `<mark>${sel.toString()}</mark>`);
+          }
+        }
+        this.editorElement.focus();
+        break;
+      }
+      case 'taskList':
+        this.taskListFeature.insertTaskList();
+        break;
+      case 'callout': {
+        const calloutBtn = this.toolbarElement.querySelector<HTMLElement>('.ray-btn-callout');
+        if (calloutBtn) this.calloutFeature.showPicker(calloutBtn);
+        break;
+      }
+      case 'specialChars': {
+        const scBtn = this.toolbarElement.querySelector<HTMLElement>('.ray-btn-specialChars');
+        if (scBtn) this.specialCharsFeature.toggle(scBtn);
         break;
       }
     }
@@ -520,8 +613,51 @@ export class RayEditor implements RayEditorInstance {
         }
 
         if (evt === 'paste') {
-          this.youtubeFeature.handlePaste(event as ClipboardEvent);
-          // Push to history after paste
+          const pasteEvt = event as ClipboardEvent;
+
+          // 1. Let specialised handlers run first (code blocks, YouTube URLs).
+          //    Both call e.preventDefault() themselves when they intercept.
+          if (this.codeBlockFeature.handlePaste(pasteEvt)) {
+            setTimeout(() => {
+              this.historyManager.push(this.editorElement.innerHTML);
+              this.eventBus.emit('content:change', { html: this.getContent() });
+            }, 0);
+            return;
+          }
+          this.youtubeFeature.handlePaste(pasteEvt);
+          if (pasteEvt.defaultPrevented) {
+            setTimeout(() => {
+              this.historyManager.push(this.editorElement.innerHTML);
+              this.eventBus.emit('content:change', { html: this.getContent() });
+            }, 0);
+            return;
+          }
+
+          // 2. General HTML paste — normalize then insert via DOM (preserves listeners)
+          const clipHtml = pasteEvt.clipboardData?.getData('text/html') ?? '';
+          const clipText = pasteEvt.clipboardData?.getData('text/plain') ?? '';
+
+          if (clipHtml) {
+            pasteEvt.preventDefault();
+            const normalizedHtml = normalizePastedHTML(clipHtml);
+            // Apply RayEditor structure (code blocks, table wrappers, task lists)
+            const temp = document.createElement('div');
+            temp.innerHTML = normalizedHtml;
+            this.contentManager.applyStructure(temp);
+
+            const sel = window.getSelection();
+            if (sel?.rangeCount) {
+              const range = sel.getRangeAt(0);
+              range.deleteContents();
+              const frag = document.createDocumentFragment();
+              while (temp.firstChild) frag.appendChild(temp.firstChild);
+              range.insertNode(frag);
+              sel.collapseToEnd();
+            }
+          } else if (clipText) {
+            // Plain text — browser default is fine (inserts as text)
+          }
+
           setTimeout(() => {
             this.historyManager.push(this.editorElement.innerHTML);
             this.eventBus.emit('content:change', { html: this.getContent() });

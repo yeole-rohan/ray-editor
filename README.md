@@ -2,11 +2,11 @@
 
 > Lightweight, dependency-free WYSIWYG rich text editor — free alternative to TinyMCE & CKEditor.
 
-[![npm version](https://img.shields.io/npm/v/ray-editor.svg)](https://www.npmjs.com/package/ray-editor)
+[![npm version](https://img.shields.io/npm/v/@rohanyeole/ray-editor.svg)](https://www.npmjs.com/package/@rohanyeole/ray-editor)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Bundle Size](https://img.shields.io/badge/bundle-~45KB-blue)](https://bundlephobia.com/package/ray-editor)
+[![Bundle Size](https://img.shields.io/badge/bundle-~45KB-blue)](https://bundlephobia.com/package/@rohanyeole/ray-editor)
 
-**[Demo](https://github.com/yeole-rohan/ray-editor)** · **[Issues](https://github.com/yeole-rohan/ray-editor/issues)** · **[npm](https://www.npmjs.com/package/ray-editor)**
+**[Live Demo](https://ray-editor.rohanyeole.com)** · **[Issues](https://github.com/yeole-rohan/ray-editor/issues)** · **[npm](https://www.npmjs.com/package/@rohanyeole/ray-editor)**
 
 ![RayEditor preview](https://github.com/user-attachments/assets/d9f38163-fdfa-4f57-9d16-1234e6d78b7c)
 
@@ -26,10 +26,16 @@
 | Slash commands (/) | ❌ | ❌ | ❌ | ✅ |
 | Dark mode | Paid | ❌ | Paid | ✅ Free |
 | CSS variable theming | ❌ | ❌ | Limited | ✅ |
+| Markdown mode (bidirectional) | Paid | ❌ | ✅ | ✅ Free |
 | Markdown shortcuts | Paid | ❌ | Paid | ✅ Free |
 | Find & Replace | Paid | ❌ | Paid | ✅ Free |
 | Word count | Paid | ❌ | Paid | ✅ Free |
 | Fullscreen mode | Paid | ❌ | Paid | ✅ Free |
+| Task lists | Paid | ❌ | ✅ | ✅ Free |
+| Callout blocks | ❌ | ❌ | ❌ | ✅ Free |
+| Paste normalization (Word/GDocs) | ✅ | ❌ | ✅ | ✅ Free |
+| Syntax highlighting (code blocks) | Paid | ❌ | ✅ | ✅ Free |
+| Special characters picker | Paid | ❌ | ✅ | ✅ Free |
 | Toolbar array config | ❌ | ❌ | ✅ | ✅ |
 | Bundle size (min+gzip) | ~260KB | ~100KB | ~270KB+ | **~45KB target** |
 | License cost | Freemium | Free | Freemium | **100% Free** |
@@ -40,11 +46,9 @@
 
 ```html
 <!-- CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ray-editor@2/dist/ray-editor.css">
-<!-- Optional: dark theme -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ray-editor@2/dist/ray-editor.dark.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rohanyeole/ray-editor@2/dist/ray-editor.css">
 <!-- JS — exposes window.RayEditor -->
-<script src="https://cdn.jsdelivr.net/npm/ray-editor@2/dist/ray-editor.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@rohanyeole/ray-editor@2/dist/ray-editor.umd.min.js"></script>
 
 <div id="editor"></div>
 <script>
@@ -60,12 +64,12 @@
 ## Install via npm
 
 ```bash
-npm install ray-editor
+npm install @rohanyeole/ray-editor
 ```
 
 ```js
-import { RayEditor } from 'ray-editor';
-import 'ray-editor/css';
+import { RayEditor } from '@rohanyeole/ray-editor';
+import '@rohanyeole/ray-editor/css';
 
 const editor = new RayEditor('editor', { theme: 'light' });
 ```
@@ -74,79 +78,109 @@ const editor = new RayEditor('editor', { theme: 'light' });
 
 ## Framework Usage
 
+RayEditor is framework-agnostic — use it directly in any framework by mounting it in a container element.
+
 ### React
 
 ```bash
-npm install ray-editor @ray-editor/react
+npm install @rohanyeole/ray-editor
 ```
 
 ```tsx
-import { RayEditorComponent } from '@ray-editor/react';
-import 'ray-editor/css';
+import { useEffect, useRef } from 'react';
+import { RayEditor } from '@rohanyeole/ray-editor';
+import '@rohanyeole/ray-editor/css';
 
-function App() {
-  const [html, setHtml] = React.useState('');
-  return (
-    <RayEditorComponent
-      value={html}
-      onChange={setHtml}
-      options={{ theme: 'light', wordCount: true }}
-    />
-  );
+function Editor({ onChange }: { onChange?: (html: string) => void }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<RayEditor | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    editorRef.current = new RayEditor(containerRef.current, {
+      theme: 'light',
+      wordCount: true,
+      onChange,
+    });
+    return () => editorRef.current?.destroy();
+  }, []);
+
+  return <div ref={containerRef} />;
 }
 ```
 
 ### Vue 3
 
 ```bash
-npm install ray-editor @ray-editor/vue
+npm install @rohanyeole/ray-editor
 ```
 
 ```vue
-<script setup>
-import { ref } from 'vue';
-import { RayEditorVue } from '@ray-editor/vue';
-import 'ray-editor/css';
-const content = ref('');
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue';
+import { RayEditor } from '@rohanyeole/ray-editor';
+import '@rohanyeole/ray-editor/css';
+
+const container = ref<HTMLDivElement>();
+let editor: RayEditor;
+
+onMounted(() => {
+  editor = new RayEditor(container.value!, { theme: 'light', wordCount: true });
+});
+onUnmounted(() => editor?.destroy());
 </script>
+
 <template>
-  <RayEditorVue v-model="content" :options="{ theme: 'light' }" />
+  <div ref="container" />
 </template>
 ```
 
 ### Angular
 
 ```bash
-npm install ray-editor @ray-editor/angular
+npm install @rohanyeole/ray-editor
 ```
 
 ```typescript
-// app.component.ts
-import { RayEditorAngularComponent } from '@ray-editor/angular';
+import { Component, ElementRef, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { RayEditor } from '@rohanyeole/ray-editor';
+import '@rohanyeole/ray-editor/css';
 
 @Component({
-  standalone: true,
-  imports: [RayEditorAngularComponent],
-  template: `<ray-editor [(ngModel)]="content"></ray-editor>`,
+  selector: 'app-editor',
+  template: `<div #container></div>`,
 })
-export class AppComponent {
-  content = '';
+export class EditorComponent implements OnInit, OnDestroy {
+  @ViewChild('container', { static: true }) containerRef!: ElementRef;
+  private editor!: RayEditor;
+
+  ngOnInit() {
+    this.editor = new RayEditor(this.containerRef.nativeElement, { theme: 'light' });
+  }
+  ngOnDestroy() { this.editor?.destroy(); }
 }
 ```
 
 ### Svelte
 
 ```bash
-npm install ray-editor @ray-editor/svelte
+npm install @rohanyeole/ray-editor
 ```
 
 ```svelte
-<script>
-  import RayEditor from '@ray-editor/svelte/src/RayEditor.svelte';
-  import 'ray-editor/css';
-  let content = '';
+<script lang="ts">
+  import { onMount, onDestroy } from 'svelte';
+  import { RayEditor } from '@rohanyeole/ray-editor';
+  import '@rohanyeole/ray-editor/css';
+
+  let container: HTMLDivElement;
+  let editor: RayEditor;
+
+  onMount(() => { editor = new RayEditor(container, { theme: 'light' }); });
+  onDestroy(() => editor?.destroy());
 </script>
-<RayEditor bind:value={content} />
+
+<div bind:this={container} />
 ```
 
 ---
@@ -172,10 +206,11 @@ const editor = new RayEditor('editor', {
 
 | Key | Description |
 |-----|-------------|
-| `bold` | Bold |
-| `italic` | Italic |
-| `underline` | Underline |
+| `bold` | Bold (`Ctrl+B`) |
+| `italic` | Italic (`Ctrl+I`) |
+| `underline` | Underline (`Ctrl+U`) |
 | `strikethrough` | Strikethrough |
+| `highlight` | Highlight text with `<mark>` ✨ v2.0.5 |
 | `superscript` | Superscript (x²) |
 | `subscript` | Subscript (x₂) |
 | `uppercase` | Transform to uppercase |
@@ -183,28 +218,36 @@ const editor = new RayEditor('editor', {
 | `toggleCase` | Toggle case |
 | `textColor` | Text color picker |
 | `backgroundColor` | Background color picker |
+| `fontSize` | Font size dropdown (10–64 px) ✨ v2.0.5 |
 | `fonts` | Font family dropdown |
 | `headings` | Heading dropdown (H1–H6, Blockquote, Paragraph) |
+| `blockquote` | Blockquote |
+| `callout` | Callout block picker (Info / Warning / Success / Error) ✨ v2.0.5 |
 | `orderedList` | Ordered list |
 | `unorderedList` | Unordered list |
+| `taskList` | Interactive checkbox task list ✨ v2.0.5 |
 | `indent` | Indent |
 | `outdent` | Outdent |
 | `textAlignment` | Alignment dropdown (Left/Center/Right/Justify) |
 | `hr` | Horizontal rule |
-| `codeBlock` | Code block |
+| `codeBlock` | Fenced code block with language selector + syntax highlighting |
 | `codeInline` | Inline code |
 | `link` | Insert / edit link |
-| `imageUpload` | Upload & insert image |
-| `fileUpload` | Upload & insert file link |
-| `table` | Insert table (right-click for context menu) |
+| `imageUpload` | Upload & insert image (requires `imageUpload.imageUploadUrl`) |
+| `fileUpload` | Upload & insert file link (requires `fileUpload.fileUploadUrl`) |
+| `table` | Insert table (grid picker) — click inside any cell for the floating context toolbar |
 | `emoji` | Emoji picker |
-| `insertDateTime` | Insert current date & time |
-| `undo` | Undo |
-| `redo` | Redo |
+| `specialChars` | Special characters grid — 90+ symbols in 6 categories ✨ v2.0.5 |
+| `insertDateTime` | Date/time picker popup |
+| `undo` | Undo (`Ctrl+Z`) |
+| `redo` | Redo (`Ctrl+Y`) |
 | `removeFormat` | Clear all formatting |
 | `showSource` | Toggle HTML source view |
 | `fullscreen` | Fullscreen mode |
-| `print` | Print editor content |
+| `print` | Print editor content only |
+| `markdownToggle` | Switch Rich Text ↔ Markdown mode |
+| `importMarkdown` | Import a `.md` file |
+| `exportMarkdown` | Export as `.md` file |
 
 ---
 
@@ -335,10 +378,13 @@ editor.registerSlashCommand({
 
 ## Dark Mode & CSS Variables
 
+Dark mode is **bundled inside `ray-editor.css`** — no separate stylesheet needed. Just call `setTheme()`:
+
 ```js
 editor.setTheme('dark');
 editor.setTheme('light');
-// or auto-detect: theme: 'auto'
+// or auto-detect OS preference:
+new RayEditor('container', { theme: 'auto' });
 ```
 
 Override any CSS variable to create a custom theme:
@@ -355,6 +401,48 @@ Override any CSS variable to create a custom theme:
   /* ... see full list in src/themes/light.css */
 }
 ```
+
+---
+
+## Markdown Mode
+
+RayEditor supports full bidirectional Markdown editing — switch between rich text and raw Markdown at any time without losing content. Most editors charge for this.
+
+### Toolbar buttons
+
+| Key | Description |
+|-----|-------------|
+| `markdownToggle` | Switch between Rich Text ↔ Markdown mode |
+| `importMarkdown` | Import a `.md` file — opens file picker, converts to rich text |
+| `exportMarkdown` | Export current content as a `.md` file download |
+
+```js
+const editor = new RayEditor('editor', {
+  toolbar: [
+    ['bold', 'italic', 'headings'],
+    ['markdownToggle', 'importMarkdown', 'exportMarkdown'],
+  ],
+});
+```
+
+### What converts
+
+| Markdown | Rich Text |
+|----------|-----------|
+| `# Heading` | `<h1>` |
+| `**bold**` / `__bold__` | `<strong>` |
+| `*italic*` / `_italic_` | `<em>` |
+| `~~strike~~` | `<s>` |
+| `` `code` `` | `<code>` |
+| ` ```lang ` fenced block | Code block with language selector |
+| `> blockquote` | `<blockquote>` |
+| `- item` / `1. item` | `<ul>` / `<ol>` |
+| `[text](url)` | `<a href="url">` |
+| `![alt](url)` | `<img>` |
+| `---` | `<hr>` |
+| Tables (`\| col \| col \|`) | `<table>` |
+
+`getContent()` always returns HTML regardless of which mode is active.
 
 ---
 
@@ -376,6 +464,11 @@ Disable: `markdownShortcuts: false`
 ---
 
 ## Public API
+
+`getContent()` returns clean, portable HTML — all editor UI chrome is stripped:
+- Tables output as plain `<table>` with no CSS classes
+- Code blocks output as `<pre data-lang="js"><code>…</code></pre>`
+- `setContent()` accepts the same clean HTML and rebuilds the full interactive editor UI
 
 ```ts
 editor.getContent(): string
@@ -399,6 +492,8 @@ editor.execCommand(name: string, value?: string): void
 editor.setTheme('light' | 'dark'): void
 editor.setReadOnly(readOnly: boolean): void
 editor.getWordCount(): { words: number; chars: number }
+editor.exportHtml(): void   // download editor content as .html file
+editor.exportText(): void   // download editor content as .txt file
 editor.destroy(): void
 
 editor.editorElement: HTMLElement  // the contenteditable div
@@ -436,6 +531,64 @@ editor.toolbarElement: HTMLElement // the toolbar div
 | `Shift+Tab` | Outdent |
 | `Escape` | Exit fullscreen / close palette |
 | `/` | Slash command palette |
+
+---
+
+## Task Lists ✨ v2.0.5
+
+Add `taskList` to your toolbar to insert interactive checkbox lists. Checkboxes are clickable inside the editor. `getContent()` outputs clean, portable HTML:
+
+```html
+<ul class="ray-task-list">
+  <li data-type="taskItem" data-checked="false">Buy groceries</li>
+  <li data-type="taskItem" data-checked="true">Call the bank</li>
+</ul>
+```
+
+`setContent()` automatically rebuilds the interactive checkbox UI from this format.
+
+---
+
+## Callout Blocks ✨ v2.0.5
+
+Add `callout` to your toolbar. A picker lets you choose from four types:
+
+| Type | Icon | Class |
+|------|------|-------|
+| Info | ℹ️ | `ray-callout-info` |
+| Warning | ⚠️ | `ray-callout-warning` |
+| Success | ✅ | `ray-callout-success` |
+| Error | ❌ | `ray-callout-error` |
+
+The callout body is fully editable rich text. Clean HTML output:
+
+```html
+<div class="ray-callout ray-callout-info">
+  <span class="ray-callout-icon">ℹ️</span>
+  <div class="ray-callout-body">Your note here.</div>
+</div>
+```
+
+---
+
+## Paste Normalization ✨ v2.0.5
+
+HTML pasted from Word, Google Docs, GitHub, Stack Overflow, or any webpage is automatically cleaned. The pipeline:
+
+1. **Sandbox** — parsed in a detached DOMParser context; no scripts execute
+2. **Strip dangerous** — `<script>`, `<iframe>`, `<object>`, event attributes (`onclick` etc.), `javascript:` hrefs
+3. **Remove MSO** — Word/Outlook conditional comments and proprietary styles
+4. **GDocs unwrap** — Google Docs outer wrapper `<div class="docs-…">` removed, children kept
+5. **Tag morphing** — `<b>` → `<strong>`, `<i>` → `<em>`
+6. **Span promotion** — `font-weight:700` span → `<strong>`, highlight `background-color` → `<mark>`
+7. **Style filter** — only `color`, `background-color`, `font-size`, `font-family`, `text-align` survive
+8. **Structure rebuild** — `<pre>` → code block UI, `<table>` → wrapper, task-list `<li>` → checkboxes
+
+---
+
+## Special Characters ✨ v2.0.5
+
+Add `specialChars` to your toolbar. A popup grid of 90+ symbols in 6 categories: punctuation, currency, math, arrows, Greek, and miscellaneous. Click any symbol to insert it at the cursor.
 
 ---
 

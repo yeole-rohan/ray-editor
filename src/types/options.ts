@@ -20,6 +20,10 @@ export type ToolbarItem =
   | 'link' | 'table'
   // Mentions
   | 'mentions'
+  // Markdown
+  | 'markdownToggle' | 'importMarkdown' | 'exportMarkdown'
+  // New features
+  | 'highlight' | 'fontSize' | 'taskList' | 'callout' | 'specialChars'
   // Utility
   | 'undo' | 'redo' | 'showSource' | 'fullscreen' | 'print'
   | 'fonts' | 'overflowMenu' | 'wordCount';
@@ -117,17 +121,18 @@ export interface RayEditorOptions {
 }
 
 export const DEFAULT_TOOLBAR: ToolbarGroup[] = [
-  ['bold', 'italic', 'underline', 'strikethrough'],
+  ['bold', 'italic', 'underline', 'strikethrough', 'highlight'],
   ['superscript', 'subscript'],
   ['uppercase', 'lowercase', 'toggleCase'],
-  ['textColor', 'backgroundColor'],
+  ['textColor', 'backgroundColor', 'fontSize'],
   ['fonts'],
-  ['headings', 'blockquote'],
-  ['orderedList', 'unorderedList', 'indent', 'outdent'],
+  ['headings', 'blockquote', 'callout'],
+  ['orderedList', 'unorderedList', 'taskList', 'indent', 'outdent'],
   ['textAlignment', 'hr'],
   ['codeBlock', 'codeInline'],
   ['link', 'imageUpload', 'fileUpload', 'table'],
-  ['emoji', 'insertDateTime'],
+  ['emoji', 'specialChars', 'insertDateTime'],
+  ['markdownToggle', 'importMarkdown', 'exportMarkdown'],
   ['undo', 'redo', 'removeFormat'],
   ['showSource', 'fullscreen', 'print'],
 ];

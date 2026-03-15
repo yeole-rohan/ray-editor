@@ -203,4 +203,52 @@ export const BUTTON_CONFIGS = {
     keyname: 'overflowMenu',
     label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>`,
   },
+  markdownToggle: {
+    keyname: 'markdownToggle',
+    label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z"/><path d="M7 7v10"/><path d="M7 12l3-3 3 3"/><path d="M13 17V7l4 5 4-5v10" transform="translate(-4,0) scale(0.6,1) translate(7,0)"/><path d="M14 7l2.5 5L19 7v10"/></svg>`,
+  },
+  importMarkdown: {
+    keyname: 'importMarkdown',
+    label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>`,
+  },
+  exportMarkdown: {
+    keyname: 'exportMarkdown',
+    label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/><polyline points="9 15 12 18 15 15"/></svg>`,
+  },
+  highlight: {
+    keyname: 'highlight',
+    label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>`,
+  },
+  fontSize: {
+    keyname: 'fontSize',
+    label: 'Size',
+    dropdown: true,
+    dropdownOptions: {
+      default: { label: 'Default', cmd: 'fontSize', value: '' },
+      s10: { label: '10px', cmd: 'fontSize', value: '10' },
+      s12: { label: '12px', cmd: 'fontSize', value: '12' },
+      s14: { label: '14px', cmd: 'fontSize', value: '14' },
+      s16: { label: '16px', cmd: 'fontSize', value: '16' },
+      s18: { label: '18px', cmd: 'fontSize', value: '18' },
+      s20: { label: '20px', cmd: 'fontSize', value: '20' },
+      s24: { label: '24px', cmd: 'fontSize', value: '24' },
+      s28: { label: '28px', cmd: 'fontSize', value: '28' },
+      s32: { label: '32px', cmd: 'fontSize', value: '32' },
+      s36: { label: '36px', cmd: 'fontSize', value: '36' },
+      s48: { label: '48px', cmd: 'fontSize', value: '48' },
+      s64: { label: '64px', cmd: 'fontSize', value: '64' },
+    },
+  },
+  taskList: {
+    keyname: 'taskList',
+    label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></svg>`,
+  },
+  callout: {
+    keyname: 'callout',
+    label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+  },
+  specialChars: {
+    keyname: 'specialChars',
+    label: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M5 20h6"/><path d="M8 4v16"/><path d="m15 15 2 5h.5l2-5"/><path d="M17.4 15a4 4 0 0 0 0 5"/></svg>`,
+  },
 } as const;
