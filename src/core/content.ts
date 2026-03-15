@@ -1,4 +1,5 @@
 import { buildCodeBlock } from '../features/codeblock.js';
+import { TaskListFeature, serializeTaskLists } from '../features/tasklist.js';
 
 /**
  * Content get/set/clean logic.
@@ -19,18 +20,14 @@ export class ContentManager {
     const isInsideCodeBlock = (el: Element): boolean =>
       el.closest('pre, code, .ray-code-block') !== null;
 
-    // Remove <p> inside list items
-    const removePInsideList = () => {
-      tempDiv.querySelectorAll('ul li, ol li').forEach(li => {
-        if (isInsideCodeBlock(li)) return;
-        const p = li.querySelector('p');
-        if (p) {
-          li.innerHTML = li.innerHTML.replace(p.outerHTML, p.innerHTML);
-        }
-      });
-    };
-
-    removePInsideList();
+    // Remove <p> inside list items (but not task list items — they use spans)
+    tempDiv.querySelectorAll('ul li:not(.ray-task-item), ol li:not(.ray-task-item)').forEach(li => {
+      if (isInsideCodeBlock(li)) return;
+      const p = li.querySelector('p');
+      if (p) {
+        li.innerHTML = li.innerHTML.replace(p.outerHTML, p.innerHTML);
+      }
+    });
 
     // Remove empty inline elements
     const isEffectivelyEmpty = (el: Element): boolean => {
@@ -55,16 +52,21 @@ export class ContentManager {
     allTargets.forEach(el => {
       if (isInsideCodeBlock(el)) return;
       if (el.classList.contains('ray-date-time')) return;
+      // Don't clean task list internals
+      if (el.classList.contains('ray-task-checkbox') || el.classList.contains('ray-task-text')) return;
       if (isEffectivelyEmpty(el)) el.remove();
     });
 
-    // Replace unclassed divs with <p>
+    // Replace unclassed divs with <p> (but not callout bodies)
     tempDiv.querySelectorAll('div:not([class])').forEach(div => {
       if (isInsideCodeBlock(div)) return;
       const p = document.createElement('p');
       p.innerHTML = div.innerHTML;
       div.parentNode?.replaceChild(p, div);
     });
+
+    // Serialize task list items → clean output (strip span structure, keep data-checked)
+    serializeTaskLists(tempDiv);
 
     // Unwrap .ray-table-wrapper: output bare <table> for clean HTML
     tempDiv.querySelectorAll('.ray-table-wrapper').forEach(wrapper => {
@@ -83,14 +85,21 @@ export class ContentManager {
       if (pre) {
         pre.setAttribute('data-lang', lang);
         pre.removeAttribute('contenteditable');
+        // Strip hljs syntax classes — output clean text only
+        pre.querySelectorAll('[class]').forEach(el => {
+          if (Array.from(el.classList).some(c => c.startsWith('hljs'))) {
+            const text = document.createTextNode(el.textContent ?? '');
+            el.parentNode?.replaceChild(text, el);
+          }
+        });
         block.parentNode?.replaceChild(pre, block);
       } else {
         block.remove();
       }
     });
 
-    // Strip contenteditable from date-time elements
-    tempDiv.querySelectorAll('.ray-date-time').forEach(el => {
+    // Strip contenteditable from date-time and callout elements
+    tempDiv.querySelectorAll('.ray-date-time, .ray-callout, .ray-callout-icon, .ray-callout-body').forEach(el => {
       el.removeAttribute('contenteditable');
     });
 
@@ -112,32 +121,52 @@ export class ContentManager {
   setContent(html: string): void {
     const temp = document.createElement('div');
     temp.innerHTML = html;
+    this.applyStructure(temp);
+    this.editorArea.innerHTML = temp.innerHTML;
+    temp.remove();
+  }
 
+  /**
+   * Converts clean HTML (getContent output or pasted normalized HTML) into
+   * the editor's live DOM structure: code blocks, table wrappers, task lists,
+   * callout contenteditable restoration.
+   *
+   * Called by setContent() and by the paste handler after normalization.
+   */
+  applyStructure(container: HTMLElement): void {
     // Wrap bare <table> in .ray-table-wrapper for overflow-x scroll
-    temp.querySelectorAll('table').forEach(table => {
-      if (table.closest('.ray-table-wrapper')) return; // already wrapped
+    container.querySelectorAll('table').forEach(table => {
+      if (table.closest('.ray-table-wrapper')) return;
       const wrapper = document.createElement('div');
       wrapper.className = 'ray-table-wrapper';
       table.parentNode?.insertBefore(wrapper, table);
       wrapper.appendChild(table);
     });
 
-    // Rebuild full code block UI from bare <pre data-lang> (getContent output)
-    // Also handles <pre><code> from external HTML
-    temp.querySelectorAll('pre').forEach(pre => {
-      if (pre.closest('.ray-code-block')) return; // already wrapped
+    // Rebuild full code block UI from bare <pre data-lang> or <pre><code>
+    container.querySelectorAll('pre').forEach(pre => {
+      if (pre.closest('.ray-code-block')) return;
       const lang = pre.getAttribute('data-lang') ?? 'plaintext';
       const block = buildCodeBlock(lang, pre.innerHTML);
       pre.parentNode?.replaceChild(block, pre);
     });
 
-    // If already wrapped (editor format), just re-enable contenteditable
-    temp.querySelectorAll('.ray-code-content').forEach(pre => {
+    // Re-enable contenteditable on already-wrapped code blocks
+    container.querySelectorAll('.ray-code-content').forEach(pre => {
       pre.setAttribute('contenteditable', 'true');
       pre.setAttribute('spellcheck', 'false');
     });
 
-    this.editorArea.innerHTML = temp.innerHTML;
-    temp.remove();
+    // Restore task list span structure from clean getContent() output
+    TaskListFeature.restoreFromHTML(container);
+
+    // Restore callout contenteditable
+    container.querySelectorAll<HTMLElement>('.ray-callout').forEach(callout => {
+      callout.contentEditable = 'false';
+      const body = callout.querySelector<HTMLElement>('.ray-callout-body');
+      if (body) body.contentEditable = 'true';
+      const icon = callout.querySelector<HTMLElement>('.ray-callout-icon');
+      if (icon) icon.contentEditable = 'false';
+    });
   }
 }

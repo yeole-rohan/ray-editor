@@ -291,11 +291,17 @@ export class ImageFeature {
     const altVal = this.escapeHtml(originalImg.alt || '');
     const titleVal = this.escapeHtml(originalImg.title || '');
 
+    // Detect existing caption if image is already in a figure
+    const existingFigure = originalImg.closest('figure');
+    const existingCaption = existingFigure?.querySelector('figcaption')?.textContent ?? '';
+    const captionVal = this.escapeHtml(existingCaption);
+
     editorModal.innerHTML = `
       <h3 style="margin:0 0 12px;">Edit Image</h3>
       <canvas id="ray-crop-canvas" style="max-width:100%;border:1px dashed #ccc;margin-bottom:12px;display:block;"></canvas>
       <label style="display:block;margin-bottom:6px;">Alt text<br><input type="text" id="ray-alt-input" value="${altVal}" style="width:100%;padding:6px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;" /></label>
-      <label style="display:block;margin-bottom:12px;">Title<br><input type="text" id="ray-title-input" value="${titleVal}" style="width:100%;padding:6px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;" /></label>
+      <label style="display:block;margin-bottom:6px;">Title<br><input type="text" id="ray-title-input" value="${titleVal}" style="width:100%;padding:6px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;" /></label>
+      <label style="display:block;margin-bottom:12px;">Caption <span style="color:#94a3b8;font-size:12px;">(optional)</span><br><input type="text" id="ray-caption-input" value="${captionVal}" placeholder="Image caption…" style="width:100%;padding:6px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;" /></label>
       <div style="display:flex;gap:8px;">
         <button id="ray-img-save" style="padding:8px 16px;background:#3b82f6;color:white;border:none;border-radius:4px;cursor:pointer;">✅ Save</button>
         <button id="ray-img-cancel" style="padding:8px 16px;background:#eee;border:none;border-radius:4px;cursor:pointer;">Cancel</button>
@@ -322,8 +328,43 @@ export class ImageFeature {
     editorModal.querySelector('#ray-img-save')!.addEventListener('click', () => {
       const alt = (editorModal.querySelector<HTMLInputElement>('#ray-alt-input')!).value;
       const title = (editorModal.querySelector<HTMLInputElement>('#ray-title-input')!).value;
+      const caption = (editorModal.querySelector<HTMLInputElement>('#ray-caption-input')!).value.trim();
+
       originalImg.alt = alt;
       originalImg.title = title;
+
+      // Wrap in <figure> if caption provided; unwrap if caption cleared
+      const existingFigure = originalImg.closest('figure');
+      if (caption) {
+        if (existingFigure) {
+          // Update existing figcaption
+          let fc = existingFigure.querySelector('figcaption');
+          if (!fc) {
+            fc = document.createElement('figcaption');
+            existingFigure.appendChild(fc);
+          }
+          fc.textContent = caption;
+        } else {
+          // Wrap the image wrapper in a figure
+          const imgWrapper = originalImg.closest('[style*="position"]') as HTMLElement ?? originalImg;
+          const figure = document.createElement('figure');
+          imgWrapper.parentNode?.insertBefore(figure, imgWrapper);
+          figure.appendChild(imgWrapper);
+          const fc = document.createElement('figcaption');
+          fc.textContent = caption;
+          figure.appendChild(fc);
+        }
+      } else if (existingFigure && !caption) {
+        // Remove caption if cleared, unwrap figure
+        existingFigure.querySelector('figcaption')?.remove();
+        if (!existingFigure.querySelector('figcaption')) {
+          // No more caption — unwrap figure
+          const parent = existingFigure.parentNode!;
+          while (existingFigure.firstChild) parent.insertBefore(existingFigure.firstChild, existingFigure);
+          parent.removeChild(existingFigure);
+        }
+      }
+
       editorModal.remove();
     });
   }

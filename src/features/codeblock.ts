@@ -60,7 +60,10 @@ export function buildCodeBlock(lang: string, codeHtml: string): HTMLDivElement {
     if (value === lang) opt.selected = true;
     select.appendChild(opt);
   });
-  select.onchange = () => wrapper.setAttribute('data-lang', select.value);
+  select.onchange = () => {
+    wrapper.setAttribute('data-lang', select.value);
+    highlightBlock(code, select.value);
+  };
 
   const deleteBtn = document.createElement('button');
   deleteBtn.className = 'ray-code-delete-btn';
@@ -99,7 +102,67 @@ export function buildCodeBlock(lang: string, codeHtml: string): HTMLDivElement {
   pre.appendChild(code);
   wrapper.appendChild(header);
   wrapper.appendChild(pre);
+
+  // Apply syntax highlighting after a microtask (so the block is in the DOM)
+  if (lang !== 'plaintext') {
+    requestAnimationFrame(() => highlightBlock(code, lang));
+  }
+
   return wrapper;
+}
+
+// ─── Highlight.js lazy loader ─────────────────────────────────────────────
+
+declare global {
+  interface Window {
+    hljs?: {
+      highlight: (code: string, opts: { language: string; ignoreIllegals?: boolean }) => { value: string };
+      getLanguage: (lang: string) => unknown;
+    };
+  }
+}
+
+let hljsLoading = false;
+let hljsLoaded = false;
+const hljsQueue: Array<() => void> = [];
+
+function loadHljs(cb: () => void): void {
+  if (hljsLoaded) { cb(); return; }
+  hljsQueue.push(cb);
+  if (hljsLoading) return;
+  hljsLoading = true;
+
+  // CSS theme
+  if (!document.querySelector('#ray-hljs-css')) {
+    const link = document.createElement('link');
+    link.id = 'ray-hljs-css';
+    link.rel = 'stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
+    document.head.appendChild(link);
+  }
+
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+  script.onload = () => {
+    hljsLoaded = true;
+    hljsQueue.splice(0).forEach(fn => fn());
+  };
+  script.onerror = () => { hljsLoading = false; }; // allow retry
+  document.head.appendChild(script);
+}
+
+export function highlightBlock(codeEl: HTMLElement, lang: string): void {
+  if (lang === 'plaintext' || !lang) return;
+  loadHljs(() => {
+    if (!window.hljs) return;
+    const supported = window.hljs.getLanguage(lang);
+    if (!supported) return;
+    try {
+      const text = codeEl.textContent ?? '';
+      const result = window.hljs.highlight(text, { language: lang, ignoreIllegals: true });
+      codeEl.innerHTML = result.value;
+    } catch { /* ignore */ }
+  });
 }
 
 /**

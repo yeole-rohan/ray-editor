@@ -1,6 +1,6 @@
 {
   "name": "@rohanyeole/ray-editor",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Lightweight, dependency-free WYSIWYG rich text editor. Free alternative to TinyMCE & CKEditor.",
   "main": "dist/ray-editor.cjs.js",
   "module": "dist/ray-editor.esm.js",
