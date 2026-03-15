@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RayEditor — Free WYSIWYG Editor</title>
+  <meta name="description" content="RayEditor is a lightweight, dependency-free WYSIWYG rich text editor. Free alternative to TinyMCE, Quill, and CKEditor with slash commands, dark mode, markdown mode, and a plugin API.">
+
+  <!-- CDN — always latest published version -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rohanyeole/ray-editor/dist/ray-editor.css">
+  <script src="https://cdn.jsdelivr.net/npm/@rohanyeole/ray-editor/dist/ray-editor.umd.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f4f8;
+      --surface: #ffffff;
+      --surface2: #f8fafc;
+      --border: #e2e8f0;
+      --text: #1a202c;
+      --text-muted: #64748b;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --green: #166534;
+      --green-bg: #dcfce7;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+      --radius: 12px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .nav-logo {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--accent);
+      text-decoration: none;
+      letter-spacing: -0.3px;
+    }
+    .nav-version {
+      background: var(--green-bg);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 99px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 4px;
+      margin-left: auto;
+      align-items: center;
+    }
+    .nav-links a {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 6px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-links a:hover { background: var(--border); color: var(--text); }
+    .nav-links a.cta {
+      background: var(--accent);
+      color: white;
+      padding: 5px 14px;
+    }
+    .nav-links a.cta:hover { background: var(--accent-hover); }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 72px 24px 56px;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      background: #ede9fe;
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      color: #0f172a;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero-sub {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 560px;
+      margin: 0 auto 32px;
+      line-height: 1.6;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-outline { background: var(--surface); color: var(--text); border-color: var(--border); }
+    .btn-outline:hover { background: var(--surface2); }
+    .btn-sm { padding: 7px 14px; font-size: 13px; }
+
+    /* ── Pills / chips ── */
+    .pill-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 28px 0 0;
+    }
+    .pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    /* ── Section wrappers ── */
+    .section {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px 64px;
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .section-title {
+      font-size: clamp(20px, 3vw, 28px);
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      margin-bottom: 6px;
+    }
+    .section-desc {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-bottom: 28px;
+      max-width: 600px;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .card-body { padding: 24px; }
+    .card-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface2);
+    }
+    .card-header h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .card-header p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .card + .card { margin-top: 24px; }
+
+    /* ── Feature grid ── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .feature-tile {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .feature-tile-icon { font-size: 22px; }
+    .feature-tile-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .feature-tile-desc { font-size: 12px; color: var(--text-muted); }
+
+    /* ── Controls ── */
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 14px 0 0;
+    }
+    .controls button {
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface2);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+    .controls button:hover { background: var(--border); }
+    .controls button.primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    .controls button.primary:hover { background: var(--accent-hover); }
+    .controls .wc-badge {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 3px 10px;
+    }
+
+    /* ── Output ── */
+    .output {
+      margin-top: 12px;
+      font-family: 'Courier New', Consolas, monospace;
+      font-size: 12px;
+      background: #1e1e2e;
+      color: #cdd6f4;
+      padding: 14px 16px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    /* ── Install box ── */
+    .install-box {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      display: grid;
+      gap: 12px;
+    }
+    .install-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Courier New', Consolas, monospace;
+      font-size: 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 10px 16px;
+    }
+    .install-row .prompt { color: #7c3aed; user-select: none; }
+    .install-row code { color: #a5f3fc; flex: 1; }
+    .copy-btn {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #94a3b8;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.18); color: white; }
+
+    /* ── Comparison table ── */
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-top: 24px;
+    }
+    .comparison-table th, .comparison-table td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .comparison-table th {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      background: var(--surface2);
+    }
+    .comparison-table th:first-child { border-radius: 8px 0 0 0; }
+    .comparison-table th:last-child { border-radius: 0 8px 0 0; }
+    .comparison-table tr:hover td { background: var(--surface2); }
+    .comparison-table .yes { color: #16a34a; font-weight: 600; }
+    .comparison-table .no { color: #dc2626; }
+    .comparison-table .paid { color: var(--text-muted); font-style: italic; }
+    .comparison-table .highlight-col { font-weight: 600; color: var(--accent); }
+
+    /* ── Code snippets ── */
+    .code-block {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .code-block-header {
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 12px;
+      color: #64748b;
+      font-family: monospace;
+    }
+    .code-block pre {
+      padding: 18px 20px;
+      font-size: 13px;
+      font-family: 'Courier New', Consolas, monospace;
+      overflow-x: auto;
+      line-height: 1.7;
+    }
+    .kw { color: #c084fc; }
+    .fn { color: #60a5fa; }
+    .str { color: #a5f3fc; }
+    .cm { color: #4b5563; }
+    .obj { color: #fcd34d; }
+
+    /* ── Tab nav ── */
+    .tab-nav {
+      display: flex;
+      gap: 2px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0;
+      padding: 0 24px;
+      background: var(--surface2);
+    }
+    .tab-nav button {
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.15s;
+    }
+    .tab-nav button.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    footer a { color: var(--text-muted); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (max-width: 600px) {
+      nav { padding: 0 16px; }
+      .hero { padding: 48px 16px 40px; }
+      .section { padding: 0 16px 48px; }
+      .feature-grid { grid-template-columns: 1fr 1fr; }
+      .install-row { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Nav ─────────────────────────────────────────────────────────────────── -->
+  <nav>
+    <a class="nav-logo" href="/">RayEditor</a>
+    <span class="nav-version">v2.0</span>
+    <div class="nav-links">
+      <a href="#demos">Demos</a>
+      <a href="#install">Install</a>
+      <a href="#features">Features</a>
+      <a href="https://github.com/yeole-rohan/ray-editor" target="_blank">GitHub</a>
+      <a href="https://www.npmjs.com/package/@rohanyeole/ray-editor" target="_blank" class="cta">npm</a>
+    </div>
+  </nav>
+
+  <!-- ── Hero ─────────────────────────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero-eyebrow">⚡ Zero dependencies · MIT License</div>
+    <h1>The free rich-text editor<br><span>your app deserves</span></h1>
+    <p class="hero-sub">
+      RayEditor is a lightweight, dependency-free WYSIWYG editor.
+      No commercial license. No vendor lock-in. Just drop it in and start writing.
+    </p>
+    <div class="hero-actions">
+      <a href="#demos" class="btn btn-primary">Try it live</a>
+      <a href="https://github.com/yeole-rohan/ray-editor" target="_blank" class="btn btn-outline">
+        View on GitHub
+      </a>
+    </div>
+    <div class="pill-row">
+      <span class="pill">TypeScript</span>
+      <span class="pill">Slash commands</span>
+      <span class="pill">Dark mode</span>
+      <span class="pill">Markdown mode</span>
+      <span class="pill">Plugin API</span>
+      <span class="pill">ESM · CJS · UMD</span>
+      <span class="pill">React · Vue · Angular · Svelte</span>
+    </div>
+  </section>
+
+  <!-- ── Demos ─────────────────────────────────────────────────────────────────── -->
+  <section class="section" id="demos">
+    <div class="section-label">Interactive demos</div>
+    <div class="section-title">See everything it can do</div>
+    <p class="section-desc">Every demo below runs live in your browser — no build step, no server.</p>
+
+    <!-- Demo 1: Full toolbar -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3>Full-Featured Editor</h3>
+          <p>All toolbar buttons · slash commands · find &amp; replace · markdown shortcuts · word count</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="editor1"></div>
+        <div class="controls">
+          <button class="primary" onclick="showContent1()">Get HTML</button>
+          <button onclick="setContent1()">Set Content</button>
+          <button onclick="toggleTheme1()">Toggle Dark Mode</button>
+          <button onclick="toggleReadOnly1()">Toggle Read-Only</button>
+          <span class="wc-badge">Words: <strong id="wc1">—</strong></span>
+        </div>
+        <pre id="output1" class="output"></pre>
+      </div>
+    </div>
+
+    <!-- Demo 2: Markdown mode -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3>Markdown Mode</h3>
+          <p>Toggle between rich text and raw Markdown — bidirectional, lossless conversion</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="editor2"></div>
+        <div class="controls">
+          <button class="primary" onclick="showContent2()">Get HTML</button>
+          <button onclick="toggleTheme2()">Toggle Dark Mode</button>
+        </div>
+        <pre id="output2" class="output"></pre>
+      </div>
+    </div>
+
+    <!-- Demo 3: Plugin API -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3>Plugin API Demo</h3>
+          <p>Custom plugin that logs word count on every change — install any plugin with <code>editor.use(plugin)</code></p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="editor3"></div>
+        <div class="controls">
+          <button class="primary" onclick="showContent3()">Get HTML</button>
+          <button onclick="toggleTheme3()">Toggle Dark Mode</button>
+          <span class="wc-badge">Plugin event count: <strong id="pluginEvents">0</strong></span>
+        </div>
+        <pre id="output3" class="output"></pre>
+      </div>
+    </div>
+
+    <!-- Demo 4: Minimal toolbar -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3>Minimal Toolbar</h3>
+          <p>Custom toolbar with only essential formatting — pick exactly which buttons you need</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="editor4"></div>
+        <div class="controls">
+          <button class="primary" onclick="showContent4()">Get HTML</button>
+          <button onclick="toggleTheme4()">Toggle Dark Mode</button>
+        </div>
+        <pre id="output4" class="output"></pre>
+      </div>
+    </div>
+
+    <!-- Demo 5: Read-only -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3>Read-Only / Preview Mode</h3>
+          <p>Render saved content in read-only mode — toggle editing programmatically at any time</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="editor5"></div>
+        <div class="controls">
+          <button onclick="toggleReadOnly5()" id="roBtn5">Enable Editing</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Install ─────────────────────────────────────────────────────────────── -->
+  <section class="section" id="install">
+    <div class="section-label">Getting started</div>
+    <div class="section-title">Up and running in 60 seconds</div>
+    <p class="section-desc">Choose npm for bundled apps or CDN for quick prototypes.</p>
+
+    <div class="card">
+      <div class="tab-nav">
+        <button class="active" onclick="showTab('npm')">npm / yarn</button>
+        <button onclick="showTab('cdn')">CDN</button>
+        <button onclick="showTab('esm')">ESM module</button>
+      </div>
+
+      <div id="tab-npm" class="tab-panel active">
+        <div class="card-body">
+          <div class="install-box">
+            <div class="install-row">
+              <span class="prompt">$</span>
+              <code>npm install @rohanyeole/ray-editor</code>
+              <button class="copy-btn" onclick="copy('npm install @rohanyeole/ray-editor')">copy</button>
+            </div>
+          </div>
+          <div class="code-block" style="margin-top:16px">
+            <div class="code-block-header">main.js</div>
+            <pre><span class="kw">import</span> { RayEditor } <span class="kw">from</span> <span class="str">'@rohanyeole/ray-editor'</span>;
+<span class="kw">import</span> <span class="str">'@rohanyeole/ray-editor/css'</span>;
+
+<span class="kw">const</span> editor = <span class="kw">new</span> <span class="fn">RayEditor</span>(<span class="str">'editor'</span>, {
+  theme: <span class="str">'light'</span>,
+  markdownShortcuts: <span class="kw">true</span>,
+  slashCommands: <span class="kw">true</span>,
+  wordCount: <span class="kw">true</span>,
+  onChange: (html) => <span class="fn">console</span>.<span class="fn">log</span>(html),
+});</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-cdn" class="tab-panel">
+        <div class="card-body">
+          <div class="code-block">
+            <div class="code-block-header">index.html</div>
+            <pre><span class="cm">&lt;!-- CSS --&gt;</span>
+&lt;link rel=<span class="str">"stylesheet"</span> href=<span class="str">"https://cdn.jsdelivr.net/npm/@rohanyeole/ray-editor/dist/ray-editor.css"</span>&gt;
+
+<span class="cm">&lt;!-- UMD bundle --&gt;</span>
+&lt;script src=<span class="str">"https://cdn.jsdelivr.net/npm/@rohanyeole/ray-editor/dist/ray-editor.umd.js"</span>&gt;&lt;/script&gt;
+
+&lt;div id=<span class="str">"editor"</span>&gt;&lt;/div&gt;
+
+&lt;script&gt;
+  <span class="kw">const</span> editor = <span class="kw">new</span> RayEditor.<span class="fn">RayEditor</span>(<span class="str">'editor'</span>, {
+    theme: <span class="str">'light'</span>,
+    slashCommands: <span class="kw">true</span>,
+  });
+&lt;/script&gt;</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-esm" class="tab-panel">
+        <div class="card-body">
+          <div class="code-block">
+            <div class="code-block-header">index.html (ESM native)</div>
+            <pre>&lt;script type=<span class="str">"module"</span>&gt;
+  <span class="kw">import</span> { RayEditor } <span class="kw">from</span> <span class="str">'https://cdn.jsdelivr.net/npm/@rohanyeole/ray-editor/dist/ray-editor.esm.js'</span>;
+
+  <span class="kw">const</span> editor = <span class="kw">new</span> <span class="fn">RayEditor</span>(<span class="str">'editor'</span>, {
+    theme: <span class="str">'auto'</span>, <span class="cm">// follows OS preference</span>
+    markdownShortcuts: <span class="kw">true</span>,
+  });
+&lt;/script&gt;</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Features ─────────────────────────────────────────────────────────────── -->
+  <section class="section" id="features">
+    <div class="section-label">What's included</div>
+    <div class="section-title">Everything. Out of the box. Free.</div>
+    <p class="section-desc">Features that competitors lock behind paid tiers are free in RayEditor.</p>
+
+    <div class="feature-grid">
+      <div class="feature-tile">
+        <div class="feature-tile-icon">⚡</div>
+        <div class="feature-tile-title">Zero dependencies</div>
+        <div class="feature-tile-desc">Pure TypeScript — no jQuery, no lodash, no bloat</div>
+      </div>
+      <div class="feature-tile">
+        <div class="feature-tile-icon">🎨</div>
+        <div class="feature-tile-title">Dark mode</div>
+        <div class="feature-tile-desc">Light, dark, or auto (follows OS). CSS variables for full theming</div>
+      </div>
+      <div class="feature-tile">
+        <div class="feature-tile-icon">⌨️</div>
+        <div class="feature-tile-title">Slash commands</div>
+        <div class="feature-tile-desc">Notion-style / palette with custom commands via API</div>
+      </div>
+      <div class="feature-tile">
+        <div class="feature-tile-icon">📝</div>
+        <div class="feature-tile-title">Markdown mode</div>
+        <div class="feature-tile-desc">Bidirectional rich text ↔ Markdown, import/export</div>
+      </div>
+      <div class="feature-tile">
+        <div class="feature-tile-icon">🔍</div>
+        <div class="feature-tile-title">Find &amp; Replace</div>
+        <div class="feature-tile-desc">Ctrl+F / Ctrl+H with match highlighting — free (locked behind paywall in TinyMCE)</div>
+      </div>
+      <div class="feature-tile">
+        <div class="feature-tile-icon">🔌</div>
+        <div class="feature-tile-title">Plugin API</div>
+        <div class="feature-tile-desc"><code>editor.use(plugin)</code> — register commands, listen to events</div>
+      </div>
+      <div class="feature-tile">
+        <div class="feature-tile-icon">📊</div>
+        <div class="feature-tile-title">Tables</div>
+        <div class="feature-tile-desc">Insert, add/remove rows &amp; columns, clean HTML output</div>
+      </div>
+      <div class="feature-tile">
+        <div class="feature-tile-icon">💻</div>
+        <div class="feature-tile-title">Code blocks</div>
+        <div class="feature-tile-desc">Inline code + fenced code blocks with language labels</div>
+      </div>
+      <div class="feature-tile">
+        <div class="feature-tile-icon">📦</div>
+        <div class="feature-tile-title">ESM · CJS · UMD</div>
+        <div class="feature-tile-desc">Modern bundler support + CDN-ready UMD build</div>
+      </div>
+      <div class="feature-tile">
+        <div class="feature-tile-icon">🧩</div>
+        <div class="feature-tile-title">Framework wrappers</div>
+        <div class="feature-tile-desc">React, Vue 3, Angular, Svelte components ready to use</div>
+      </div>
+      <div class="feature-tile">
+        <div class="feature-tile-icon">🔢</div>
+        <div class="feature-tile-title">Word count</div>
+        <div class="feature-tile-desc">Live word &amp; character count with <code>getWordCount()</code> API</div>
+      </div>
+      <div class="feature-tile">
+        <div class="feature-tile-icon">🔡</div>
+        <div class="feature-tile-title">TypeScript</div>
+        <div class="feature-tile-desc">Full .d.ts types shipped — autocomplete in any IDE</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Comparison ─────────────────────────────────────────────────────────────── -->
+  <section class="section" id="compare">
+    <div class="section-label">Editor comparison</div>
+    <div class="section-title">Why RayEditor?</div>
+    <p class="section-desc">The only free editor with slash commands, markdown mode, find/replace, and a plugin API all together.</p>
+
+    <div class="card">
+      <div class="card-body" style="padding:0; overflow-x:auto;">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th class="highlight-col">RayEditor</th>
+              <th>TinyMCE (free)</th>
+              <th>Quill.js</th>
+              <th>CKEditor 5</th>
+              <th>Trix</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Zero dependencies</td><td class="yes highlight-col">✅</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td><td class="yes">✅</td></tr>
+            <tr><td>TypeScript types</td><td class="yes highlight-col">✅</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">✅</td><td class="no">❌</td></tr>
+            <tr><td>Dark mode (free)</td><td class="yes highlight-col">✅</td><td class="paid">Paid</td><td class="no">❌</td><td class="paid">Paid</td><td class="no">❌</td></tr>
+            <tr><td>Slash commands</td><td class="yes highlight-col">✅</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td></tr>
+            <tr><td>Markdown mode</td><td class="yes highlight-col">✅</td><td class="paid">Paid</td><td class="no">❌</td><td class="yes">✅</td><td class="no">❌</td></tr>
+            <tr><td>Find &amp; Replace (free)</td><td class="yes highlight-col">✅</td><td class="paid">Paid</td><td class="no">❌</td><td class="paid">Paid</td><td class="no">❌</td></tr>
+            <tr><td>Plugin / Extension API</td><td class="yes highlight-col">✅</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">✅</td><td class="no">❌</td></tr>
+            <tr><td>Tables (free)</td><td class="yes highlight-col">✅</td><td class="paid">Paid</td><td class="no">❌</td><td class="yes">✅</td><td class="no">❌</td></tr>
+            <tr><td>Word count (free)</td><td class="yes highlight-col">✅</td><td class="paid">Paid</td><td class="no">❌</td><td class="yes">✅</td><td class="no">❌</td></tr>
+            <tr><td>Mention (@) support</td><td class="yes highlight-col">✅</td><td class="no">❌</td><td class="no">❌</td><td class="yes">✅</td><td class="no">❌</td></tr>
+            <tr><td>MIT License</td><td class="yes highlight-col">✅</td><td class="no">❌ (GPLv2)</td><td class="yes">✅</td><td class="paid">Paid</td><td class="yes">✅</td></tr>
+            <tr><td>React / Vue / Angular</td><td class="yes highlight-col">✅</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">✅</td><td class="no">❌</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── API Snippets ─────────────────────────────────────────────────────────── -->
+  <section class="section" id="api">
+    <div class="section-label">API Reference</div>
+    <div class="section-title">Clean, predictable API</div>
+    <p class="section-desc">Everything you need to get, set, and extend the editor.</p>
+
+    <div class="card">
+      <div class="code-block" style="border-radius:0">
+        <div class="code-block-header">Core API</div>
+        <pre><span class="kw">const</span> editor = <span class="kw">new</span> <span class="fn">RayEditor</span>(<span class="str">'elementId'</span>, options);
+
+<span class="cm">// Content</span>
+editor.<span class="fn">getContent</span>();            <span class="cm">// → clean HTML string</span>
+editor.<span class="fn">setContent</span>(html);       <span class="cm">// set HTML programmatically</span>
+
+<span class="cm">// Theme</span>
+editor.<span class="fn">setTheme</span>(<span class="str">'dark'</span>);        <span class="cm">// 'light' | 'dark' | 'auto'</span>
+
+<span class="cm">// Read-only</span>
+editor.<span class="fn">setReadOnly</span>(<span class="kw">true</span>);      <span class="cm">// lock/unlock editing</span>
+
+<span class="cm">// Word count</span>
+editor.<span class="fn">getWordCount</span>();         <span class="cm">// → { words: number, chars: number }</span>
+
+<span class="cm">// Events</span>
+editor.<span class="fn">on</span>(<span class="str">'content:change'</span>, (html) => {});
+editor.<span class="fn">off</span>(<span class="str">'content:change'</span>, handler);
+
+<span class="cm">// Plugins</span>
+editor.<span class="fn">use</span>({ name: <span class="str">'my-plugin'</span>, <span class="fn">install</span>(ed) { <span class="cm">/* ... */</span> } });
+
+<span class="cm">// Slash commands</span>
+editor.<span class="fn">registerSlashCommand</span>({
+  name: <span class="str">"Today's Date"</span>, icon: <span class="str">'📅'</span>,
+  description: <span class="str">'Insert today\'s date'</span>,
+  action: () => document.<span class="fn">execCommand</span>(<span class="str">'insertText'</span>, <span class="kw">false</span>, <span class="kw">new</span> <span class="fn">Date</span>().<span class="fn">toLocaleDateString</span>()),
+});
+
+<span class="cm">// Cleanup</span>
+editor.<span class="fn">destroy</span>();</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ─────────────────────────────────────────────────────────────────── -->
+  <footer>
+    <p>
+      RayEditor · MIT License ·
+      <a href="https://github.com/yeole-rohan/ray-editor" target="_blank">GitHub</a> ·
+      <a href="https://www.npmjs.com/package/@rohanyeole/ray-editor" target="_blank">npm</a> ·
+      Built by <a href="https://github.com/yeole-rohan" target="_blank">Rohan Yeole</a>
+    </p>
+  </footer>
+
+  <script>
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Editor 1: Full toolbar with all features
+    // ─────────────────────────────────────────────────────────────────────────────
+    const editor1 = new RayEditor.RayEditor('editor1', {
+      theme: 'light',
+      wordCount: true,
+      slashCommands: true,
+      findReplace: true,
+      markdownShortcuts: true,
+      toolbar: [
+        ['bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript'],
+        ['headings', 'blockquote'],
+        ['orderedList', 'unorderedList', 'indent', 'outdent'],
+        ['textColor', 'backgroundColor', 'fonts', 'textAlignment'],
+        ['link', 'imageUpload', 'table', 'emoji', 'insertDateTime', 'hr'],
+        ['codeBlock', 'codeInline'],
+        ['markdownToggle', 'importMarkdown', 'exportMarkdown'],
+        ['undo', 'redo', 'removeFormat', 'showSource', 'fullscreen', 'print'],
+      ],
+      onChange: () => updateWordCount1(),
+    });
+
+    editor1.setContent(`
+      <h2>Welcome to RayEditor</h2>
+      <p>A <strong>lightweight</strong>, <em>dependency-free</em> WYSIWYG editor — free alternative to TinyMCE, Quill, and CKEditor.</p>
+      <ul>
+        <li>Zero dependencies</li>
+        <li>Full TypeScript types</li>
+        <li>Plugin API &amp; slash commands — type <strong>/</strong> on a new line</li>
+        <li>Dark mode + CSS variable theming</li>
+        <li>Bidirectional Markdown mode</li>
+      </ul>
+      <table>
+        <thead><tr><th>Feature</th><th>RayEditor</th><th>TinyMCE Free</th></tr></thead>
+        <tbody>
+          <tr><td>Zero dependencies</td><td>✅</td><td>❌</td></tr>
+          <tr><td>Dark mode (free)</td><td>✅</td><td>Paid</td></tr>
+          <tr><td>Markdown mode</td><td>✅</td><td>Paid</td></tr>
+          <tr><td>Find &amp; Replace (free)</td><td>✅</td><td>Paid</td></tr>
+        </tbody>
+      </table>
+      <p>Press <code>Ctrl+F</code> to open Find &amp; Replace. Type <code>/</code> on a blank line for slash commands.</p>
+    `);
+
+    editor1.use({
+      name: 'word-count-logger',
+      install(ed) {
+        ed.on('content:change', () => {
+          const { words } = ed.getWordCount?.() ?? { words: 0 };
+          console.log('[Plugin] Word count:', words);
+        });
+      },
+    });
+
+    editor1.registerSlashCommand({
+      name: "Today's Date",
+      icon: '📅',
+      description: "Insert today's date",
+      action: () => document.execCommand('insertText', false, new Date().toLocaleDateString()),
+    });
+
+    editor1.registerSlashCommand({
+      name: "Divider",
+      icon: '—',
+      description: "Insert a horizontal rule",
+      action: () => document.execCommand('insertHorizontalRule'),
+    });
+
+    let isDark1 = false, isReadOnly1 = false;
+    function showContent1() {
+      const el = document.getElementById('output1');
+      el.style.display = 'block';
+      el.textContent = editor1.getContent();
+    }
+    function setContent1() {
+      editor1.setContent(`
+        <h1>Programmatic Content</h1>
+        <p>This was set using <code>editor.setContent()</code>. The HTML is clean — no editor-specific classes.</p>
+        <table>
+          <thead><tr><th>Column A</th><th>Column B</th><th>Column C</th></tr></thead>
+          <tbody>
+            <tr><td>Row 1, A</td><td>Row 1, B</td><td>Row 1, C</td></tr>
+            <tr><td>Row 2, A</td><td>Row 2, B</td><td>Row 2, C</td></tr>
+          </tbody>
+        </table>
+        <p>Click <strong>Get HTML</strong> to inspect the clean output.</p>
+      `);
+    }
+    function toggleTheme1() {
+      isDark1 = !isDark1;
+      editor1.setTheme(isDark1 ? 'dark' : 'light');
+    }
+    function toggleReadOnly1() {
+      isReadOnly1 = !isReadOnly1;
+      editor1.setReadOnly(isReadOnly1);
+    }
+    function updateWordCount1() {
+      const { words } = editor1.getWordCount();
+      document.getElementById('wc1').textContent = words;
+    }
+    updateWordCount1();
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Editor 2: Markdown mode showcase
+    // ─────────────────────────────────────────────────────────────────────────────
+    const editor2 = new RayEditor.RayEditor('editor2', {
+      theme: 'light',
+      markdownShortcuts: true,
+      toolbar: [
+        ['bold', 'italic', 'underline', 'strikethrough'],
+        ['headings', 'blockquote'],
+        ['orderedList', 'unorderedList'],
+        ['codeBlock', 'codeInline', 'link'],
+        ['markdownToggle', 'importMarkdown', 'exportMarkdown'],
+        ['undo', 'redo', 'removeFormat'],
+      ],
+    });
+
+    editor2.setContent(`
+      <h2>Markdown Mode</h2>
+      <p>Click the <strong>Markdown</strong> button in the toolbar to switch between rich text and raw Markdown.</p>
+      <p>Markdown shortcuts work in rich text mode too — try typing <code>**bold**</code> and pressing space, or start a line with <code>## </code> for a heading.</p>
+      <blockquote>This is a blockquote. In Markdown mode it appears as <code>&gt; This is a blockquote.</code></blockquote>
+      <pre data-lang="javascript">// Code blocks are preserved in Markdown
+function greet(name) {
+  return 'Hello, ' + name;
+}</pre>
+    `);
+
+    let isDark2 = false;
+    function showContent2() {
+      const el = document.getElementById('output2');
+      el.style.display = 'block';
+      el.textContent = editor2.getContent();
+    }
+    function toggleTheme2() {
+      isDark2 = !isDark2;
+      editor2.setTheme(isDark2 ? 'dark' : 'light');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Editor 3: Plugin API
+    // ─────────────────────────────────────────────────────────────────────────────
+    let pluginEventCount = 0;
+    const editor3 = new RayEditor.RayEditor('editor3', {
+      theme: 'light',
+      wordCount: true,
+      toolbar: [
+        ['bold', 'italic', 'underline'],
+        ['headings'],
+        ['orderedList', 'unorderedList'],
+        ['undo', 'redo'],
+      ],
+    });
+
+    editor3.use({
+      name: 'event-counter',
+      install(ed) {
+        ed.on('content:change', () => {
+          pluginEventCount++;
+          document.getElementById('pluginEvents').textContent = pluginEventCount;
+        });
+      },
+    });
+
+    editor3.setContent(`
+      <h3>Plugin API</h3>
+      <p>This editor has a custom plugin installed via <code>editor.use(plugin)</code>.</p>
+      <p>The plugin listens to <code>content:change</code> events. Every time you type, the event counter above increments.</p>
+      <p>Plugins can register commands, add toolbar buttons, intercept content, and more.</p>
+    `);
+
+    let isDark3 = false;
+    function showContent3() {
+      const el = document.getElementById('output3');
+      el.style.display = 'block';
+      el.textContent = editor3.getContent();
+    }
+    function toggleTheme3() {
+      isDark3 = !isDark3;
+      editor3.setTheme(isDark3 ? 'dark' : 'light');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Editor 4: Minimal toolbar
+    // ─────────────────────────────────────────────────────────────────────────────
+    const editor4 = new RayEditor.RayEditor('editor4', {
+      theme: 'light',
+      markdownShortcuts: true,
+      toolbar: [
+        ['bold', 'italic', 'underline', 'strikethrough'],
+        ['headings', 'blockquote'],
+        ['orderedList', 'unorderedList'],
+        ['link', 'codeInline'],
+        ['undo', 'redo'],
+      ],
+    });
+
+    editor4.setContent('<p>This editor has a <strong>minimal toolbar</strong> — only the most common formatting tools. Each editor instance is fully independent with its own state, theme, and toolbar.</p>');
+
+    let isDark4 = false;
+    function showContent4() {
+      const el = document.getElementById('output4');
+      el.style.display = 'block';
+      el.textContent = editor4.getContent();
+    }
+    function toggleTheme4() {
+      isDark4 = !isDark4;
+      editor4.setTheme(isDark4 ? 'dark' : 'light');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Editor 5: Read-only
+    // ─────────────────────────────────────────────────────────────────────────────
+    const editor5 = new RayEditor.RayEditor('editor5', {
+      theme: 'light',
+      readOnly: true,
+      toolbar: [['bold', 'italic', 'underline'], ['link']],
+    });
+
+    editor5.setContent(`
+      <h3>Read-Only Preview</h3>
+      <p>This editor is in <strong>read-only</strong> mode — perfect for rendering saved content as a preview.
+         Click <em>Enable Editing</em> below to switch it to editable mode programmatically.</p>
+      <blockquote>Call <code>editor.setReadOnly(false)</code> to unlock editing at any time. Each instance is fully isolated.</blockquote>
+      <ul>
+        <li>Read-only mode hides the toolbar and disables contenteditable</li>
+        <li>Content renders identically to the editable mode</li>
+        <li>Great for CMS preview panels</li>
+      </ul>
+    `);
+
+    let isReadOnly5 = true;
+    function toggleReadOnly5() {
+      isReadOnly5 = !isReadOnly5;
+      editor5.setReadOnly(isReadOnly5);
+      document.getElementById('roBtn5').textContent = isReadOnly5 ? 'Enable Editing' : 'Back to Read-Only';
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Tab switcher
+    // ─────────────────────────────────────────────────────────────────────────────
+    function showTab(id) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-nav button').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + id).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Copy helper
+    // ─────────────────────────────────────────────────────────────────────────────
+    function copy(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        event.target.textContent = 'copied!';
+        setTimeout(() => event.target.textContent = 'copy', 1500);
+      });
+    }
+  </script>
+</body>
+</html>
