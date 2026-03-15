@@ -210,7 +210,7 @@ const editor = new RayEditor('editor', {
 | `italic` | Italic (`Ctrl+I`) |
 | `underline` | Underline (`Ctrl+U`) |
 | `strikethrough` | Strikethrough |
-| `highlight` | Highlight text with `<mark>` ✨ v2.0.5 |
+| `highlight` | Highlight text with `<mark>` ✨ v2.0.6 |
 | `superscript` | Superscript (x²) |
 | `subscript` | Subscript (x₂) |
 | `uppercase` | Transform to uppercase |
@@ -218,14 +218,14 @@ const editor = new RayEditor('editor', {
 | `toggleCase` | Toggle case |
 | `textColor` | Text color picker |
 | `backgroundColor` | Background color picker |
-| `fontSize` | Font size dropdown (10–64 px) ✨ v2.0.5 |
+| `fontSize` | Font size dropdown (10–64 px) ✨ v2.0.6 |
 | `fonts` | Font family dropdown |
 | `headings` | Heading dropdown (H1–H6, Blockquote, Paragraph) |
 | `blockquote` | Blockquote |
-| `callout` | Callout block picker (Info / Warning / Success / Error) ✨ v2.0.5 |
+| `callout` | Callout block picker (Info / Warning / Success / Error) ✨ v2.0.6 |
 | `orderedList` | Ordered list |
 | `unorderedList` | Unordered list |
-| `taskList` | Interactive checkbox task list ✨ v2.0.5 |
+| `taskList` | Interactive checkbox task list ✨ v2.0.6 |
 | `indent` | Indent |
 | `outdent` | Outdent |
 | `textAlignment` | Alignment dropdown (Left/Center/Right/Justify) |
@@ -237,7 +237,7 @@ const editor = new RayEditor('editor', {
 | `fileUpload` | Upload & insert file link (requires `fileUpload.fileUploadUrl`) |
 | `table` | Insert table (grid picker) — click inside any cell for the floating context toolbar |
 | `emoji` | Emoji picker |
-| `specialChars` | Special characters grid — 90+ symbols in 6 categories ✨ v2.0.5 |
+| `specialChars` | Special characters grid — 90+ symbols in 6 categories ✨ v2.0.6 |
 | `insertDateTime` | Date/time picker popup |
 | `undo` | Undo (`Ctrl+Z`) |
 | `redo` | Redo (`Ctrl+Y`) |
@@ -534,7 +534,7 @@ editor.toolbarElement: HTMLElement // the toolbar div
 
 ---
 
-## Task Lists ✨ v2.0.5
+## Task Lists ✨ v2.0.6
 
 Add `taskList` to your toolbar to insert interactive checkbox lists. Checkboxes are clickable inside the editor. `getContent()` outputs clean, portable HTML:
 
@@ -549,7 +549,7 @@ Add `taskList` to your toolbar to insert interactive checkbox lists. Checkboxes 
 
 ---
 
-## Callout Blocks ✨ v2.0.5
+## Callout Blocks ✨ v2.0.6
 
 Add `callout` to your toolbar. A picker lets you choose from four types:
 
@@ -571,7 +571,7 @@ The callout body is fully editable rich text. Clean HTML output:
 
 ---
 
-## Paste Normalization ✨ v2.0.5
+## Paste Normalization ✨ v2.0.6
 
 HTML pasted from Word, Google Docs, GitHub, Stack Overflow, or any webpage is automatically cleaned. The pipeline:
 
@@ -586,7 +586,7 @@ HTML pasted from Word, Google Docs, GitHub, Stack Overflow, or any webpage is au
 
 ---
 
-## Special Characters ✨ v2.0.5
+## Special Characters ✨ v2.0.6
 
 Add `specialChars` to your toolbar. A popup grid of 90+ symbols in 6 categories: punctuation, currency, math, arrows, Greek, and miscellaneous. Click any symbol to insert it at the cursor.
 
