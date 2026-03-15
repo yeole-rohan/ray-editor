@@ -38,7 +38,7 @@ jobs:
           rsync -avz --delete \
             --exclude '/vanilla/' \
             examples/ \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/ray-editor/
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_TARGET_DIR }}
 
       - name: Reload Nginx
         run: |
