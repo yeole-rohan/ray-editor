@@ -20,6 +20,8 @@ export type ToolbarItem =
   | 'link' | 'table'
   // Mentions
   | 'mentions'
+  // Markdown
+  | 'markdownToggle' | 'importMarkdown' | 'exportMarkdown'
   // Utility
   | 'undo' | 'redo' | 'showSource' | 'fullscreen' | 'print'
   | 'fonts' | 'overflowMenu' | 'wordCount';
@@ -128,6 +130,7 @@ export const DEFAULT_TOOLBAR: ToolbarGroup[] = [
   ['codeBlock', 'codeInline'],
   ['link', 'imageUpload', 'fileUpload', 'table'],
   ['emoji', 'insertDateTime'],
+  ['markdownToggle', 'importMarkdown', 'exportMarkdown'],
   ['undo', 'redo', 'removeFormat'],
   ['showSource', 'fullscreen', 'print'],
 ];
