@@ -1,4 +1,5 @@
 import { SelectionManager } from '../core/selection';
+import { insertBlockAtCursor } from '../core/dom-utils';
 
 /**
  * Table insertion, grid picker, floating context toolbar, and keyboard navigation.
@@ -107,20 +108,14 @@ export class TableFeature {
 
     const sel = window.getSelection();
     const range = sel?.rangeCount ? sel.getRangeAt(0) : null;
-    if (range) {
-      range.deleteContents();
-      range.insertNode(wrapper);
-      // Move range after the inserted wrapper
-      range.setStartAfter(wrapper);
-      range.collapse(true);
+    if (range && this.editorArea.contains(range.commonAncestorContainer)) {
+      insertBlockAtCursor(this.editorArea, range, wrapper);
     } else {
+      const spacer = document.createElement('p');
+      spacer.innerHTML = '<br>';
       this.editorArea.appendChild(wrapper);
+      this.editorArea.appendChild(spacer);
     }
-
-    // Paragraph after table so user can exit
-    const newLine = document.createElement('p');
-    newLine.innerHTML = '<br>';
-    wrapper.after(newLine);
 
     // Place cursor in first cell
     const firstCell = table.querySelector('td');

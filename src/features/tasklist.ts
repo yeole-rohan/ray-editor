@@ -1,3 +1,5 @@
+import { insertBlockAtCursor } from '../core/dom-utils';
+
 /**
  * Task / to-do list feature.
  *
@@ -40,18 +42,9 @@ export class TaskListFeature {
     const sel = window.getSelection();
     if (sel?.rangeCount) {
       const range = sel.getRangeAt(0);
+      if (!this.editorArea.contains(range.commonAncestorContainer)) return;
 
-      let blockNode: Node | null = range.commonAncestorContainer;
-      while (blockNode && blockNode.parentNode !== this.editorArea) {
-        blockNode = blockNode.parentNode;
-      }
-
-      if (blockNode && blockNode.parentNode === this.editorArea) {
-        (blockNode as Element).after(ul);
-      } else {
-        range.deleteContents();
-        range.insertNode(ul);
-      }
+      insertBlockAtCursor(this.editorArea, range, ul, false);
 
       // Place cursor after the checkbox span so the user can start typing
       const span = item.querySelector('.ray-task-checkbox');

@@ -9,6 +9,7 @@ import type {
 } from './types/plugin';
 import { DEFAULT_TOOLBAR } from './types/options';
 import { applySanitizedHTML, sanitizeUrl } from './core/sanitize';
+import { insertBlockAtCursor } from './core/dom-utils';
 import { normalizePastedHTML } from './core/paste-normalizer';
 import { EventBus } from './core/events';
 import { SelectionManager } from './core/selection';
@@ -81,6 +82,7 @@ export class RayEditor implements RayEditorInstance {
 
   // State
   private isSourceMode = false;
+  private _autoSaveTimer: ReturnType<typeof setInterval> | null = null;
   private sourceTextarea: HTMLTextAreaElement | null = null;
   private isReadOnly = false;
   private destroyed = false;
@@ -244,6 +246,14 @@ export class RayEditor implements RayEditorInstance {
       });
     }
 
+    // Auto-save
+    if (this.options.autoSave) {
+      const interval = this.options.autoSave.interval ?? 30000;
+      this._autoSaveTimer = setInterval(() => {
+        this.options.autoSave!.onSave(this.getContent());
+      }, interval);
+    }
+
     // Initial history entry
     this.historyManager.push(this.editorElement.innerHTML);
 
@@ -400,6 +410,7 @@ export class RayEditor implements RayEditorInstance {
     this.emojiFeature?.destroy();
     this.fontSizeFeature?.destroy();
     this.markdownFeature?.destroy();
+    if (this._autoSaveTimer !== null) clearInterval(this._autoSaveTimer);
     this.eventBus.destroy();
 
     this.wrapper.remove();
@@ -575,6 +586,16 @@ export class RayEditor implements RayEditorInstance {
       case 'fontSize': {
         const fsBtn = this.toolbarElement.querySelector<HTMLElement>('.ray-btn-fontSize');
         if (fsBtn) this.fontSizeFeature.show(fsBtn);
+        break;
+      }
+      case 'spellCheck': {
+        const isOn = this.editorElement.spellcheck;
+        this.editorElement.spellcheck = !isOn;
+        const scBtn = this.toolbarElement.querySelector<HTMLElement>('.ray-btn-spellCheck');
+        if (scBtn) {
+          scBtn.classList.toggle('active', !isOn);
+          scBtn.setAttribute('aria-pressed', String(!isOn));
+        }
         break;
       }
     }
@@ -797,20 +818,10 @@ export class RayEditor implements RayEditorInstance {
       blockNode = blockNode.parentNode;
     }
 
-    if (blockNode && blockNode.parentNode === this.editorElement) {
-      (blockNode as Element).after(hr, paragraph);
-    } else {
-      // Fallback: insert at cursor
-      range.collapse(true);
-      range.deleteContents();
-      const frag = document.createDocumentFragment();
-      frag.appendChild(hr);
-      frag.appendChild(paragraph);
-      range.insertNode(frag);
-    }
+    const spacer = insertBlockAtCursor(this.editorElement, range, hr);
 
     const newRange = document.createRange();
-    newRange.setStart(paragraph, 0);
+    newRange.setStart(spacer, 0);
     newRange.collapse(true);
     sel.removeAllRanges();
     sel.addRange(newRange);

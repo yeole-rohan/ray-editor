@@ -1,8 +1,6 @@
 /**
  * Callout / alert box blocks.
  *
- * Four variants: info, warning, success, error.
- *
  * DOM structure (inside editor):
  *   <div class="ray-callout ray-callout-info">
  *     <span class="ray-callout-icon" contenteditable="false">ℹ️</span>
@@ -11,14 +9,19 @@
  *
  * getContent() passes this through as-is — clean semantic HTML.
  */
+import { insertBlockAtCursor } from '../core/dom-utils';
 
-export type CalloutType = 'info' | 'warning' | 'success' | 'error';
+export type CalloutType = 'info' | 'warning' | 'success' | 'error' | 'tip' | 'note' | 'important' | 'caution';
 
 const CALLOUT_ICONS: Record<CalloutType, string> = {
   info: 'ℹ️',
   warning: '⚠️',
   success: '✅',
   error: '❌',
+  tip: '💡',
+  note: '📝',
+  important: '🔔',
+  caution: '🔥',
 };
 
 const CALLOUT_LABELS: Record<CalloutType, string> = {
@@ -26,6 +29,10 @@ const CALLOUT_LABELS: Record<CalloutType, string> = {
   warning: 'Warning',
   success: 'Success',
   error: 'Error',
+  tip: 'Tip',
+  note: 'Note',
+  important: 'Important',
+  caution: 'Caution',
 };
 
 export class CalloutFeature {
@@ -81,6 +88,12 @@ export class CalloutFeature {
   insertCallout(type: CalloutType): void {
     const sel = window.getSelection();
 
+    // Bail out if the selection is not inside the editor area
+    if (sel?.rangeCount) {
+      const range = sel.getRangeAt(0);
+      if (!this.editorArea.contains(range.commonAncestorContainer)) return;
+    }
+
     // Capture selected text/HTML before altering the range
     let selectedHtml = '';
     if (sel?.rangeCount && !sel.isCollapsed) {
@@ -113,31 +126,15 @@ export class CalloutFeature {
     callout.appendChild(icon);
     callout.appendChild(body);
 
-    const spacerAfter = document.createElement('p');
-    spacerAfter.innerHTML = '<br>';
-
     if (sel?.rangeCount) {
       const range = sel.getRangeAt(0);
+      if (selectedHtml) range.deleteContents();
 
-      // Find block ancestor (direct child of editorArea) to insert after it
-      let blockNode: Node | null = range.commonAncestorContainer;
-      while (blockNode && blockNode.parentNode !== this.editorArea) {
-        blockNode = blockNode.parentNode;
-      }
+      insertBlockAtCursor(this.editorArea, range, callout);
 
-      if (blockNode && blockNode.parentNode === this.editorArea) {
-        // If text was selected, remove it from the source block first
-        if (selectedHtml) range.deleteContents();
-        (blockNode as Element).after(callout, spacerAfter);
-      } else {
-        range.deleteContents();
-        const frag = document.createDocumentFragment();
-        frag.appendChild(callout);
-        frag.appendChild(spacerAfter);
-        range.insertNode(frag);
-      }
-
-      // Place cursor at end of callout body
+      // Focus the callout body first so the cursor lands inside it,
+      // not at the top of the outer editor area.
+      body.focus();
       const newRange = document.createRange();
       newRange.setStart(p, p.childNodes.length);
       newRange.collapse(true);
@@ -145,11 +142,12 @@ export class CalloutFeature {
       sel.addRange(newRange);
       callout.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     } else {
+      const spacer = document.createElement('p');
+      spacer.innerHTML = '<br>';
       this.editorArea.appendChild(callout);
-      this.editorArea.appendChild(spacerAfter);
+      this.editorArea.appendChild(spacer);
+      body.focus();
     }
-
-    this.editorArea.focus();
   }
 
   destroy(): void {

@@ -1608,11 +1608,36 @@ p.ray-date-time {
   background: #fef2f2;
 }
 
+/* Tip */
+.ray-callout-tip {
+  border-left-color: #14b8a6;
+  background: #f0fdfa;
+}
+/* Note */
+.ray-callout-note {
+  border-left-color: #a855f7;
+  background: #faf5ff;
+}
+/* Important */
+.ray-callout-important {
+  border-left-color: #8b5cf6;
+  background: #f5f3ff;
+}
+/* Caution */
+.ray-callout-caution {
+  border-left-color: #f97316;
+  background: #fff7ed;
+}
+
 /* Dark theme callouts */
-[data-ray-theme="dark"] .ray-callout-info    { background: #1e3a5f; border-left-color: #60a5fa; color: #e2e8f0; }
-[data-ray-theme="dark"] .ray-callout-warning { background: #3a2e0a; border-left-color: #fbbf24; color: #e2e8f0; }
-[data-ray-theme="dark"] .ray-callout-success { background: #0a2e1e; border-left-color: #34d399; color: #e2e8f0; }
-[data-ray-theme="dark"] .ray-callout-error   { background: #2e0a0a; border-left-color: #f87171; color: #e2e8f0; }
+[data-ray-theme="dark"] .ray-callout-info      { background: #1e3a5f; border-left-color: #60a5fa; color: #e2e8f0; }
+[data-ray-theme="dark"] .ray-callout-warning   { background: #3a2e0a; border-left-color: #fbbf24; color: #e2e8f0; }
+[data-ray-theme="dark"] .ray-callout-success   { background: #0a2e1e; border-left-color: #34d399; color: #e2e8f0; }
+[data-ray-theme="dark"] .ray-callout-error     { background: #2e0a0a; border-left-color: #f87171; color: #e2e8f0; }
+[data-ray-theme="dark"] .ray-callout-tip       { background: #042f2e; border-left-color: #2dd4bf; color: #e2e8f0; }
+[data-ray-theme="dark"] .ray-callout-note      { background: #2e1a47; border-left-color: #c084fc; color: #e2e8f0; }
+[data-ray-theme="dark"] .ray-callout-important { background: #1e1047; border-left-color: #a78bfa; color: #e2e8f0; }
+[data-ray-theme="dark"] .ray-callout-caution   { background: #3a1a00; border-left-color: #fb923c; color: #e2e8f0; }
 
 /* Callout picker popup */
 .ray-callout-picker {
@@ -1643,10 +1668,14 @@ p.ray-date-time {
 }
 
 .ray-callout-picker-btn:hover { background: var(--ray-btn-hover, #f1f5f9); }
-.ray-callout-picker-info    { border-left: 3px solid #3b82f6; }
-.ray-callout-picker-warning { border-left: 3px solid #f59e0b; }
-.ray-callout-picker-success { border-left: 3px solid #10b981; }
-.ray-callout-picker-error   { border-left: 3px solid #ef4444; }
+.ray-callout-picker-info      { border-left: 3px solid #3b82f6; }
+.ray-callout-picker-warning   { border-left: 3px solid #f59e0b; }
+.ray-callout-picker-success   { border-left: 3px solid #10b981; }
+.ray-callout-picker-error     { border-left: 3px solid #ef4444; }
+.ray-callout-picker-tip       { border-left: 3px solid #14b8a6; }
+.ray-callout-picker-note      { border-left: 3px solid #a855f7; }
+.ray-callout-picker-important { border-left: 3px solid #8b5cf6; }
+.ray-callout-picker-caution   { border-left: 3px solid #f97316; }
 
 /* ─── Special Characters Picker ──────────────────────────────────────────── */
 

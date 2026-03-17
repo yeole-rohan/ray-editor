@@ -85,6 +85,10 @@ export class ToolbarManager {
     btn.innerHTML = config.label;
     btn.className = `ray-btn ray-btn-${key}`;
 
+    // Prevent mousedown from stealing focus away from the editor so the
+    // selection (and caret position) is preserved when the click handler runs.
+    btn.addEventListener('mousedown', e => e.preventDefault());
+
     btn.addEventListener('click', () => {
       this.commandDispatch(key);
     });
@@ -324,6 +328,7 @@ export class ToolbarManager {
     overflowed.forEach(btn => {
       const clone = btn.cloneNode(true) as HTMLElement;
       clone.style.display = 'block';
+      clone.addEventListener('mousedown', e => e.preventDefault());
       clone.addEventListener('click', () => {
         this.commandDispatch(btn.id.replace('ray-btn-', ''));
         dropdown.style.display = 'none';

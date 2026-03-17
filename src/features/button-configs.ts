@@ -157,6 +157,10 @@ export const BUTTON_CONFIGS = {
     label: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 7V4h16v3"/><path d="M5 20h6"/><path d="M13 4 8 20"/><path d="m15 15 5 5"/><path d="m20 15-5 5"/></svg>`,
     cmd: 'removeFormat',
   },
+  spellCheck: {
+    keyname: 'spellCheck',
+    label: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="2" y="16" font-size="13" stroke="none" fill="currentColor" font-family="sans-serif" font-weight="bold">ABC</text><path d="M3 20 Q6 17 9 20 Q12 23 15 20" stroke-width="2" stroke-linecap="round" fill="none"/></svg>`,
+  },
   table: {
     keyname: 'table',
     label: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v18"/><rect x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>`,

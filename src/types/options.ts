@@ -23,7 +23,7 @@ export type ToolbarItem =
   // Markdown
   | 'markdownToggle' | 'importMarkdown' | 'exportMarkdown'
   // New features
-  | 'highlight' | 'fontSize' | 'taskList' | 'callout' | 'specialChars'
+  | 'highlight' | 'fontSize' | 'taskList' | 'callout' | 'specialChars' | 'spellCheck'
   // Utility
   | 'undo' | 'redo' | 'showSource' | 'fullscreen' | 'print'
   | 'fonts' | 'overflowMenu' | 'wordCount';
@@ -117,6 +117,15 @@ export interface RayEditorOptions {
   // ─── Callbacks ───────────────────────────────────────────────────────────
 
   onChange?: (html: string) => void;
+
+  // ─── Auto-save ───────────────────────────────────────────────────────────
+
+  autoSave?: {
+    /** Interval in milliseconds between saves. Default: 30000 (30 s) */
+    interval?: number;
+    /** Called with the current HTML on each save tick */
+    onSave: (html: string) => void;
+  };
 }
 
 export const DEFAULT_TOOLBAR: ToolbarGroup[] = [
@@ -132,6 +141,6 @@ export const DEFAULT_TOOLBAR: ToolbarGroup[] = [
   ['link', 'imageUpload', 'fileUpload', 'table'],
   ['emoji', 'specialChars', 'insertDateTime'],
   ['markdownToggle', 'importMarkdown', 'exportMarkdown'],
-  ['undo', 'redo', 'removeFormat'],
+  ['undo', 'redo', 'removeFormat', 'spellCheck'],
   ['showSource', 'fullscreen', 'print'],
 ];
