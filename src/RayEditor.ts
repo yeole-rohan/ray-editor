@@ -411,6 +411,7 @@ export class RayEditor implements RayEditorInstance {
     this.emojiFeature?.destroy();
     this.fontSizeFeature?.destroy();
     this.markdownFeature?.destroy();
+    this.imageFeature?.destroy();
     if (this._autoSaveTimer !== null) clearInterval(this._autoSaveTimer);
     this.eventBus.destroy();
 

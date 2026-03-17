@@ -91,6 +91,9 @@ export class TaskListFeature {
     if (e.key === 'Enter') {
       e.preventDefault();
 
+      // Repair structure first — moves any text that slipped before the span to after it
+      this.normalizeTaskItem(li);
+
       const textNode = this.getTextNode(li);
       const text = textNode?.textContent ?? '';
 
@@ -114,8 +117,21 @@ export class TaskListFeature {
         // Split text at cursor into a new task item
         let textAfter = '';
         if (textNode && range.startContainer === textNode) {
+          // Cursor is inside the text node — split at offset
           textAfter = textNode.textContent!.slice(range.startOffset);
           textNode.textContent = textNode.textContent!.slice(0, range.startOffset);
+        } else if (range.startContainer === li) {
+          // Cursor is a child-index reference on the li itself.
+          // offset 0 = before span (shouldn't happen after normalize, but guard anyway)
+          // offset 1 = after span / start of text → textAfter = all text
+          // offset 2+ = after text node → textAfter = ''
+          const span = li.querySelector('.ray-task-checkbox');
+          const spanIdx = span ? Array.from(li.childNodes).indexOf(span) : -1;
+          if (range.startOffset <= spanIdx + 1 && textNode) {
+            textAfter = textNode.textContent ?? '';
+            textNode.textContent = '';
+          }
+          // offset beyond text node → textAfter stays ''
         }
         const newLi = this.buildTaskItem(false, textAfter);
         li.after(newLi);
@@ -135,6 +151,7 @@ export class TaskListFeature {
     }
 
     if (e.key === 'Backspace' && sel.isCollapsed) {
+      this.normalizeTaskItem(li);
       const textNode = this.getTextNode(li);
       const atStart =
         !textNode ||
@@ -223,11 +240,44 @@ export class TaskListFeature {
     return checkbox;
   }
 
+  /** Return the text node that follows the checkbox span (the canonical content node). */
   private getTextNode(li: HTMLLIElement): Text | null {
+    const span = li.querySelector('.ray-task-checkbox');
+    if (span) {
+      let node: ChildNode | null = span.nextSibling;
+      while (node) {
+        if (node.nodeType === Node.TEXT_NODE) return node as Text;
+        node = node.nextSibling;
+      }
+      return null;
+    }
     for (const node of Array.from(li.childNodes)) {
       if (node.nodeType === Node.TEXT_NODE) return node as Text;
     }
     return null;
+  }
+
+  /**
+   * If the browser allowed text/nodes to slip before the checkbox span
+   * (e.g. cursor was at li[offset=0] and user typed), move them to after the span.
+   * Called at the start of every keydown handler to guarantee structure before splits.
+   */
+  private normalizeTaskItem(li: HTMLLIElement): void {
+    const span = li.querySelector('.ray-task-checkbox');
+    if (!span) return;
+    const misplaced: ChildNode[] = [];
+    let node: ChildNode | null = li.firstChild;
+    while (node && node !== span) {
+      misplaced.push(node);
+      node = node.nextSibling;
+    }
+    if (misplaced.length === 0) return;
+    // Move each misplaced node to immediately after the span (preserves Range objects)
+    const afterSpan = span.nextSibling;
+    for (const n of misplaced) {
+      li.removeChild(n);
+      li.insertBefore(n, afterSpan);
+    }
   }
 
   /**

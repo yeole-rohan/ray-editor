@@ -1010,6 +1010,7 @@ tr.ray-row-resize-active > th {
 }
 
 .ray-emoji-grid-hidden { display: none; }
+.ray-emoji-no-results { padding: 16px; text-align: center; color: var(--ray-muted, #94a3b8); font-size: 13px; }
 
 .ray-emoji-btn {
   width: 32px;

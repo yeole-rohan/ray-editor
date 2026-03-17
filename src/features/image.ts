@@ -410,6 +410,10 @@ export class ImageFeature {
     });
   }
 
+  destroy(): void {
+    document.querySelector('.ray-img-editor-modal')?.remove();
+  }
+
   private showError(msg: string): void {
     const div = document.createElement('div');
     div.className = 'ray-editor-error-toast';

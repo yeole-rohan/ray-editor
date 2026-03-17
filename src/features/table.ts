@@ -363,6 +363,17 @@ export class TableFeature {
     const MIN_COL_WIDTH = 40;
     const MIN_ROW_HEIGHT = 30;
 
+    // AbortController lets us clean up all three table-level listeners when
+    // the table is removed from the DOM (deleteTable / replaceWith).
+    const tableAC = new AbortController();
+    const { signal } = tableAC;
+
+    // Abort when the table leaves the DOM (MutationObserver on the parent)
+    const observer = new MutationObserver(() => {
+      if (!table.isConnected) { tableAC.abort(); observer.disconnect(); }
+    });
+    if (table.parentNode) observer.observe(table.parentNode, { childList: true });
+
     let colDragCell: HTMLTableCellElement | null = null;
     let colDragStartX = 0;
     let colDragStartWidth = 0;
@@ -420,7 +431,7 @@ export class TableFeature {
       }
 
       table.style.cursor = cursor;
-    });
+    }, { signal });
 
     table.addEventListener('mouseleave', () => {
       if (!colDragCell && !rowDragRow) {
@@ -430,7 +441,7 @@ export class TableFeature {
         highlightRow?.classList.remove('ray-row-resize-active');
         highlightRow = null;
       }
-    });
+    }, { signal });
 
     table.addEventListener('mousedown', (e: MouseEvent) => {
       const cell = (e.target as HTMLElement).closest('td, th') as HTMLTableCellElement | null;
@@ -486,7 +497,7 @@ export class TableFeature {
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
       }
-    });
+    }, { signal });
   }
 
   // ── Tab Key Navigation ────────────────────────────────────────────────────────

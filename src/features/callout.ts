@@ -99,13 +99,10 @@ export class CalloutFeature {
       if (!this.editorArea.contains(range.commonAncestorContainer)) return;
     }
 
-    // Capture selected text/HTML before altering the range
-    let selectedHtml = '';
+    // Capture selected content (as a live DocumentFragment — no innerHTML serialization)
+    let selectedFrag: DocumentFragment | null = null;
     if (sel?.rangeCount && !sel.isCollapsed) {
-      const range = sel.getRangeAt(0);
-      const div = document.createElement('div');
-      div.appendChild(range.cloneContents());
-      selectedHtml = div.innerHTML;
+      selectedFrag = sel.getRangeAt(0).cloneContents();
     }
 
     const callout = document.createElement('div');
@@ -121,8 +118,8 @@ export class CalloutFeature {
     body.className = 'ray-callout-body';
     body.contentEditable = 'true';
     const p = document.createElement('p');
-    if (selectedHtml) {
-      p.innerHTML = selectedHtml;
+    if (selectedFrag && selectedFrag.childNodes.length > 0) {
+      p.appendChild(selectedFrag);
     } else {
       p.textContent = `${CALLOUT_LABELS[type]}: `;
     }
@@ -133,7 +130,7 @@ export class CalloutFeature {
 
     if (sel?.rangeCount) {
       const range = sel.getRangeAt(0);
-      if (selectedHtml) range.deleteContents();
+      if (selectedFrag) range.deleteContents();
 
       insertBlockAtCursor(this.editorArea, range, callout);
 

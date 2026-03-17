@@ -244,7 +244,14 @@ export class EmojiFeature {
       }
       const results = this.filterEmojis(q);
       searchGrid.innerHTML = '';
-      results.forEach(e => searchGrid.appendChild(this.makeEmojiBtn(e)));
+      if (results.length === 0) {
+        const msg = document.createElement('div');
+        msg.className = 'ray-emoji-no-results';
+        msg.textContent = 'No results';
+        searchGrid.appendChild(msg);
+      } else {
+        results.forEach(e => searchGrid.appendChild(this.makeEmojiBtn(e)));
+      }
       content.querySelectorAll<HTMLElement>('.ray-emoji-grid:not([data-cat="search"])').forEach(g =>
         g.classList.add('ray-emoji-grid-hidden')
       );
@@ -302,9 +309,8 @@ export class EmojiFeature {
       cat.name.toLowerCase().includes(q) ||
       (SEARCH_KEYWORDS[cat.name] ?? []).some(kw => kw.includes(q))
     );
-    return matching.length > 0
-      ? matching.flatMap(c => c.emojis)
-      : CATEGORIES.flatMap(c => c.emojis);
+    // Return only matched emojis; empty array signals "no results" to caller
+    return matching.flatMap(c => c.emojis);
   }
 
   private insertEmoji(emoji: string): void {
