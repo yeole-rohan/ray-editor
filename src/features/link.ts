@@ -18,6 +18,9 @@ export class LinkFeature {
 
     const modal = document.createElement('div');
     modal.className = 'ray-editor-link-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', anchor ? 'Edit Link' : 'Insert Link');
     modal.innerHTML = `
       <div class="modal-content">
         <h3 style="margin:0 0 12px;font-size:16px;">${anchor ? 'Edit Link' : 'Insert Link'}</h3>
@@ -54,6 +57,24 @@ export class LinkFeature {
     }
 
     urlInput.focus();
+
+    // Focus trap + Escape — listener is on the modal element itself so it is
+    // automatically removed when the modal leaves the DOM (no document leak).
+    modal.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { e.preventDefault(); modal.remove(); return; }
+      if (e.key !== 'Tab') return;
+      const focusable = Array.from(
+        modal.querySelectorAll<HTMLElement>('input, select, button')
+      ).filter(el => !el.hasAttribute('disabled'));
+      if (!focusable.length) { e.preventDefault(); return; }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
 
     modal.querySelector('#ray-insert-link')!.addEventListener('click', () => {
       const url = urlInput.value.trim();

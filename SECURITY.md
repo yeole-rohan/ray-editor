@@ -59,3 +59,48 @@ Out of scope:
 - **Content Security Policy**: add a `Content-Security-Policy` header in your app;
   RayEditor does not require `unsafe-eval`
 - **Keep dependencies updated** — Dependabot PRs are reviewed and merged promptly
+
+---
+
+## Known Design Decisions (not vulnerabilities)
+
+### `setContent(html)` trusts the caller
+
+`editor.setContent(html)` is a **trusted developer API**. It accepts arbitrary HTML and
+sets it directly as the editor's content without sanitization. This is intentional —
+sanitizing would break legitimate CMS use cases where implementers need to restore rich
+content including inline styles, custom attributes, and complex HTML structures.
+
+**If your source HTML is untrusted** (e.g. loaded from user-submitted content, a database
+row that accepts arbitrary input, or a third-party API), you **must sanitize it before
+calling `setContent()`**. Recommended libraries:
+
+```js
+import DOMPurify from 'dompurify';
+editor.setContent(DOMPurify.sanitize(untrustedHtml));
+```
+
+Calling `editor.getContent()` after `setContent()` with untrusted HTML does **not** make
+the content safe — the editor does not strip event attributes on load.
+
+This is the same model used by TinyMCE, CKEditor, and Quill.
+
+---
+
+### Client-side MIME type check on image upload
+
+When a user selects an image via the toolbar's image upload button, RayEditor checks
+`file.type.startsWith('image/')` client-side before sending the file to your endpoint.
+This check prevents honest mistakes (e.g. selecting a PDF by accident) but is **not a
+security control** — a malicious user can spoof the MIME type trivially.
+
+**Always validate file type and content server-side** at your `imageUploadUrl` endpoint.
+Recommended approach:
+
+1. Check the file's magic bytes (not just extension or MIME header)
+2. Reject unexpected content types with a `400` or `422` response
+3. Store uploaded files outside the web root or behind a CDN with `Content-Disposition: attachment`
+4. Never execute uploaded files server-side
+
+The same applies to `fileUploadUrl` — RayEditor performs no MIME validation for general
+file uploads (any file type is allowed through the file upload button by design).

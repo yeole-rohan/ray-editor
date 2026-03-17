@@ -314,6 +314,9 @@ export class ImageFeature {
   private openImageEditor(originalImg: HTMLImageElement, _wrapper: HTMLElement): void {
     const editorModal = document.createElement('div');
     editorModal.className = 'ray-img-editor-modal';
+    editorModal.setAttribute('role', 'dialog');
+    editorModal.setAttribute('aria-modal', 'true');
+    editorModal.setAttribute('aria-label', 'Edit Image');
     Object.assign(editorModal.style, {
       position: 'fixed',
       top: '50%',
@@ -350,6 +353,26 @@ export class ImageFeature {
     `;
 
     document.body.appendChild(editorModal);
+
+    // Focus first input + Tab trap + Escape. Listener is on the modal element so
+    // it is cleaned up automatically when the element is removed from the DOM.
+    const altInput = editorModal.querySelector<HTMLInputElement>('#ray-alt-input')!;
+    altInput.focus();
+    editorModal.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { e.preventDefault(); editorModal.remove(); return; }
+      if (e.key !== 'Tab') return;
+      const focusable = Array.from(
+        editorModal.querySelectorAll<HTMLElement>('input, button')
+      ).filter(el => !el.hasAttribute('disabled'));
+      if (!focusable.length) { e.preventDefault(); return; }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
 
     const canvas = editorModal.querySelector<HTMLCanvasElement>('#ray-crop-canvas')!;
     const ctx = canvas.getContext('2d')!;
