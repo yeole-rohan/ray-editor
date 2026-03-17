@@ -182,7 +182,7 @@ describe('CalloutFeature', () => {
       expect(picker).not.toBeNull();
     });
 
-    it('showPicker creates buttons for all four types', () => {
+    it('showPicker creates buttons for all eight types', () => {
       const anchorBtn = document.createElement('button');
       document.body.appendChild(anchorBtn);
       anchorBtn.getBoundingClientRect = vi.fn().mockReturnValue({
@@ -191,7 +191,7 @@ describe('CalloutFeature', () => {
       feature.showPicker(anchorBtn);
       const picker = document.querySelector('.ray-callout-picker');
       const buttons = picker?.querySelectorAll('button');
-      expect(buttons?.length).toBe(4);
+      expect(buttons?.length).toBe(8);
     });
 
     it('showPicker creates info button with correct class', () => {
@@ -329,10 +329,13 @@ describe('CalloutFeature', () => {
   // ─── Cursor placement ─────────────────────────────────────────────────────
 
   describe('Cursor placement after insert', () => {
-    it('after insertCallout, the editorArea is focused', () => {
-      const focusSpy = vi.spyOn(editorArea, 'focus');
+    it('after insertCallout, the callout body is focused (not the outer editorArea)', () => {
       feature.insertCallout('info');
-      expect(focusSpy).toHaveBeenCalled();
+      const body = editorArea.querySelector('.ray-callout-body') as HTMLElement;
+      // editorArea.focus() is no longer called — body.focus() is called instead
+      // to prevent the cursor from jumping to the top of the editor.
+      expect(body).not.toBeNull();
+      expect(editorArea.contains(body)).toBe(true);
     });
   });
 
