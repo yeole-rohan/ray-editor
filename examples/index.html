@@ -1040,42 +1040,212 @@ editor.<span class="fn">use</span>(myPlugin);</pre>
 </section>
 
 <!-- ── Coming Soon / Contributing ─────────────────────────────────────────────── -->
-<section class="section" id="contributing" style="padding-bottom:60px">
-  <div class="section-label">Roadmap</div>
-  <div class="section-title">Coming Soon &amp; What Needs Help</div>
-  <p class="section-desc">RayEditor is MIT-licensed and open to contributions. Here's what's planned and what needs community help.</p>
+<section class="section" id="contributing" style="padding-bottom:80px">
+  <div class="section-label">Open Source</div>
+  <div class="section-title">Coming Soon &amp; Needs Your Help</div>
+  <p class="section-desc">RayEditor is MIT-licensed and built in the open. Every feature below has a clear <strong>why</strong>, <strong>what</strong>, and <strong>how</strong> — so you can pick one up and ship it without guessing what's needed.</p>
 
+  <style>
+    .contrib-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:20px; margin-bottom:32px; }
+    .contrib-card { background:var(--surface,#fff); border:1px solid var(--border,#e2e8f0); border-radius:12px; padding:20px; display:flex; flex-direction:column; gap:10px; }
+    .contrib-card h4 { font-size:15px; font-weight:700; margin:0; display:flex; align-items:center; gap:8px; }
+    .contrib-badge { font-size:11px; font-weight:600; padding:2px 8px; border-radius:20px; white-space:nowrap; }
+    .badge-easy  { background:#d1fae5; color:#065f46; }
+    .badge-med   { background:#fef3c7; color:#92400e; }
+    .badge-hard  { background:#fee2e2; color:#991b1b; }
+    .badge-arch  { background:#ede9fe; color:#5b21b6; }
+    .contrib-why, .contrib-what, .contrib-how { font-size:13px; line-height:1.65; }
+    .contrib-why strong, .contrib-what strong, .contrib-how strong { display:inline-block; width:36px; font-weight:700; opacity:.6; font-size:11px; text-transform:uppercase; }
+    .contrib-files { font-size:12px; color:var(--muted,#64748b); margin-top:4px; }
+    .contrib-files code { background:var(--surface2,#f1f5f9); padding:1px 5px; border-radius:4px; font-size:11px; }
+    .contrib-section-title { font-size:18px; font-weight:700; margin:36px 0 16px; display:flex; align-items:center; gap:10px; }
+    .contrib-section-title::after { content:''; flex:1; height:1px; background:var(--border,#e2e8f0); }
+    .arch-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .arch-table th { text-align:left; padding:8px 12px; background:var(--surface2,#f8fafc); font-weight:600; border-bottom:2px solid var(--border,#e2e8f0); }
+    .arch-table td { padding:8px 12px; border-bottom:1px solid var(--border,#e2e8f0); vertical-align:top; }
+    .arch-table tr:last-child td { border-bottom:none; }
+    .known-issue-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px; }
+    .known-issue-list li { font-size:13.5px; line-height:1.6; padding:10px 14px; background:var(--surface2,#f8fafc); border-radius:8px; border-left:3px solid var(--border,#e2e8f0); }
+    .known-issue-list li strong { color:var(--text,#1a202c); }
+  </style>
+
+  <!-- Architecture -->
   <div class="card" style="margin-bottom:28px">
     <div class="card-body">
-      <h3 style="font-size:16px;font-weight:700;margin:0 0 12px">Planned Features</h3>
-      <table class="cmp-table" style="width:100%">
-        <thead><tr><th>Feature</th><th>Notes</th></tr></thead>
+      <h3 style="font-size:16px;font-weight:700;margin:0 0 4px">Architecture at a Glance</h3>
+      <p style="font-size:13px;color:var(--muted,#64748b);margin:0 0 16px">Understanding the structure before you contribute.</p>
+      <table class="arch-table">
+        <thead><tr><th>Layer</th><th>What it does</th><th>Key files</th></tr></thead>
         <tbody>
-          <tr><td>Table: merge / split cells</td><td>colspan/rowspan with cell-map bookkeeping</td></tr>
-          <tr><td>Image: crop</td><td>CSS crop + aspect-ratio lock (Canvas API, no server needed)</td></tr>
-          <tr><td>RTL support</td><td>dir="rtl" toggle on editor area</td></tr>
-          <tr><td>Math / LaTeX</td><td>KaTeX opt-in plugin (inline $…$ and block $$…$$)</td></tr>
-          <tr><td>Word / DOCX import</td><td>mammoth.js-based opt-in plugin (separate package)</td></tr>
-          <tr><td>Real-time collaboration</td><td>WebSocket + OT/CRDT — external plugin, not core</td></tr>
-          <tr><td>Auto-save hook</td><td>onAutoSave(html) callback + configurable interval</td></tr>
-          <tr><td>More tests</td><td>Unit tests for table, image, link, markdown features</td></tr>
+          <tr>
+            <td><strong>Facade / Mediator</strong></td>
+            <td>Public API. Routes every toolbar action to the right feature via <code>dispatchCommand(key)</code>. Features never talk to each other — everything goes through here.</td>
+            <td><code>src/RayEditor.ts</code></td>
+          </tr>
+          <tr>
+            <td><strong>Core modules</strong></td>
+            <td>EventBus (pub/sub), HistoryManager (undo/redo stack), SelectionManager (Range save/restore), ContentManager (getContent pipeline), ToolbarManager (render + active states).</td>
+            <td><code>src/core/</code></td>
+          </tr>
+          <tr>
+            <td><strong>Feature modules</strong></td>
+            <td>One class per feature. Each receives <code>editorArea: HTMLElement</code> in the constructor. Block-level insertions must use <code>insertBlockAtCursor()</code> from <code>dom-utils.ts</code>.</td>
+            <td><code>src/features/</code></td>
+          </tr>
+          <tr>
+            <td><strong>Plugin API</strong></td>
+            <td><code>editor.use({ name, install(editor) {} })</code> — third-party plugins get the full public API. Heavy optional features (KaTeX, DOCX, collab) belong here, never in core.</td>
+            <td><code>src/types/plugin.ts</code></td>
+          </tr>
+          <tr>
+            <td><strong>Two rules for contributors</strong></td>
+            <td colspan="2">① Every toolbar button needs <code>mousedown.preventDefault()</code> (already in <code>ToolbarManager.createButton</code>). ② Every <code>document.addEventListener</code> must be cleaned up in <code>destroy()</code> — use <code>AbortController</code>.</td>
+          </tr>
         </tbody>
       </table>
     </div>
   </div>
 
+  <!-- Easy / Medium features -->
+  <div class="contrib-section-title">Features to Build <span style="font-size:13px;font-weight:500;color:var(--muted,#64748b)">pick one up on GitHub</span></div>
+  <div class="contrib-grid">
+
+    <div class="contrib-card">
+      <h4>⬇️ Export HTML &amp; Plain Text <span class="contrib-badge badge-easy">Easy</span></h4>
+      <div class="contrib-why"><strong>Why</strong> Writers want to download their work without copy-paste. One-click export is a standard expectation.</div>
+      <div class="contrib-what"><strong>What</strong> Two buttons: <em>Export HTML</em> (saves <code>getContent()</code> as <code>.html</code>) and <em>Export Text</em> (saves <code>innerText</code> as <code>.txt</code>). No server needed — pure <code>Blob + URL.createObjectURL</code>.</div>
+      <div class="contrib-how"><strong>How</strong> Add <code>'exportHtml'</code> and <code>'exportText'</code> to <code>ToolbarItem</code> and <code>DEFAULT_TOOLBAR</code>. Wire to <code>_downloadBlob()</code> which already exists in <code>RayEditor.ts</code> (used by markdown export).</div>
+      <div class="contrib-files">Files: <code>types/options.ts</code> <code>button-configs.ts</code> <code>RayEditor.ts</code></div>
+    </div>
+
+    <div class="contrib-card">
+      <h4>↔️ RTL / LTR Support <span class="contrib-badge badge-easy">Easy</span></h4>
+      <div class="contrib-why"><strong>Why</strong> Arabic, Hebrew, and Persian are spoken by ~500 million people. Without RTL, the editor is unusable for them.</div>
+      <div class="contrib-what"><strong>What</strong> A toggle button that sets <code>dir="rtl"</code> on the editor area. Dropdowns and popups should also flip to right-align.</div>
+      <div class="contrib-how"><strong>How</strong> Add <code>'rtl'</code> toolbar item. In <code>dispatchCommand</code>, toggle <code>editorArea.dir</code> between <code>'rtl'</code> and <code>'ltr'</code>. Update popup positioning in <code>toolbar.ts</code> to read the current dir. <code>getContent()</code> passes <code>dir</code> attributes through unchanged.</div>
+      <div class="contrib-files">Files: <code>types/options.ts</code> <code>button-configs.ts</code> <code>RayEditor.ts</code> <code>main.css</code></div>
+    </div>
+
+    <div class="contrib-card">
+      <h4>🔍 Emoji Search "No Results" State <span class="contrib-badge badge-easy">Easy</span></h4>
+      <div class="contrib-why"><strong>Why</strong> Currently, typing a search term that matches zero emojis shows all 800+ emojis instead of a "no results" message — breaking the search UX entirely.</div>
+      <div class="contrib-what"><strong>What</strong> When <code>filterEmojis()</code> returns an empty array, show a <em>"No emojis found for '…'"</em> message in the grid instead of the full emoji set.</div>
+      <div class="contrib-how"><strong>How</strong> In <code>emoji.ts</code> <code>filterEmojis()</code>: if all category results are empty, return an empty array. In the render function, check for empty and render a message node instead of buttons.</div>
+      <div class="contrib-files">Files: <code>features/emoji.ts</code></div>
+    </div>
+
+    <div class="contrib-card">
+      <h4>🧹 Fix Event Listener Leaks (AbortController) <span class="contrib-badge badge-med">Medium</span></h4>
+      <div class="contrib-why"><strong>Why</strong> Callout, emoji, special-chars, and formatting pickers register outside-click and keydown listeners on <code>document</code> but never remove them on close. After 10 minutes of editing, the document accumulates dozens of dead handlers that fire on every click — degrading performance.</div>
+      <div class="contrib-what"><strong>What</strong> Each picker class gets an <code>AbortController</code>. All its <code>document.addEventListener</code> calls pass <code>{ signal: controller.signal }</code>. Calling <code>controller.abort()</code> in the close/destroy path removes all of them automatically.</div>
+      <div class="contrib-how"><strong>How</strong>
+        <pre style="font-size:11px;background:var(--surface2,#f1f5f9);padding:8px;border-radius:6px;margin-top:6px;overflow:auto">private _ac = new AbortController();
+// register:
+document.addEventListener('click', handler,
+  { signal: this._ac.signal });
+// cleanup:
+destroy() { this._ac.abort(); }</pre>
+        Apply this pattern to: <code>callout.ts</code>, <code>emoji.ts</code>, <code>special-chars.ts</code>, <code>formatting.ts</code>, <code>link.ts</code>.
+      </div>
+      <div class="contrib-files">Files: <code>features/callout.ts</code> <code>features/emoji.ts</code> <code>features/special-chars.ts</code> <code>features/formatting.ts</code> <code>features/link.ts</code></div>
+    </div>
+
+    <div class="contrib-card">
+      <h4>🔢 More Unit Tests <span class="contrib-badge badge-med">Medium</span></h4>
+      <div class="contrib-why"><strong>Why</strong> Test coverage is strong for task lists and formatting but missing for table operations, image insertion, link sanitization, and markdown round-trips. Uncovered code ships broken features undetected.</div>
+      <div class="contrib-what"><strong>What</strong> Add test files for: <code>table.test.ts</code> (insert, add/remove row/col, resize), <code>link.test.ts</code> (insert, edit, sanitize javascript:), <code>image.test.ts</code> (upload, resize handles), <code>markdown.test.ts</code> (round-trip for all block types).</div>
+      <div class="contrib-how"><strong>How</strong> Follow the pattern in <code>tests/features/tasklist.test.ts</code> — jsdom + vitest, no real browser needed. Run with <code>npm test</code>.</div>
+      <div class="contrib-files">Files: <code>tests/features/</code></div>
+    </div>
+
+    <div class="contrib-card">
+      <h4>⬛ Empty &lt;ul&gt; After Task List Delete <span class="contrib-badge badge-easy">Easy</span></h4>
+      <div class="contrib-why"><strong>Why</strong> Pressing Backspace on the last task item converts it to a <code>&lt;p&gt;</code> but leaves an orphan <code>&lt;ul&gt;&lt;/ul&gt;</code> in the DOM — invalid HTML that can cause layout artefacts.</div>
+      <div class="contrib-what"><strong>What</strong> After removing the last <code>&lt;li&gt;</code> from a <code>.ray-task-list</code>, check if the <code>&lt;ul&gt;</code> has zero children and remove it too.</div>
+      <div class="contrib-how"><strong>How</strong> In <code>tasklist.ts</code> <code>handleKeydown()</code> Backspace path, after the <code>li.remove()</code> call: <code>if (ul.children.length === 0) ul.remove();</code></div>
+      <div class="contrib-files">Files: <code>features/tasklist.ts</code></div>
+    </div>
+
+  </div>
+
+  <!-- Hard / Architecture features -->
+  <div class="contrib-section-title">Advanced Features <span style="font-size:13px;font-weight:500;color:var(--muted,#64748b)">significant scope — open an issue first</span></div>
+  <div class="contrib-grid">
+
+    <div class="contrib-card">
+      <h4>➗ Math / LaTeX (KaTeX Plugin) <span class="contrib-badge badge-hard">Hard</span></h4>
+      <div class="contrib-why"><strong>Why</strong> Scientific, engineering, and academic writing requires equations. Without math support, RayEditor cannot serve this large segment of users.</div>
+      <div class="contrib-what"><strong>What</strong> An opt-in plugin package <code>@rohanyeole/ray-editor-katex</code> so KaTeX does not bloat the zero-dep core. Inline <code>$...$</code> and block <code>$$...$$</code> render to <code>&lt;span class="ray-math" data-latex="..."&gt;</code> with the KaTeX SVG inside. The <code>data-latex</code> attribute preserves source for round-trip editing.</div>
+      <div class="contrib-how"><strong>How</strong> Add a slash command <code>/math</code> and toolbar button. On insert: modal with LaTeX input + live preview. On save: insert the span. In <code>content.ts</code> <code>getContent()</code>: strip inner SVG, keep only the span + data attribute. On <code>setContent()</code>: find all <code>.ray-math</code>, call <code>katex.render()</code> to re-render.</div>
+      <div class="contrib-files">New package: <code>packages/ray-editor-katex/</code></div>
+    </div>
+
+    <div class="contrib-card">
+      <h4>📄 DOCX Import (mammoth.js Plugin) <span class="contrib-badge badge-hard">Hard</span></h4>
+      <div class="contrib-why"><strong>Why</strong> Writers live in Word. Paste-from-Word strips all formatting. A proper DOCX import preserves headings, bold, lists, and tables — a significant productivity gain.</div>
+      <div class="contrib-what"><strong>What</strong> Opt-in plugin. User supplies <code>mammoth</code> as their own dep (core stays zero-dep). Plugin exposes <code>importDocx(file: File): Promise&lt;void&gt;</code> that converts and calls <code>editor.setContent()</code>.</div>
+      <div class="contrib-how"><strong>How</strong> <code>mammoth.convertToHtml({ arrayBuffer })</code> → pass result through <code>normalizePastedHTML()</code> (already in <code>core/paste-normalizer.ts</code>) to strip Word-specific tags → call <code>editor.setContent(html)</code>.</div>
+      <div class="contrib-files">New package: <code>packages/ray-editor-docx/</code></div>
+    </div>
+
+    <div class="contrib-card">
+      <h4>⊞ Table: Merge / Split Cells <span class="contrib-badge badge-hard">Hard</span></h4>
+      <div class="contrib-why"><strong>Why</strong> Without merge/split you can only build plain grids — no forms, invoices, or complex document layouts. This is the #1 table feature request and the biggest gap vs TinyMCE / CKEditor.</div>
+      <div class="contrib-what"><strong>What</strong> Right-click on a selected cell range → "Merge cells" (sets <code>colspan</code>/<code>rowspan</code>, removes covered cells). Right-click a merged cell → "Split" (restores individual cells).</div>
+      <div class="contrib-how"><strong>How</strong> ① Build a <code>buildCellMap(table)</code> utility — a <code>rows × cols</code> 2D grid mapping logical positions to physical cells (accounting for existing spans). ② Merge: walk the map for the selection, set attributes on anchor cell, remove others. ③ Split: re-insert <code>&lt;td&gt;</code> elements, clear span attributes. Full undo/redo snapshot of the table is required — not just one cell.</div>
+      <div class="contrib-files">Files: <code>features/table.ts</code> + new <code>core/cell-map.ts</code></div>
+    </div>
+
+    <div class="contrib-card">
+      <h4>🤝 Real-Time Collaboration <span class="contrib-badge badge-hard">Hard</span></h4>
+      <div class="contrib-why"><strong>Why</strong> Notion and Google Docs have set the expectation that rich text is collaborative by default. A collaboration layer would open RayEditor to team-tool use cases.</div>
+      <div class="contrib-what"><strong>What</strong> External plugin only — never in core. WebSocket + <strong>Yjs CRDT</strong> for conflict-free merging. Remote cursors shown as coloured caret overlays. The plugin intercepts <code>on('content:change')</code> and applies incoming operations.</div>
+      <div class="contrib-how"><strong>How</strong> Use <a href="https://docs.yjs.dev" target="_blank" rel="noopener">Yjs</a> with a <code>Y.XmlFragment</code> bound to the editor DOM. Apply incoming ops via <code>editor.setContent(merged)</code> or targeted DOM patches. Requires a WebSocket server (e.g., <code>y-websocket</code>). This is effectively a separate product — consider building it as a standalone SaaS add-on.</div>
+      <div class="contrib-files">New package: <code>packages/ray-editor-collab/</code></div>
+    </div>
+
+    <div class="contrib-card">
+      <h4>🏗️ Content Pipeline (Visitor Pattern) <span class="contrib-badge badge-arch">Architecture</span></h4>
+      <div class="contrib-why"><strong>Why</strong> <code>getContent()</code> currently runs 6+ <code>querySelectorAll</code> sweeps over the full DOM on every call. With <code>onChange</code> bound, this runs on every keystroke — O(n²) on large documents.</div>
+      <div class="contrib-what"><strong>What</strong> Each feature registers a <code>ContentVisitor</code> with <code>ContentManager</code>. <code>getContent()</code> does a single DOM walk, calling all registered visitors per node — O(n) one pass.</div>
+      <div class="contrib-how"><strong>How</strong>
+        <pre style="font-size:11px;background:var(--surface2,#f1f5f9);padding:8px;border-radius:6px;margin-top:6px;overflow:auto">interface ContentVisitor {
+  visitElement(el: Element): Element | null;
+}
+// Each feature in constructor:
+contentManager.registerVisitor(this);</pre>
+        Replace each <code>querySelectorAll</code> cleanup block in <code>content.ts</code> <code>getContent()</code> with visitor dispatch.
+      </div>
+      <div class="contrib-files">Files: <code>core/content.ts</code> + all feature files (register visitors)</div>
+    </div>
+
+    <div class="contrib-card">
+      <h4>🔄 Editor Mode State Machine <span class="contrib-badge badge-arch">Architecture</span></h4>
+      <div class="contrib-why"><strong>Why</strong> The editor has 4 modes (rich-text, markdown, source, fullscreen) and 2 flags (read-only, destroyed). Interactions between modes are guarded by scattered <code>if</code> checks. Entering markdown mode while a link modal is open, or calling <code>setContent()</code> after <code>destroy()</code>, can silently corrupt state.</div>
+      <div class="contrib-what"><strong>What</strong> An explicit state machine with valid transitions:
+        <code>IDLE → MARKDOWN | SOURCE | FULLSCREEN | READONLY → any → DESTROYED</code>.
+        Invalid transitions log a warning and no-op. Each mode has enter/exit hooks to clean up its own UI.
+      </div>
+      <div class="contrib-how"><strong>How</strong> Add a <code>EditorStateMachine</code> class to <code>core/</code>. Replace scattered <code>isSourceMode</code>, <code>readOnly</code>, and destroyed guards in <code>RayEditor.ts</code> with <code>this.state.transition('SOURCE')</code> calls. Each transition validates current state before proceeding.</div>
+      <div class="contrib-files">New: <code>core/state-machine.ts</code> · Modified: <code>RayEditor.ts</code></div>
+    </div>
+
+  </div>
+
+  <!-- Known issues -->
   <div class="card">
     <div class="card-body">
-      <h3 style="font-size:16px;font-weight:700;margin:0 0 12px">Known Issues</h3>
-      <p style="margin:0 0 8px;font-size:14px;color:#555">These are browser-level limitations that affect all <code>contenteditable</code>-based editors — not specific to RayEditor:</p>
-      <ul style="margin:0;padding-left:20px;font-size:14px;line-height:1.8">
-        <li><strong>Emoji cursor splitting</strong> — Unicode emojis can span multiple code points. The browser cursor may land between them, causing Backspace to appear ineffective on first press.</li>
-        <li><strong>Emoji skin tones removed</strong> — Fitzpatrick skin-tone modifiers only work on <code>Emoji_Modifier_Base</code> characters. Appending one to a non-base emoji (e.g., 😄) renders two separate visible characters. RayEditor does not ship skin tone support for this reason.</li>
-        <li><strong>Undo granularity</strong> — <code>document.execCommand</code> undo is managed by the browser. Direct DOM insertions (code blocks, tables, callouts) may not participate in the native undo stack.</li>
-        <li><strong>Table resize in read-only mode</strong> — Column and row resize handlers remain active even when <code>readOnly: true</code>. Fix is tracked in the roadmap.</li>
+      <h3 style="font-size:16px;font-weight:700;margin:0 0 4px">Known Browser Limitations</h3>
+      <p style="font-size:13px;color:var(--muted,#64748b);margin:0 0 16px">These affect all <code>contenteditable</code>-based editors — not specific to RayEditor. Fixes require browser patches, not editor code.</p>
+      <ul class="known-issue-list">
+        <li><strong>Emoji cursor splitting</strong> — Unicode emojis span multiple code points. The cursor can land between them, making the first Backspace appear ineffective (it removes the trailing invisible code point).</li>
+        <li><strong>Emoji skin tones</strong> — Fitzpatrick modifiers (U+1F3FB–U+1F3FF) only work on <code>Emoji_Modifier_Base</code> characters. Appending one to a non-base emoji (e.g. 😄) renders two separate visible characters. Skin tone support is intentionally excluded from RayEditor.</li>
+        <li><strong>Undo granularity</strong> — <code>document.execCommand</code> undo is browser-managed. Direct DOM insertions (callouts, tables, code blocks) may not participate in the native undo stack. Custom history via <code>HistoryManager</code> is planned to replace this.</li>
+        <li><strong>Table resize in read-only mode</strong> — Col/row drag handlers remain active when <code>readOnly: true</code>. Tracked for a fix — good first issue for contributors.</li>
       </ul>
-      <p style="margin:12px 0 0;font-size:14px">
-        Found a bug or want to contribute? <a href="https://github.com/yeole-rohan/ray-editor/issues" target="_blank" rel="noopener">Open an issue on GitHub</a>.
+      <p style="margin:16px 0 0;font-size:14px">
+        Found a bug or ready to contribute?
+        <a href="https://github.com/yeole-rohan/ray-editor/issues" target="_blank" rel="noopener" style="font-weight:600">Open an issue on GitHub →</a>
       </p>
     </div>
   </div>
