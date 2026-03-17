@@ -403,6 +403,7 @@ export class RayEditor implements RayEditorInstance {
 
     this.pluginManager.destroy();
     this.toolbarManager.destroy();
+    this.linkFeature.destroy();
     this.slashCommandFeature?.destroy();
     this.findReplaceFeature?.destroy();
     this.wordCountFeature?.destroy();

@@ -32,6 +32,7 @@ const CHAR_GROUPS: Array<{ label: string; chars: string[] }> = [
 export class SpecialCharsFeature {
   private activePopup: HTMLElement | null = null;
   private savedSelection: { range: Range; } | null = null;
+  private _openAC: AbortController | null = null;
 
   toggle(anchorBtn: HTMLElement): void {
     if (this.activePopup) {
@@ -98,21 +99,18 @@ export class SpecialCharsFeature {
     popup.style.top = `${rect.bottom + window.scrollY + 4}px`;
     popup.style.left = `${Math.max(4, left)}px`;
 
-    // Close on outside click or Escape
+    // Close on outside click or Escape — AbortController cleans up both
+    // listeners via any close path (char click, outside click, or Escape).
+    this._openAC = new AbortController();
+    const { signal } = this._openAC;
     const onOutside = (e: MouseEvent) => {
-      if (!popup.contains(e.target as Node) && e.target !== anchorBtn) {
-        this.close();
-        document.removeEventListener('click', onOutside, true);
-      }
+      if (!popup.contains(e.target as Node) && e.target !== anchorBtn) this.close();
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        this.close();
-        document.removeEventListener('keydown', onKey);
-      }
+      if (e.key === 'Escape') this.close();
     };
-    setTimeout(() => document.addEventListener('click', onOutside, true), 0);
-    document.addEventListener('keydown', onKey);
+    setTimeout(() => document.addEventListener('click', onOutside, { capture: true, signal }), 0);
+    document.addEventListener('keydown', onKey, { signal });
   }
 
   private insertChar(char: string): void {
@@ -127,6 +125,8 @@ export class SpecialCharsFeature {
   }
 
   close(): void {
+    this._openAC?.abort();
+    this._openAC = null;
     this.activePopup?.remove();
     this.activePopup = null;
   }

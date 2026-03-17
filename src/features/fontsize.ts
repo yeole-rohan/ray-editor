@@ -9,6 +9,7 @@ export class FontSizeFeature {
   private picker: HTMLElement | null = null;
   private savedRange: Range | null = null;
   private previewSpan: HTMLElement | null = null;
+  private _pickerAC: AbortController | null = null;
 
   constructor(editorArea: HTMLElement) {
     this.editorArea = editorArea;
@@ -103,13 +104,14 @@ export class FontSizeFeature {
       `position:fixed;z-index:99999;top:${Math.max(4, top)}px;left:${Math.max(4, left)}px`;
 
     // ── Outside-click close ───────────────────────────────────────────────────
+    this._pickerAC = new AbortController();
+    const { signal } = this._pickerAC;
     const onOutside = (e: MouseEvent) => {
       if (this.picker && !this.picker.contains(e.target as Node) && e.target !== anchorBtn) {
         this.close();
-        document.removeEventListener('click', onOutside);
       }
     };
-    setTimeout(() => document.addEventListener('click', onOutside), 0);
+    setTimeout(() => document.addEventListener('click', onOutside, { signal }), 0);
   }
 
   // ── Preview ───────────────────────────────────────────────────────────────
@@ -172,6 +174,8 @@ export class FontSizeFeature {
     }
 
     // Close without calling removePreview (already handled above)
+    this._pickerAC?.abort();
+    this._pickerAC = null;
     this.picker?.remove();
     this.picker = null;
     this.savedRange = null;
@@ -237,6 +241,8 @@ export class FontSizeFeature {
   }
 
   private close(): void {
+    this._pickerAC?.abort();
+    this._pickerAC = null;
     this.removePreview();
     this.picker?.remove();
     this.picker = null;

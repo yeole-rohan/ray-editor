@@ -38,6 +38,7 @@ const CALLOUT_LABELS: Record<CalloutType, string> = {
 export class CalloutFeature {
   private editorArea: HTMLElement;
   private activePopup: HTMLElement | null = null;
+  private _pickerAC: AbortController | null = null;
 
   constructor(editorArea: HTMLElement) {
     this.editorArea = editorArea;
@@ -70,17 +71,21 @@ export class CalloutFeature {
     popup.style.top = `${rect.bottom + window.scrollY + 4}px`;
     popup.style.left = `${rect.left + window.scrollX}px`;
 
-    // Close on outside click
+    // Close on outside click — AbortController ensures the listener is always
+    // removed regardless of which path closes the picker.
+    this._pickerAC = new AbortController();
+    const { signal } = this._pickerAC;
     const onOutside = (e: MouseEvent) => {
       if (!popup.contains(e.target as Node) && e.target !== anchorBtn) {
         this.closePicker();
-        document.removeEventListener('click', onOutside, true);
       }
     };
-    setTimeout(() => document.addEventListener('click', onOutside, true), 0);
+    setTimeout(() => document.addEventListener('click', onOutside, { capture: true, signal }), 0);
   }
 
   closePicker(): void {
+    this._pickerAC?.abort();
+    this._pickerAC = null;
     this.activePopup?.remove();
     this.activePopup = null;
   }

@@ -133,6 +133,7 @@ export class EmojiFeature {
   private editorArea: HTMLElement;
   private picker: HTMLElement | null = null;
   private savedRange: Range | null = null;
+  private _closeAC: AbortController | null = null;
 
   constructor(editorArea: HTMLElement) {
     this.editorArea = editorArea;
@@ -251,13 +252,14 @@ export class EmojiFeature {
     });
 
     // ── Outside-click close ────────────────────────────────────────────────
+    this._closeAC = new AbortController();
+    const { signal } = this._closeAC;
     const onOutside = (e: MouseEvent) => {
       if (this.picker && !this.picker.contains(e.target as Node) && e.target !== anchorEl) {
         this.close();
-        document.removeEventListener('click', onOutside);
       }
     };
-    setTimeout(() => document.addEventListener('click', onOutside), 0);
+    setTimeout(() => document.addEventListener('click', onOutside, { signal }), 0);
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────
@@ -334,6 +336,8 @@ export class EmojiFeature {
   }
 
   private close(): void {
+    this._closeAC?.abort();
+    this._closeAC = null;
     this.picker?.remove();
     this.picker = null;
   }

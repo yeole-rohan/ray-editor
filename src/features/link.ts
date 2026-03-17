@@ -111,6 +111,7 @@ export class LinkFeature {
 
   private _tooltipEl: HTMLElement | null = null;
   private _tooltipHideTimer: ReturnType<typeof setTimeout> | null = null;
+  private _tooltipAC: AbortController | null = null;
 
   showLinkTooltip(anchor: HTMLAnchorElement): void {
     if (this._tooltipHideTimer !== null) {
@@ -136,6 +137,10 @@ export class LinkFeature {
     tooltip.style.top = `${rect.bottom + window.scrollY + 6}px`;
     tooltip.style.left = `${rect.left + window.scrollX}px`;
 
+    // AbortController so all hover listeners are cleaned up when tooltip hides
+    this._tooltipAC = new AbortController();
+    const { signal } = this._tooltipAC;
+
     const scheduleHide = () => {
       this._tooltipHideTimer = setTimeout(() => this.hideLinkTooltip(0), 2000);
     };
@@ -146,20 +151,24 @@ export class LinkFeature {
       }
     };
 
-    anchor.addEventListener('mouseleave', scheduleHide, { once: false });
-    anchor.addEventListener('mouseenter', cancelHide, { once: false });
-    tooltip.addEventListener('mouseenter', cancelHide);
-    tooltip.addEventListener('mouseleave', scheduleHide);
+    anchor.addEventListener('mouseleave', scheduleHide, { signal });
+    anchor.addEventListener('mouseenter', cancelHide, { signal });
+    tooltip.addEventListener('mouseenter', cancelHide, { signal });
+    tooltip.addEventListener('mouseleave', scheduleHide, { signal });
   }
 
   hideLinkTooltip(delay = 500): void {
     if (this._tooltipHideTimer !== null) clearTimeout(this._tooltipHideTimer);
     if (delay === 0) {
+      this._tooltipAC?.abort();
+      this._tooltipAC = null;
       this._tooltipEl?.remove();
       this._tooltipEl = null;
       this._tooltipHideTimer = null;
     } else {
       this._tooltipHideTimer = setTimeout(() => {
+        this._tooltipAC?.abort();
+        this._tooltipAC = null;
         this._tooltipEl?.remove();
         this._tooltipEl = null;
         this._tooltipHideTimer = null;
@@ -201,9 +210,14 @@ export class LinkFeature {
     popup.style.top = `${rect.bottom + window.scrollY + 4}px`;
     popup.style.left = `${rect.left + window.scrollX}px`;
 
+    // AbortController for the document click-outside listener — aborted whenever
+    // the popup closes (edit, remove, or outside click) so no leak.
+    const popupAC = new AbortController();
+    const closePopup = () => { popupAC.abort(); popup.remove(); };
+
     editBtn.addEventListener('click', () => {
       this.openLinkModal(anchor);
-      popup.remove();
+      closePopup();
     });
 
     tabBtn.addEventListener('click', (e) => {
@@ -216,16 +230,23 @@ export class LinkFeature {
 
     removeBtn.addEventListener('click', () => {
       this.removeLink(anchor);
-      popup.remove();
+      closePopup();
     });
 
-    const onDocClick = (e: MouseEvent) => {
-      if (!popup.contains(e.target as Node) && e.target !== anchor) {
-        popup.remove();
-        document.removeEventListener('click', onDocClick);
-      }
-    };
-    document.addEventListener('click', onDocClick);
+    document.addEventListener('click', (e: MouseEvent) => {
+      if (!popup.contains(e.target as Node) && e.target !== anchor) closePopup();
+    }, { signal: popupAC.signal });
+  }
+
+  destroy(): void {
+    if (this._tooltipHideTimer !== null) clearTimeout(this._tooltipHideTimer);
+    this._tooltipHideTimer = null;
+    this._tooltipAC?.abort();
+    this._tooltipAC = null;
+    this._tooltipEl?.remove();
+    this._tooltipEl = null;
+    document.querySelector('.ray-editor-link-edit-remove')?.remove();
+    document.querySelector('.ray-editor-link-modal')?.remove();
   }
 
   removeLink(anchor: HTMLAnchorElement): void {

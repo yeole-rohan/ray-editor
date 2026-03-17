@@ -14,6 +14,7 @@ const PRESET_COLORS = [
 export class FormattingFeature {
   private editorArea: HTMLElement;
   private activePopup: HTMLElement | null = null;
+  private _popupAC: AbortController | null = null;
 
   constructor(editorArea: HTMLElement) {
     this.editorArea = editorArea;
@@ -127,19 +128,19 @@ export class FormattingFeature {
       }
     });
 
-    // Close on outside click
-    setTimeout(() => {
-      const onOutside = (e: MouseEvent) => {
-        if (!popup.contains(e.target as Node)) {
-          this._closePopup();
-          document.removeEventListener('mousedown', onOutside);
-        }
-      };
-      document.addEventListener('mousedown', onOutside);
-    }, 0);
+    // Close on outside click — signal captured before setTimeout so abort()
+    // called before the timeout fires makes the addEventListener a no-op.
+    this._popupAC = new AbortController();
+    const { signal } = this._popupAC;
+    const onOutside = (e: MouseEvent) => {
+      if (!popup.contains(e.target as Node)) this._closePopup();
+    };
+    setTimeout(() => document.addEventListener('mousedown', onOutside, { signal }), 0);
   }
 
   private _closePopup(): void {
+    this._popupAC?.abort();
+    this._popupAC = null;
     this.activePopup?.remove();
     this.activePopup = null;
   }
