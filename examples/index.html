@@ -551,8 +551,8 @@
     </div>
     <div class="ft">
       <div class="ft-icon">📐</div><div class="ft-title">Font size picker</div>
-      <div class="ft-desc">10–64 px dropdown wraps selection in a clean inline span</div>
-      <div class="ft-new">NEW v2.0.5</div>
+      <div class="ft-desc">Popup with 12 preset sizes (10–72 px), live preview on hover, custom size input, Default to clear</div>
+      <div class="ft-new">UPDATED v2.0.8</div>
     </div>
     <div class="ft">
       <div class="ft-icon">📋</div><div class="ft-title">Paste normalization</div>
@@ -565,6 +565,7 @@
       <div class="ft-new">NEW v2.0.5</div>
     </div>
     <div class="ft"><div class="ft-icon">📊</div><div class="ft-title">Tables</div><div class="ft-desc">Grid picker, floating toolbar — add/remove rows &amp; columns, move rows, toggle header</div></div>
+    <div class="ft"><div class="ft-icon">🔗</div><div class="ft-title">Link new-tab toggle</div><div class="ft-desc">Click ↗ in the link popup to toggle target="_blank" in-place — no modal needed</div><div class="ft-new">NEW v2.0.8</div></div>
     <div class="ft"><div class="ft-icon">🖼️</div><div class="ft-title">Image upload</div><div class="ft-desc">Upload, drag-resize, alt/title/caption editor modal</div></div>
     <div class="ft"><div class="ft-icon">🔢</div><div class="ft-title">Word count</div><div class="ft-desc">Live word &amp; character count bar + getWordCount() API</div></div>
     <div class="ft"><div class="ft-icon">♿</div><div class="ft-title">Accessible</div><div class="ft-desc">role="toolbar", role="textbox", aria-pressed, full keyboard navigation</div></div>
@@ -736,7 +737,7 @@ editor.<span class="fn">setContent</span>(<span class="str">'&lt;p&gt;Hello worl
               <tr><td><code>toggleCase</code></td><td>Toggle Title Case / sentence case</td><td>Copywriting, blog titles</td><td>text-transform</td></tr>
               <tr><td><code>textColor</code></td><td>Text color — inline swatch popup</td><td>Rich CMS editors, email composers</td><td><code>style="color:…"</code></td></tr>
               <tr><td><code>backgroundColor</code></td><td>Background color of selected text</td><td>Same as textColor</td><td><code>style="background-color:…"</code></td></tr>
-              <tr><td><code>fontSize</code> <span class="new-badge">NEW</span></td><td>Font size dropdown (10–64 px)</td><td>Email editors, rich newsletters, anywhere font size matters</td><td><code>&lt;span style="font-size:…px"&gt;</code></td></tr>
+              <tr><td><code>fontSize</code> <span class="new-badge">v2.0.8</span></td><td>Font size picker — popup with preset sizes (10–72 px), live preview on hover, custom input</td><td>Email editors, rich newsletters, anywhere font size matters</td><td><code>&lt;span style="font-size:…px"&gt;</code></td></tr>
               <tr><td><code>fonts</code></td><td>Font family dropdown</td><td>Design tools, email composers</td><td><code>&lt;font face="…"&gt;</code></td></tr>
               <tr><td><code>headings</code></td><td>Heading level (H1–H6, paragraph, blockquote) dropdown</td><td>Almost always — structure is fundamental</td><td><code>&lt;h1&gt;…&lt;h6&gt;</code></td></tr>
               <tr><td><code>blockquote</code></td><td>Block quote</td><td>Blogs, articles, citation-heavy content</td><td><code>&lt;blockquote&gt;</code></td></tr>
@@ -750,7 +751,7 @@ editor.<span class="fn">setContent</span>(<span class="str">'&lt;p&gt;Hello worl
               <tr><td><code>hr</code></td><td>Horizontal rule</td><td>Long-form content, separating sections</td><td><code>&lt;hr&gt;</code></td></tr>
               <tr><td><code>codeBlock</code></td><td>Fenced code block — language selector + syntax highlighting</td><td>Dev docs, technical blogs, READMEs</td><td><code>&lt;pre data-lang="js"&gt;</code></td></tr>
               <tr><td><code>codeInline</code></td><td>Inline code — wraps selection in <code>&lt;code&gt;</code></td><td>Whenever you have codeBlock — or for inline variable/key references</td><td><code>&lt;code&gt;</code></td></tr>
-              <tr><td><code>link</code></td><td>Insert / edit / remove link with modal</td><td>Almost always</td><td><code>&lt;a href="…"&gt;</code></td></tr>
+              <tr><td><code>link</code></td><td>Insert / edit / remove link with modal — popup also has ↗ one-click new-tab toggle</td><td>Almost always</td><td><code>&lt;a href="…"&gt;</code></td></tr>
               <tr><td><code>imageUpload</code></td><td>Upload image — needs <code>imageUpload.imageUploadUrl</code> in options</td><td>CMS, blog editor, any content with images</td><td><code>&lt;img&gt;</code></td></tr>
               <tr><td><code>fileUpload</code></td><td>Upload file attachment — needs <code>fileUpload.fileUploadUrl</code></td><td>Email composers, document editors</td><td><code>&lt;a&gt;</code> file link</td></tr>
               <tr><td><code>table</code></td><td>Insert table via hover grid picker; floating toolbar for row/col ops</td><td>Data tables, comparison content, structured docs</td><td><code>&lt;table&gt;</code></td></tr>

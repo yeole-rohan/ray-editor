@@ -218,7 +218,7 @@ const editor = new RayEditor('editor', {
 | `toggleCase` | Toggle case |
 | `textColor` | Text color picker |
 | `backgroundColor` | Background color picker |
-| `fontSize` | Font size dropdown (10–64 px) ✨ v2.0.6 |
+| `fontSize` | Font size picker — popup with preset sizes (10–72 px), live preview on hover, custom size input ✨ v2.0.8 |
 | `fonts` | Font family dropdown |
 | `headings` | Heading dropdown (H1–H6, Blockquote, Paragraph) |
 | `blockquote` | Blockquote |
@@ -232,7 +232,7 @@ const editor = new RayEditor('editor', {
 | `hr` | Horizontal rule |
 | `codeBlock` | Fenced code block with language selector + syntax highlighting |
 | `codeInline` | Inline code |
-| `link` | Insert / edit link |
+| `link` | Insert / edit link — popup has Edit, ↗ New tab toggle, and Remove |
 | `imageUpload` | Upload & insert image (requires `imageUpload.imageUploadUrl`) |
 | `fileUpload` | Upload & insert file link (requires `fileUpload.fileUploadUrl`) |
 | `table` | Insert table (grid picker) — click inside any cell for the floating context toolbar |
