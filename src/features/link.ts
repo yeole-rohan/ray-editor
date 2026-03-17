@@ -171,24 +171,50 @@ export class LinkFeature {
     document.querySelector('.ray-editor-link-edit-remove')?.remove();
     this.hideLinkTooltip(0);
 
+    const isNewTab = anchor.target === '_blank';
+
     const popup = document.createElement('div');
     popup.className = 'ray-editor-link-edit-remove';
-    popup.innerHTML = `
-      <button class="ray-edit-link-btn" aria-label="Edit link">Edit</button>
-      <button class="ray-remove-link-btn" aria-label="Remove link">Remove</button>
-    `;
     document.body.appendChild(popup);
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'ray-edit-link-btn';
+    editBtn.setAttribute('aria-label', 'Edit link');
+    editBtn.textContent = 'Edit';
+
+    const tabBtn = document.createElement('button');
+    tabBtn.className = 'ray-link-newtab-btn' + (isNewTab ? ' active' : '');
+    tabBtn.setAttribute('aria-label', isNewTab ? 'Remove new tab' : 'Open in new tab');
+    tabBtn.title = 'Toggle new tab';
+    tabBtn.textContent = '↗';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'ray-remove-link-btn';
+    removeBtn.setAttribute('aria-label', 'Remove link');
+    removeBtn.textContent = 'Remove';
+
+    popup.appendChild(editBtn);
+    popup.appendChild(tabBtn);
+    popup.appendChild(removeBtn);
 
     const rect = anchor.getBoundingClientRect();
     popup.style.top = `${rect.bottom + window.scrollY + 4}px`;
     popup.style.left = `${rect.left + window.scrollX}px`;
 
-    popup.querySelector('.ray-edit-link-btn')!.addEventListener('click', () => {
+    editBtn.addEventListener('click', () => {
       this.openLinkModal(anchor);
       popup.remove();
     });
 
-    popup.querySelector('.ray-remove-link-btn')!.addEventListener('click', () => {
+    tabBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const openNewTab = anchor.target !== '_blank';
+      anchor.target = openNewTab ? '_blank' : '_self';
+      tabBtn.classList.toggle('active', openNewTab);
+      tabBtn.setAttribute('aria-label', openNewTab ? 'Remove new tab' : 'Open in new tab');
+    });
+
+    removeBtn.addEventListener('click', () => {
       this.removeLink(anchor);
       popup.remove();
     });

@@ -35,6 +35,7 @@ import { MarkdownFeature } from './features/markdown';
 import { TaskListFeature } from './features/tasklist';
 import { CalloutFeature } from './features/callout';
 import { SpecialCharsFeature } from './features/special-chars';
+import { FontSizeFeature } from './features/fontsize';
 
 export class RayEditor implements RayEditorInstance {
   // DOM
@@ -73,6 +74,7 @@ export class RayEditor implements RayEditorInstance {
   private taskListFeature!: TaskListFeature;
   private calloutFeature!: CalloutFeature;
   private specialCharsFeature!: SpecialCharsFeature;
+  private fontSizeFeature!: FontSizeFeature;
 
   // Plugin manager
   private pluginManager: PluginManager;
@@ -193,6 +195,7 @@ export class RayEditor implements RayEditorInstance {
     this.taskListFeature = new TaskListFeature(this.editorElement);
     this.calloutFeature = new CalloutFeature(this.editorElement);
     this.specialCharsFeature = new SpecialCharsFeature();
+    this.fontSizeFeature = new FontSizeFeature(this.editorElement);
 
     // Toolbar
     this.toolbarManager = new ToolbarManager(
@@ -395,6 +398,7 @@ export class RayEditor implements RayEditorInstance {
     this.wordCountFeature?.destroy();
     this.fullscreenFeature?.destroy();
     this.emojiFeature?.destroy();
+    this.fontSizeFeature?.destroy();
     this.markdownFeature?.destroy();
     this.eventBus.destroy();
 
@@ -566,6 +570,11 @@ export class RayEditor implements RayEditorInstance {
       case 'specialChars': {
         const scBtn = this.toolbarElement.querySelector<HTMLElement>('.ray-btn-specialChars');
         if (scBtn) this.specialCharsFeature.toggle(scBtn);
+        break;
+      }
+      case 'fontSize': {
+        const fsBtn = this.toolbarElement.querySelector<HTMLElement>('.ray-btn-fontSize');
+        if (fsBtn) this.fontSizeFeature.show(fsBtn);
         break;
       }
     }

@@ -111,20 +111,6 @@ export class ToolbarManager {
       ) as any;
       if (!selectedOpt) return;
 
-      // fontSize dropdown: wrap selection in <span style="font-size:Npx">
-      if (key === 'fontSize') {
-        const px = selectedOpt.value;
-        if (px) {
-          const sel = window.getSelection();
-          if (sel && sel.rangeCount && !sel.isCollapsed) {
-            document.execCommand('insertHTML', false,
-              `<span style="font-size:${px}px">${sel.toString()}</span>`);
-          }
-        }
-        this.editorArea.focus();
-        return;
-      }
-
       if (selectedOpt.cmd) {
         document.execCommand(selectedOpt.cmd, false, selectedOpt.value);
         this.editorArea.focus();

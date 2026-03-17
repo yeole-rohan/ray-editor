@@ -1029,6 +1029,99 @@ tr.ray-row-resize-active > th {
 .ray-emoji-btn:hover { background: var(--ray-btn-hover, #edf2f7); }
 .ray-emoji-btn.active { background: var(--ray-btn-active-bg, #CDF6E4); }
 
+/* ─── Font Size Picker ────────────────────────────────────────────────────── */
+
+.ray-fontsize-picker {
+  background: var(--ray-slash-bg, #ffffff);
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-radius: 8px;
+  box-shadow: var(--ray-shadow-lg, 0 4px 12px rgba(0,0,0,0.15));
+  width: 150px;
+  max-height: 420px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ray-fontsize-input-row {
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+  border-bottom: 1px solid var(--ray-border, #e2e8f0);
+  flex-shrink: 0;
+}
+
+.ray-fontsize-input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 6px;
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-radius: 4px;
+  font-size: 13px;
+  outline: none;
+  color: var(--ray-text, #1a202c);
+  background: var(--ray-bg, #fff);
+}
+
+.ray-fontsize-input:focus { border-color: var(--ray-accent, #3b82f6); }
+
+.ray-fontsize-apply-btn {
+  padding: 4px 7px;
+  border: 1px solid var(--ray-border, #e2e8f0);
+  border-radius: 4px;
+  background: var(--ray-btn-hover, #edf2f7);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--ray-text, #1a202c);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.ray-fontsize-apply-btn:hover {
+  background: var(--ray-accent, #3b82f6);
+  color: #fff;
+  border-color: var(--ray-accent, #3b82f6);
+}
+
+.ray-fontsize-list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.ray-fontsize-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 5px 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--ray-text, #1a202c);
+  transition: background 0.1s;
+  min-height: 30px;
+}
+
+.ray-fontsize-item:hover { background: var(--ray-btn-hover, #edf2f7); }
+
+.ray-fontsize-item-default {
+  font-size: 13px;
+  color: var(--ray-text-muted, #64748b);
+  border-bottom: 1px solid var(--ray-border, #e2e8f0);
+}
+
+/* ─── Link Popup — New Tab Toggle ─────────────────────────────────────────── */
+
+.ray-link-newtab-btn {
+  color: var(--ray-text, #1a202c);
+}
+
+.ray-link-newtab-btn.active {
+  background: var(--ray-btn-active-bg, #CDF6E4) !important;
+  border-color: var(--ray-btn-active-border, #4a90e2) !important;
+  color: var(--ray-btn-active-text, #1a73e8) !important;
+}
+
 /* ─── Word Count Bar ──────────────────────────────────────────────────────── */
 
 .ray-word-count-bar {
