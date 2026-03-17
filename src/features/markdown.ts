@@ -21,10 +21,14 @@ function processInline(text: string, codes: string[]): string {
   text = text.replace(/\x00IC(\d+)\x00/g, (_, i) =>
     `<code>${escapeHtml(codes[parseInt(i)])}</code>`
   );
-  // Images before links (overlapping syntax)
-  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
-  // Links
-  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  // Images before links (overlapping syntax) — escape alt and src to prevent XSS
+  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) =>
+    `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}">`
+  );
+  // Links — escape href to prevent attribute injection
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) =>
+    `<a href="${escapeHtml(url)}">${label}</a>`
+  );
   // Bold (** or __)
   text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   text = text.replace(/__(.+?)__/g, '<strong>$1</strong>');

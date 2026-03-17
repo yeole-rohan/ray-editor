@@ -22,6 +22,7 @@ export class ToolbarManager {
   private lastToolbarWidth?: number;
   private resizeTimeout?: ReturnType<typeof setTimeout>;
   private overflowMode = false;
+  private _debouncedCheck?: () => void;
 
   constructor(
     toolbar: HTMLElement,
@@ -246,6 +247,7 @@ export class ToolbarManager {
       }, 60);
     };
 
+    this._debouncedCheck = debouncedCheck;
     this.resizeObserver = new ResizeObserver(debouncedCheck);
     this.resizeObserver.observe(this.toolbar);
     window.addEventListener('resize', debouncedCheck);
@@ -355,5 +357,9 @@ export class ToolbarManager {
 
   destroy(): void {
     this.resizeObserver?.disconnect();
+    if (this._debouncedCheck) {
+      window.removeEventListener('resize', this._debouncedCheck);
+      this._debouncedCheck = undefined;
+    }
   }
 }

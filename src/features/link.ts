@@ -124,12 +124,27 @@ export class LinkFeature {
     this.hideLinkTooltip(0);
 
     const href = anchor.getAttribute('href') || '';
-    const display = href.length > 50 ? href.slice(0, 47) + '…' : href;
+    const rawDisplay = href.length > 50 ? href.slice(0, 47) + '…' : href;
 
     const tooltip = document.createElement('div');
     tooltip.className = 'ray-link-tooltip';
     tooltip.dataset.anchor = href;
-    tooltip.innerHTML = `<span class="ray-link-tooltip-url">${display}</span><a class="ray-link-tooltip-open" href="${href}" target="_blank" rel="noopener noreferrer" aria-label="Open link in new tab">↗ Open</a>`;
+
+    // Build tooltip with DOM APIs so URL content is never interpolated as HTML
+    const urlSpan = document.createElement('span');
+    urlSpan.className = 'ray-link-tooltip-url';
+    urlSpan.textContent = rawDisplay;
+
+    const openLink = document.createElement('a');
+    openLink.className = 'ray-link-tooltip-open';
+    openLink.href = href;          // safe: href attribute set via property, not innerHTML
+    openLink.target = '_blank';
+    openLink.rel = 'noopener noreferrer';
+    openLink.setAttribute('aria-label', 'Open link in new tab');
+    openLink.textContent = '↗ Open';
+
+    tooltip.appendChild(urlSpan);
+    tooltip.appendChild(openLink);
     document.body.appendChild(tooltip);
     this._tooltipEl = tooltip;
 
