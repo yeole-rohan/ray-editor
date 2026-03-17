@@ -418,6 +418,11 @@ export class MarkdownFeature {
   // Temp holder used by RayEditor after switchToRichText
   _pendingHtml: string | null = null;
 
+  // MD icon: markdown "M↓" symbol — shown when in markdown mode (click to go back to rich text)
+  private static readonly ICON_MD = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15V9l3 3 3-3v6"/><path d="M17 15l-2-3-2 3"/></svg>`;
+  // Rich text icon: "<>" symbol — shown when in rich text mode (click to switch to markdown)
+  private static readonly ICON_RT = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`;
+
   private updateToggleBtn(): void {
     const btn = this.toolbar.querySelector<HTMLElement>('.ray-btn-markdownToggle');
     if (!btn) return;
@@ -425,10 +430,12 @@ export class MarkdownFeature {
       btn.classList.add('active');
       btn.title = 'Switch to Rich Text';
       btn.setAttribute('data-tooltip', 'Switch to Rich Text');
+      btn.innerHTML = MarkdownFeature.ICON_MD;
     } else {
       btn.classList.remove('active');
       btn.title = 'Markdown Mode';
       btn.setAttribute('data-tooltip', 'Markdown Mode');
+      btn.innerHTML = MarkdownFeature.ICON_RT;
     }
   }
 }

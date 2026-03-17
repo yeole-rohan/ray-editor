@@ -42,7 +42,7 @@
     "downloadUrl": "https://www.npmjs.com/package/@rohanyeole/ray-editor",
     "author": { "@type": "Person", "name": "Rohan Yeole", "url": "https://rohanyeole.com" },
     "license": "https://opensource.org/licenses/MIT",
-    "softwareVersion": "2.0.6",
+    "softwareVersion": "2.0.8",
     "keywords": "wysiwyg, rich text editor, javascript, react, vue, angular, free, open source"
   }
   </script>
@@ -1038,10 +1038,52 @@ editor.<span class="fn">use</span>(myPlugin);</pre>
   </div><!-- /docs-layout -->
 </section>
 
+<!-- ── Coming Soon / Contributing ─────────────────────────────────────────────── -->
+<section class="section" id="contributing" style="padding-bottom:60px">
+  <div class="section-label">Roadmap</div>
+  <div class="section-title">Coming Soon &amp; What Needs Help</div>
+  <p class="section-desc">RayEditor is MIT-licensed and open to contributions. Here's what's planned and what needs community help.</p>
+
+  <div class="card" style="margin-bottom:28px">
+    <div class="card-body">
+      <h3 style="font-size:16px;font-weight:700;margin:0 0 12px">Planned Features</h3>
+      <table class="cmp-table" style="width:100%">
+        <thead><tr><th>Feature</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Table: merge / split cells</td><td>colspan/rowspan with cell-map bookkeeping</td></tr>
+          <tr><td>Image: crop</td><td>CSS crop + aspect-ratio lock (Canvas API, no server needed)</td></tr>
+          <tr><td>RTL support</td><td>dir="rtl" toggle on editor area</td></tr>
+          <tr><td>Math / LaTeX</td><td>KaTeX opt-in plugin (inline $…$ and block $$…$$)</td></tr>
+          <tr><td>Word / DOCX import</td><td>mammoth.js-based opt-in plugin (separate package)</td></tr>
+          <tr><td>Real-time collaboration</td><td>WebSocket + OT/CRDT — external plugin, not core</td></tr>
+          <tr><td>Auto-save hook</td><td>onAutoSave(html) callback + configurable interval</td></tr>
+          <tr><td>More tests</td><td>Unit tests for table, image, link, markdown features</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h3 style="font-size:16px;font-weight:700;margin:0 0 12px">Known Issues</h3>
+      <p style="margin:0 0 8px;font-size:14px;color:#555">These are browser-level limitations that affect all <code>contenteditable</code>-based editors — not specific to RayEditor:</p>
+      <ul style="margin:0;padding-left:20px;font-size:14px;line-height:1.8">
+        <li><strong>Emoji cursor splitting</strong> — Unicode emojis can span multiple code points. The browser cursor may land between them, causing Backspace to appear ineffective on first press.</li>
+        <li><strong>Emoji skin tones removed</strong> — Fitzpatrick skin-tone modifiers only work on <code>Emoji_Modifier_Base</code> characters. Appending one to a non-base emoji (e.g., 😄) renders two separate visible characters. RayEditor does not ship skin tone support for this reason.</li>
+        <li><strong>Undo granularity</strong> — <code>document.execCommand</code> undo is managed by the browser. Direct DOM insertions (code blocks, tables, callouts) may not participate in the native undo stack.</li>
+        <li><strong>Table resize in read-only mode</strong> — Column and row resize handlers remain active even when <code>readOnly: true</code>. Fix is tracked in the roadmap.</li>
+      </ul>
+      <p style="margin:12px 0 0;font-size:14px">
+        Found a bug or want to contribute? <a href="https://github.com/yeole-rohan/ray-editor/issues" target="_blank" rel="noopener">Open an issue on GitHub</a>.
+      </p>
+    </div>
+  </div>
+</section>
+
 <!-- ── Footer ────────────────────────────────────────────────────────────────── -->
 <footer>
   <p>
-    RayEditor v2.0.6 · MIT License ·
+    RayEditor v2.0.8 · MIT License ·
     <a href="https://github.com/yeole-rohan/ray-editor" target="_blank" rel="noopener">GitHub</a> ·
     <a href="https://www.npmjs.com/package/@rohanyeole/ray-editor" target="_blank" rel="noopener">npm</a> ·
     Built by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a>

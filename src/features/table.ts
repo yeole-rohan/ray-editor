@@ -131,6 +131,8 @@ export class TableFeature {
       sel?.removeAllRanges();
       sel?.addRange(r);
     }
+
+    this.initResizeHandles(table);
   }
 
   // ── Floating Context Toolbar ─────────────────────────────────────────────────
@@ -162,6 +164,7 @@ export class TableFeature {
       btn.className = 'ray-table-ctx-btn';
       btn.textContent = label;
       btn.title = title;
+      btn.setAttribute('aria-label', title);
       btn.onmousedown = (e) => {
         e.preventDefault();
         action();
@@ -357,6 +360,138 @@ export class TableFeature {
     const sel = window.getSelection();
     sel?.removeAllRanges();
     sel?.addRange(r);
+  }
+
+  // ── Column + Row Resize with visual indicators ────────────────────────────────
+
+  initResizeHandles(table: HTMLTableElement): void {
+    const MIN_COL_WIDTH = 40;
+    const MIN_ROW_HEIGHT = 30;
+
+    let colDragCell: HTMLTableCellElement | null = null;
+    let colDragStartX = 0;
+    let colDragStartWidth = 0;
+    let colDragIndex = -1;
+
+    let rowDragRow: HTMLTableRowElement | null = null;
+    let rowDragStartY = 0;
+    let rowDragStartHeight = 0;
+
+    let highlightCell: HTMLTableCellElement | null = null;
+    let highlightRow: HTMLTableRowElement | null = null;
+
+    const isNearRightEdge = (cell: HTMLTableCellElement, clientX: number): boolean => {
+      const rect = cell.getBoundingClientRect();
+      return clientX >= rect.right - 5 && clientX <= rect.right + 5;
+    };
+
+    const isNearBottomEdge = (row: HTMLTableRowElement, clientY: number): boolean => {
+      const rect = row.getBoundingClientRect();
+      return clientY >= rect.bottom - 5 && clientY <= rect.bottom + 5;
+    };
+
+    table.addEventListener('mousemove', (e: MouseEvent) => {
+      if (colDragCell || rowDragRow) return;
+
+      const cell = (e.target as HTMLElement).closest('td, th') as HTMLTableCellElement | null;
+      const row = (e.target as HTMLElement).closest('tr') as HTMLTableRowElement | null;
+
+      // Clear stale highlights
+      if (highlightCell && highlightCell !== cell) {
+        highlightCell.classList.remove('ray-col-resize-active');
+        highlightCell = null;
+      }
+      if (highlightRow && highlightRow !== row) {
+        highlightRow.classList.remove('ray-row-resize-active');
+        highlightRow = null;
+      }
+
+      let cursor = '';
+
+      if (cell && isNearRightEdge(cell, e.clientX)) {
+        cursor = 'col-resize';
+        cell.classList.add('ray-col-resize-active');
+        highlightCell = cell;
+      } else if (cell) {
+        cell.classList.remove('ray-col-resize-active');
+      }
+
+      if (row && isNearBottomEdge(row, e.clientY)) {
+        cursor = cursor || 'row-resize';
+        row.classList.add('ray-row-resize-active');
+        highlightRow = row;
+      } else if (row) {
+        row.classList.remove('ray-row-resize-active');
+      }
+
+      table.style.cursor = cursor;
+    });
+
+    table.addEventListener('mouseleave', () => {
+      if (!colDragCell && !rowDragRow) {
+        table.style.cursor = '';
+        highlightCell?.classList.remove('ray-col-resize-active');
+        highlightCell = null;
+        highlightRow?.classList.remove('ray-row-resize-active');
+        highlightRow = null;
+      }
+    });
+
+    table.addEventListener('mousedown', (e: MouseEvent) => {
+      const cell = (e.target as HTMLElement).closest('td, th') as HTMLTableCellElement | null;
+      const row = (e.target as HTMLElement).closest('tr') as HTMLTableRowElement | null;
+
+      // Column resize takes priority when near right edge
+      if (cell && isNearRightEdge(cell, e.clientX)) {
+        e.preventDefault();
+        colDragCell = cell;
+        colDragStartX = e.clientX;
+        colDragStartWidth = cell.offsetWidth;
+        colDragIndex = cell.cellIndex;
+
+        const onMove = (ev: MouseEvent) => {
+          if (!colDragCell) return;
+          const newWidth = Math.max(MIN_COL_WIDTH, colDragStartWidth + ev.clientX - colDragStartX);
+          Array.from(table.rows).forEach(r => {
+            const c = r.cells[colDragIndex] as HTMLTableCellElement | undefined;
+            if (c) c.style.width = `${newWidth}px`;
+          });
+        };
+        const onUp = () => {
+          colDragCell = null;
+          colDragIndex = -1;
+          table.style.cursor = '';
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+        };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+        return;
+      }
+
+      // Row resize when near bottom edge
+      if (row && isNearBottomEdge(row, e.clientY)) {
+        e.preventDefault();
+        rowDragRow = row;
+        rowDragStartY = e.clientY;
+        rowDragStartHeight = row.offsetHeight;
+
+        const onMove = (ev: MouseEvent) => {
+          if (!rowDragRow) return;
+          const newHeight = Math.max(MIN_ROW_HEIGHT, rowDragStartHeight + ev.clientY - rowDragStartY);
+          rowDragRow.style.height = `${newHeight}px`;
+        };
+        const onUp = () => {
+          rowDragRow?.classList.remove('ray-row-resize-active');
+          rowDragRow = null;
+          table.style.cursor = '';
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+        };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      }
+    });
   }
 
   // ── Tab Key Navigation ────────────────────────────────────────────────────────

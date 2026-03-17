@@ -151,15 +151,26 @@ function loadHljs(cb: () => void): void {
   document.head.appendChild(script);
 }
 
+function isCodeElFocused(codeEl: HTMLElement): boolean {
+  const sel = window.getSelection();
+  return !!(sel?.rangeCount && codeEl.contains(sel.anchorNode));
+}
+
 export function highlightBlock(codeEl: HTMLElement, lang: string): void {
   if (lang === 'plaintext' || !lang) return;
+  // Never overwrite innerHTML while the user has a cursor inside the block.
+  if (isCodeElFocused(codeEl)) return;
+  const text = (codeEl.textContent ?? '').trim();
+  if (!text) return; // nothing to highlight yet
+
   loadHljs(() => {
     if (!window.hljs) return;
+    // Re-check focus after async load — hljs CDN may take ~1s to arrive
+    if (isCodeElFocused(codeEl)) return;
     const supported = window.hljs.getLanguage(lang);
     if (!supported) return;
     try {
-      const text = codeEl.textContent ?? '';
-      const result = window.hljs.highlight(text, { language: lang, ignoreIllegals: true });
+      const result = window.hljs.highlight(codeEl.textContent ?? '', { language: lang, ignoreIllegals: true });
       codeEl.innerHTML = result.value;
     } catch { /* ignore */ }
   });
@@ -284,7 +295,7 @@ export class CodeBlockFeature {
   }
 
   handleCodeBlockExit(e: KeyboardEvent, elementNode: Element): void {
-    if (e.key !== 'Enter' || e.shiftKey) return;
+    if (e.key !== 'Enter') return;
 
     const codeContent = elementNode.closest('.ray-code-content');
     if (!codeContent) return;
@@ -293,7 +304,7 @@ export class CodeBlockFeature {
     if (!sel?.rangeCount) return;
     const range = sel.getRangeAt(0);
 
-    // Check if current line (before and after cursor) is empty
+    // ── Double-empty-line exit (Shift not required for this) ─────────────────
     const preRange = document.createRange();
     preRange.setStart(codeContent, 0);
     preRange.setEnd(range.startContainer, range.startOffset);
@@ -307,10 +318,10 @@ export class CodeBlockFeature {
     const nlIdx = textAfter.indexOf('\n');
     const lineAfterCursor = nlIdx === -1 ? textAfter : textAfter.slice(0, nlIdx);
 
-    if (currentLine === '' && lineAfterCursor === '') {
+    if (!e.shiftKey && currentLine === '' && lineAfterCursor === '') {
       e.preventDefault();
 
-      // Remove the trailing empty line from the code block
+      // Remove the trailing empty newline from the code block
       if (textBefore.endsWith('\n')) {
         const preRange2 = document.createRange();
         preRange2.setStart(codeContent, 0);
@@ -320,18 +331,30 @@ export class CodeBlockFeature {
 
       const newPara = document.createElement('p');
       newPara.innerHTML = '<br>';
-
       const codeBlock = codeContent.closest('.ray-code-block');
       if (codeBlock) {
         codeBlock.parentNode?.insertBefore(newPara, codeBlock.nextSibling);
-
         const newRange = document.createRange();
         newRange.selectNodeContents(newPara);
         newRange.collapse(true);
         sel.removeAllRanges();
         sel.addRange(newRange);
       }
+      return;
     }
+
+    // ── Regular Enter: insert literal \n instead of letting the browser
+    //    create block elements (<div>, <pre>, etc.) inside the code block ──────
+    e.preventDefault();
+    range.deleteContents();
+    const nl = document.createTextNode('\n');
+    range.insertNode(nl);
+    // Move cursor after the \n
+    const newRange = document.createRange();
+    newRange.setStartAfter(nl);
+    newRange.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
   }
 
   handleInlineCodeExit(e: KeyboardEvent, sel: Selection, elementNode: Element): void {

@@ -2,7 +2,7 @@ import type { FileUploadOptions } from '../types/options';
 import { sanitizeUrl } from '../core/sanitize';
 
 /**
- * File upload feature.
+ * File upload feature — inserts media previews or download links.
  */
 export class FileFeature {
   private editorArea: HTMLElement;
@@ -25,10 +25,6 @@ export class FileFeature {
       const file = input.files?.[0];
       if (!file) return;
 
-      if (file.type.startsWith('image/')) {
-        this.showError('Use the image button for image uploads.');
-        return;
-      }
       if (file.size > this.maxFileSize) {
         this.showError(
           `File size must be under ${this.maxFileSize / (1024 * 1024)}MB.`
@@ -56,12 +52,13 @@ export class FileFeature {
       })
       .then(data => {
         if (!data.url) throw new Error('No file URL returned.');
-        this.replacePlaceholderWithLink(placeholder, file.name, data.url);
+        const safeUrl = sanitizeUrl(data.url) || '#';
+        const figure = this.buildFileFigure(file.name, file.type, safeUrl);
+        this.replacePlaceholderWithFigure(placeholder, figure);
       })
       .catch(err => {
         console.error('File upload failed:', err);
-        // Use textContent so file.name is treated as plain text,
-        // not parsed as HTML (avoids XSS via crafted filenames).
+        // textContent prevents XSS via crafted filenames
         placeholder.textContent = `❌ Failed to upload "${file.name}"`;
       });
   }
@@ -90,31 +87,99 @@ export class FileFeature {
     return placeholder;
   }
 
-  private replacePlaceholderWithLink(
-    placeholder: HTMLElement,
-    filename: string,
-    url: string
-  ): void {
-    const link = document.createElement('a');
-    // Validate the server-returned URL before setting it as href.
-    link.href = sanitizeUrl(url) || '#';
-    link.target = '_blank';
-    link.download = filename;
-    link.textContent = `📄 ${filename}`;
-    link.className = 'ray-link';
+  private replacePlaceholderWithFigure(placeholder: HTMLElement, figure: HTMLElement): void {
+    placeholder.replaceWith(figure);
 
-    placeholder.replaceWith(link);
-
-    // Move cursor after link
-    const spacer = document.createTextNode(' ');
-    link.after(spacer);
+    const spacer = document.createElement('p');
+    spacer.innerHTML = '<br>';
+    figure.after(spacer);
 
     const range = document.createRange();
-    range.setStartAfter(spacer);
+    range.setStart(spacer, 0);
     range.collapse(true);
     const sel = window.getSelection();
     sel?.removeAllRanges();
     sel?.addRange(range);
+  }
+
+  /**
+   * Builds a <figure class="ray-file-figure"> for the given file.
+   * Public so content.ts restoreFromHTML and tests can reuse it.
+   *
+   *  image/* → <img>
+   *  video/* → <video controls>
+   *  audio/* → <audio controls>
+   *  other   → <a> download link with extension badge
+   *
+   * figcaption is always appended with the filename (editable in the editor).
+   */
+  buildFileFigure(name: string, mimeType: string, url: string): HTMLElement {
+    const figure = document.createElement('figure');
+    figure.className = 'ray-file-figure';
+    figure.setAttribute('contenteditable', 'false');
+
+    if (mimeType.startsWith('image/')) {
+      figure.dataset.fileType = 'image';
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = name;
+      figure.appendChild(img);
+
+    } else if (mimeType.startsWith('video/')) {
+      figure.dataset.fileType = 'video';
+      const video = document.createElement('video');
+      video.controls = true;
+      video.src = url;
+      video.textContent = 'Your browser does not support video.';
+      figure.appendChild(video);
+
+    } else if (mimeType.startsWith('audio/')) {
+      figure.dataset.fileType = 'audio';
+      const audio = document.createElement('audio');
+      audio.controls = true;
+      audio.src = url;
+      audio.textContent = 'Your browser does not support audio.';
+      figure.appendChild(audio);
+
+    } else {
+      figure.dataset.fileType = 'other';
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.download = name;
+      link.className = 'ray-file-link';
+
+      const ext = name.includes('.') ? name.split('.').pop()!.toLowerCase() : 'file';
+      const badge = document.createElement('span');
+      badge.className = 'ray-file-ext';
+      badge.textContent = ext;
+
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = name;
+
+      link.appendChild(badge);
+      link.appendChild(nameSpan);
+      figure.appendChild(link);
+    }
+
+    const figcaption = document.createElement('figcaption');
+    figcaption.textContent = name;
+    figcaption.setAttribute('contenteditable', 'true');
+    figure.appendChild(figcaption);
+
+    return figure;
+  }
+
+  /**
+   * Restores editor-only attributes on .ray-file-figure elements
+   * after setContent() or paste. Called from ContentManager.applyStructure().
+   */
+  static restoreFromHTML(container: HTMLElement): void {
+    container.querySelectorAll<HTMLElement>('.ray-file-figure').forEach(figure => {
+      figure.setAttribute('contenteditable', 'false');
+      const caption = figure.querySelector<HTMLElement>('figcaption');
+      if (caption) caption.setAttribute('contenteditable', 'true');
+    });
   }
 
   private showError(msg: string): void {

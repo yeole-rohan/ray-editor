@@ -108,7 +108,6 @@ export interface RayEditorOptions {
   theme?: 'light' | 'dark' | 'auto';
   initStyles?: boolean;
   stylesheetUrl?: string;
-  hideWatermark?: boolean;
 
   // ─── Extensibility ───────────────────────────────────────────────────────
 

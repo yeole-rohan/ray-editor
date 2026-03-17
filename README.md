@@ -290,7 +290,6 @@ const editor = new RayEditor('editor', {
   theme: 'light' | 'dark' | 'auto',
   initStyles: boolean,               // auto-inject CSS link
   stylesheetUrl: string,             // custom CSS URL
-  hideWatermark: boolean,
 
   // Extensibility
   plugins: RayPlugin[],
@@ -610,7 +609,60 @@ New v2 additions are purely additive.
 
 ---
 
-## Contributing
+## File Upload Preview
+
+The `fileUpload` toolbar item now renders uploaded files inline rather than as a plain download link:
+
+| MIME type | Rendered as |
+|-----------|-------------|
+| `image/*` | `<img>` |
+| `video/*` | `<video controls>` |
+| `audio/*` | `<audio controls>` |
+| Other | `<a class="ray-file-link">` with file-extension badge |
+
+`getContent()` returns a self-contained `<figure class="ray-file-figure">` with a `<figcaption>` (editable file name). `setContent()` automatically restores the interactive figure from this clean HTML.
+
+---
+
+## Image Resize Handles
+
+Uploaded images get 8 resize handles (N, NE, E, SE, S, SW, W, NW) that appear on hover. An edit button opens a modal for alt text, title, and caption. A close button removes the image. All handles have `aria-label` attributes for accessibility.
+
+---
+
+## Table Column & Row Resize
+
+Inside any inserted table, drag the right border of a cell to resize the column, or drag the bottom border to resize the row. Min column width: 40px. Min row height: 30px. Column widths are preserved in `getContent()` output via `style.width` on `<td>/<th>`.
+
+---
+
+## Known Issues
+
+These are browser-level limitations that affect all `contenteditable`-based editors, not specific to RayEditor:
+
+- **Emoji cursor splitting** — Unicode emojis can be more than one code point. The browser cursor can land between code points (e.g., between a base emoji and a variation selector). This can cause Backspace to appear to do nothing on first press (it deletes the invisible trailing code point first).
+- **Emoji modifier sequences** — Skin tone modifiers (U+1F3FB–U+1F3FF) only apply to `Emoji_Modifier_Base` characters (hand/people emojis). Appending a modifier to any other emoji (e.g., 😄) produces two separate visible characters. RayEditor does not ship skin tone support for this reason.
+- **Undo granularity** — `document.execCommand` undo history is managed by the browser. Some operations (especially those that manipulate the DOM directly) may not be undoable with Ctrl+Z.
+- **Table resize in read-only mode** — Column and row resize drag handlers are active even in read-only mode. This is a known gap; a fix is tracked in the roadmap.
+
+---
+
+## What Needs Help / Contributing
+
+RayEditor is MIT-licensed and community contributions are welcome. These areas need the most work:
+
+| Area | What's needed |
+|------|---------------|
+| **Table: merge / split cells** | `colspan`/`rowspan` bookkeeping, cell-map algorithm, undo snapshot |
+| **Image: crop** | Canvas crop (CSS crop only, not server-side) with aspect-ratio lock |
+| **Task list: keyboard behavior** | Enter on empty item → exit list; Backspace on first empty item → `<p>` |
+| **RTL support** | `dir="rtl"` toggle on editor area; toolbar icon mirroring |
+| **Math / LaTeX** | KaTeX integration (inline `$...$` and block `$$...$$`) via opt-in plugin |
+| **Word / DOCX import** | `mammoth.js`-based plugin (separate package, not core — to keep zero-dep) |
+| **Real-time collaboration** | WebSocket + OT/CRDT — out of scope for core, suitable as external plugin |
+| **Tests** | More unit tests for table, image, link, markdown features |
+
+To contribute:
 
 ```bash
 git clone https://github.com/yeole-rohan/ray-editor
@@ -618,6 +670,8 @@ npm install
 npm run dev    # watch build
 npm test       # run tests
 ```
+
+Open an issue before starting work on large features so we can align on the design.
 
 ---
 

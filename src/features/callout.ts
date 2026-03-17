@@ -79,6 +79,17 @@ export class CalloutFeature {
   }
 
   insertCallout(type: CalloutType): void {
+    const sel = window.getSelection();
+
+    // Capture selected text/HTML before altering the range
+    let selectedHtml = '';
+    if (sel?.rangeCount && !sel.isCollapsed) {
+      const range = sel.getRangeAt(0);
+      const div = document.createElement('div');
+      div.appendChild(range.cloneContents());
+      selectedHtml = div.innerHTML;
+    }
+
     const callout = document.createElement('div');
     callout.className = `ray-callout ray-callout-${type}`;
     callout.contentEditable = 'false';
@@ -92,36 +103,48 @@ export class CalloutFeature {
     body.className = 'ray-callout-body';
     body.contentEditable = 'true';
     const p = document.createElement('p');
-    p.textContent = `${CALLOUT_LABELS[type]}: `;
+    if (selectedHtml) {
+      p.innerHTML = selectedHtml;
+    } else {
+      p.textContent = `${CALLOUT_LABELS[type]}: `;
+    }
     body.appendChild(p);
 
     callout.appendChild(icon);
     callout.appendChild(body);
 
-    const spacerBefore = document.createElement('p');
-    spacerBefore.innerHTML = '<br>';
     const spacerAfter = document.createElement('p');
     spacerAfter.innerHTML = '<br>';
 
-    const sel = window.getSelection();
     if (sel?.rangeCount) {
       const range = sel.getRangeAt(0);
-      range.deleteContents();
 
-      const frag = document.createDocumentFragment();
-      frag.appendChild(spacerBefore);
-      frag.appendChild(callout);
-      frag.appendChild(spacerAfter);
-      range.insertNode(frag);
+      // Find block ancestor (direct child of editorArea) to insert after it
+      let blockNode: Node | null = range.commonAncestorContainer;
+      while (blockNode && blockNode.parentNode !== this.editorArea) {
+        blockNode = blockNode.parentNode;
+      }
 
-      // Place cursor inside callout body
+      if (blockNode && blockNode.parentNode === this.editorArea) {
+        // If text was selected, remove it from the source block first
+        if (selectedHtml) range.deleteContents();
+        (blockNode as Element).after(callout, spacerAfter);
+      } else {
+        range.deleteContents();
+        const frag = document.createDocumentFragment();
+        frag.appendChild(callout);
+        frag.appendChild(spacerAfter);
+        range.insertNode(frag);
+      }
+
+      // Place cursor at end of callout body
       const newRange = document.createRange();
       newRange.setStart(p, p.childNodes.length);
       newRange.collapse(true);
       sel.removeAllRanges();
       sel.addRange(newRange);
+      callout.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     } else {
-      this.editorArea.appendChild(spacerBefore);
       this.editorArea.appendChild(callout);
       this.editorArea.appendChild(spacerAfter);
     }

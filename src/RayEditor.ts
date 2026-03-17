@@ -267,6 +267,12 @@ export class RayEditor implements RayEditorInstance {
     this.contentManager.setContent(html);
     this.historyManager.push(this.editorElement.innerHTML);
     this.eventBus.emit('content:change', { html: this.getContent() });
+    // Re-attach column resize to any tables restored from HTML
+    this.editorElement.querySelectorAll<HTMLTableElement>('table').forEach(t => {
+      this.tableFeature.initResizeHandles(t);
+    });
+    // setContent bypasses 'input' events, so update word count manually
+    this.wordCountFeature?.update();
   }
 
   // Backward compatibility aliases
@@ -420,13 +426,32 @@ export class RayEditor implements RayEditorInstance {
         this.editorElement.focus();
         break;
       case 'orderedList':
-        document.execCommand('insertOrderedList', false);
+      case 'unorderedList': {
+        // If cursor is inside a task list item, move out to a clean paragraph first
+        const sel0 = window.getSelection();
+        if (sel0?.rangeCount) {
+          const node0 = sel0.anchorNode;
+          const el0 = node0?.nodeType === Node.TEXT_NODE ? node0.parentElement : node0 as Element;
+          const inTaskList = el0?.closest('.ray-task-list, .ray-task-item');
+          if (inTaskList) {
+            // Insert a new paragraph after the task list and move cursor there
+            const taskList = el0?.closest('.ray-task-list');
+            if (taskList) {
+              const newPara = document.createElement('p');
+              newPara.innerHTML = '<br>';
+              taskList.after(newPara);
+              const r = document.createRange();
+              r.selectNodeContents(newPara);
+              r.collapse(true);
+              sel0.removeAllRanges();
+              sel0.addRange(r);
+            }
+          }
+        }
+        document.execCommand(keyname === 'orderedList' ? 'insertOrderedList' : 'insertUnorderedList', false);
         this.editorElement.focus();
         break;
-      case 'unorderedList':
-        document.execCommand('insertUnorderedList', false);
-        this.editorElement.focus();
-        break;
+      }
       case 'uppercase':
         this.formattingFeature.transformSelectedText('upper');
         break;
@@ -553,7 +578,7 @@ export class RayEditor implements RayEditorInstance {
   // ─── Private: Editor Event Binding ─────────────────────────────────────────
 
   private bindEditorEvents(): void {
-    const events: string[] = ['keyup', 'mouseup', 'keydown', 'paste', 'click'];
+    const events: string[] = ['keyup', 'mouseup', 'keydown', 'paste', 'click', 'mouseover', 'mouseout'];
 
     events.forEach(evt => {
       this.editorElement.addEventListener(evt, (e) => {
@@ -580,6 +605,7 @@ export class RayEditor implements RayEditorInstance {
             elementNode
           );
           this.tableFeature.handleKeydown(event as KeyboardEvent);
+          this.taskListFeature.handleKeydown(event as KeyboardEvent);
 
           // Custom undo/redo via history manager (Ctrl+Z / Ctrl+Y)
           const isMac = navigator.platform.toLowerCase().includes('mac');
@@ -664,6 +690,20 @@ export class RayEditor implements RayEditorInstance {
           }, 0);
         }
 
+        if (evt === 'mouseover') {
+          const anchor = (event.target as HTMLElement).closest('a');
+          if (anchor && this.editorElement.contains(anchor)) {
+            this.linkFeature.showLinkTooltip(anchor as HTMLAnchorElement);
+          }
+        }
+
+        if (evt === 'mouseout') {
+          const anchor = (event.target as HTMLElement).closest('a');
+          if (anchor && this.editorElement.contains(anchor)) {
+            this.linkFeature.hideLinkTooltip(2000);
+          }
+        }
+
         if (evt === 'click') {
           const anchor = (event.target as HTMLElement).closest('a');
           if (anchor && this.editorElement.contains(anchor)) {
@@ -726,8 +766,6 @@ export class RayEditor implements RayEditorInstance {
     if (!sel?.rangeCount) return;
 
     const range = sel.getRangeAt(0);
-    range.collapse(true);
-    range.deleteContents();
 
     const hr = document.createElement('hr');
     hr.setAttribute('contenteditable', 'false');
@@ -736,7 +774,6 @@ export class RayEditor implements RayEditorInstance {
     hr.style.border = '1px solid #ccc';
     hr.style.margin = '1em 0';
 
-    // BUG FIX #4: custom modal instead of confirm()
     hr.addEventListener('click', () => {
       this.showConfirmModal('Remove this horizontal rule?', () => hr.remove());
     });
@@ -744,16 +781,31 @@ export class RayEditor implements RayEditorInstance {
     const paragraph = document.createElement('p');
     paragraph.innerHTML = '<br>';
 
-    const frag = document.createDocumentFragment();
-    frag.appendChild(hr);
-    frag.appendChild(paragraph);
-    range.insertNode(frag);
+    // Find the top-level block (direct child of editorArea) and insert after it.
+    // This avoids splitting a <p> and producing two extra paragraphs.
+    let blockNode: Node | null = range.commonAncestorContainer;
+    while (blockNode && blockNode.parentNode !== this.editorElement) {
+      blockNode = blockNode.parentNode;
+    }
+
+    if (blockNode && blockNode.parentNode === this.editorElement) {
+      (blockNode as Element).after(hr, paragraph);
+    } else {
+      // Fallback: insert at cursor
+      range.collapse(true);
+      range.deleteContents();
+      const frag = document.createDocumentFragment();
+      frag.appendChild(hr);
+      frag.appendChild(paragraph);
+      range.insertNode(frag);
+    }
 
     const newRange = document.createRange();
     newRange.setStart(paragraph, 0);
     newRange.collapse(true);
     sel.removeAllRanges();
     sel.addRange(newRange);
+    this.editorElement.focus();
   }
 
   private insertDateTime(): void {
@@ -943,6 +995,10 @@ export class RayEditor implements RayEditorInstance {
   private toggleSourceMode(): void {
     if (!this.editorElement) return;
 
+    // SVG icons swapped depending on current mode
+    const ICON_CODE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`;
+    const ICON_RICH = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><line x1="12" y1="4" x2="12" y2="20"/></svg>`;
+
     if (!this.isSourceMode) {
       this.sourceTextarea = document.createElement('textarea');
       this.sourceTextarea.className = 'ray-editor-sourcearea';
@@ -964,6 +1020,14 @@ export class RayEditor implements RayEditorInstance {
       }
       this.editorElement.style.display = '';
       this.isSourceMode = false;
+    }
+
+    // Swap icon and active state on the toolbar button
+    const btn = this.toolbarElement.querySelector<HTMLElement>('.ray-btn-showSource');
+    if (btn) {
+      btn.innerHTML = this.isSourceMode ? ICON_RICH : ICON_CODE;
+      btn.classList.toggle('active', this.isSourceMode);
+      btn.setAttribute('aria-pressed', String(this.isSourceMode));
     }
   }
 
@@ -1006,17 +1070,22 @@ export class RayEditor implements RayEditorInstance {
   // ─── Private: Watermark ─────────────────────────────────────────────────────
 
   private addWatermark(): void {
-    if (this.options.hideWatermark) return;
+    const parent = this.editorElement.parentNode;
+    if (!parent) return;
 
-    const watermark = document.createElement('div');
-    watermark.id = 'ray-editor-watermark';
-    watermark.innerHTML = `Made with ❤️ by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a>`;
+    const insert = () => {
+      if (parent.querySelector('#ray-editor-watermark')) return;
+      const watermark = document.createElement('div');
+      watermark.id = 'ray-editor-watermark';
+      watermark.innerHTML = `Made with ❤️ by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a>`;
+      parent.insertBefore(watermark, this.editorElement.nextSibling);
+    };
 
-    // BUG FIX #1: was this.editorElement.nextLastSibling → nextSibling
-    this.editorElement.parentNode?.insertBefore(
-      watermark,
-      this.editorElement.nextSibling
-    );
+    insert();
+
+    // Re-insert if someone removes the watermark node via JS
+    const observer = new MutationObserver(() => insert());
+    observer.observe(parent, { childList: true });
   }
 
   // ─── Private: CSS ───────────────────────────────────────────────────────────

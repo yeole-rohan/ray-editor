@@ -6,4 +6,6 @@ dist/
 .env.local
 coverage/
 .vitest/
-.claude/DEPLOYMENT.md
+.claude/
+local-test.html
+DEPLOYMENT.md

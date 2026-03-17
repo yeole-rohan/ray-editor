@@ -21,8 +21,8 @@ export class LinkFeature {
     modal.innerHTML = `
       <div class="modal-content">
         <h3 style="margin:0 0 12px;font-size:16px;">${anchor ? 'Edit Link' : 'Insert Link'}</h3>
-        <label>URL</label>
-        <input type="text" id="ray-link-url" placeholder="https://" />
+        <label for="ray-link-url">URL</label>
+        <input type="text" id="ray-link-url" placeholder="https://" aria-label="URL" />
         <p id="ray-link-url-error" style="color:red;font-size:12px;display:none;margin:-6px 0 6px;">Please enter a valid URL.</p>
         <label>Target</label>
         <select id="ray-link-target">
@@ -109,14 +109,73 @@ export class LinkFeature {
     });
   }
 
+  private _tooltipEl: HTMLElement | null = null;
+  private _tooltipHideTimer: ReturnType<typeof setTimeout> | null = null;
+
+  showLinkTooltip(anchor: HTMLAnchorElement): void {
+    if (this._tooltipHideTimer !== null) {
+      clearTimeout(this._tooltipHideTimer);
+      this._tooltipHideTimer = null;
+    }
+    // Don't show if already showing for this anchor
+    if (this._tooltipEl && this._tooltipEl.dataset.anchor === anchor.href) return;
+
+    this.hideLinkTooltip(0);
+
+    const href = anchor.getAttribute('href') || '';
+    const display = href.length > 50 ? href.slice(0, 47) + '…' : href;
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'ray-link-tooltip';
+    tooltip.dataset.anchor = href;
+    tooltip.innerHTML = `<span class="ray-link-tooltip-url">${display}</span><a class="ray-link-tooltip-open" href="${href}" target="_blank" rel="noopener noreferrer" aria-label="Open link in new tab">↗ Open</a>`;
+    document.body.appendChild(tooltip);
+    this._tooltipEl = tooltip;
+
+    const rect = anchor.getBoundingClientRect();
+    tooltip.style.top = `${rect.bottom + window.scrollY + 6}px`;
+    tooltip.style.left = `${rect.left + window.scrollX}px`;
+
+    const scheduleHide = () => {
+      this._tooltipHideTimer = setTimeout(() => this.hideLinkTooltip(0), 2000);
+    };
+    const cancelHide = () => {
+      if (this._tooltipHideTimer !== null) {
+        clearTimeout(this._tooltipHideTimer);
+        this._tooltipHideTimer = null;
+      }
+    };
+
+    anchor.addEventListener('mouseleave', scheduleHide, { once: false });
+    anchor.addEventListener('mouseenter', cancelHide, { once: false });
+    tooltip.addEventListener('mouseenter', cancelHide);
+    tooltip.addEventListener('mouseleave', scheduleHide);
+  }
+
+  hideLinkTooltip(delay = 500): void {
+    if (this._tooltipHideTimer !== null) clearTimeout(this._tooltipHideTimer);
+    if (delay === 0) {
+      this._tooltipEl?.remove();
+      this._tooltipEl = null;
+      this._tooltipHideTimer = null;
+    } else {
+      this._tooltipHideTimer = setTimeout(() => {
+        this._tooltipEl?.remove();
+        this._tooltipEl = null;
+        this._tooltipHideTimer = null;
+      }, delay);
+    }
+  }
+
   showLinkPopup(anchor: HTMLAnchorElement): void {
     document.querySelector('.ray-editor-link-edit-remove')?.remove();
+    this.hideLinkTooltip(0);
 
     const popup = document.createElement('div');
     popup.className = 'ray-editor-link-edit-remove';
     popup.innerHTML = `
-      <button class="ray-edit-link-btn">Edit</button>
-      <button class="ray-remove-link-btn">Remove</button>
+      <button class="ray-edit-link-btn" aria-label="Edit link">Edit</button>
+      <button class="ray-remove-link-btn" aria-label="Remove link">Remove</button>
     `;
     document.body.appendChild(popup);
 

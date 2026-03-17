@@ -1,5 +1,6 @@
 import { buildCodeBlock } from '../features/codeblock.js';
 import { TaskListFeature, serializeTaskLists } from '../features/tasklist.js';
+import { FileFeature } from '../features/file.js';
 
 /**
  * Content get/set/clean logic.
@@ -52,7 +53,7 @@ export class ContentManager {
     allTargets.forEach(el => {
       if (isInsideCodeBlock(el)) return;
       if (el.classList.contains('ray-date-time')) return;
-      // Don't clean task list internals
+      // Don't clean task list text spans (backward-compat with old serialized format)
       if (el.classList.contains('ray-task-checkbox') || el.classList.contains('ray-task-text')) return;
       if (isEffectivelyEmpty(el)) el.remove();
     });
@@ -98,8 +99,8 @@ export class ContentManager {
       }
     });
 
-    // Strip contenteditable from date-time and callout elements
-    tempDiv.querySelectorAll('.ray-date-time, .ray-callout, .ray-callout-icon, .ray-callout-body').forEach(el => {
+    // Strip contenteditable from date-time, callout, and file figure elements
+    tempDiv.querySelectorAll('.ray-date-time, .ray-callout, .ray-callout-icon, .ray-callout-body, .ray-file-figure, .ray-file-figure figcaption').forEach(el => {
       el.removeAttribute('contenteditable');
     });
 
@@ -159,6 +160,9 @@ export class ContentManager {
 
     // Restore task list span structure from clean getContent() output
     TaskListFeature.restoreFromHTML(container);
+
+    // Restore file figure contenteditable
+    FileFeature.restoreFromHTML(container);
 
     // Restore callout contenteditable
     container.querySelectorAll<HTMLElement>('.ray-callout').forEach(callout => {

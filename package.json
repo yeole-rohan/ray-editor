@@ -1,6 +1,6 @@
 {
   "name": "@rohanyeole/ray-editor",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "Free, lightweight, dependency-free WYSIWYG rich text editor for JavaScript, TypeScript, React, Vue, Angular & Svelte. Slash commands, dark mode, markdown, task lists, callouts, tables, find & replace, plugin API, syntax highlighting. MIT licensed.",
   "main": "dist/ray-editor.cjs.js",
   "module": "dist/ray-editor.esm.js",

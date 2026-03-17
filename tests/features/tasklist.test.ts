@@ -21,7 +21,7 @@ describe('TaskListFeature', () => {
   // ─── buildTaskItem ────────────────────────────────────────────────────────
 
   describe('buildTaskItem', () => {
-    it('creates an <li> element with class ray-task-item', () => {
+    it('creates an <li> with class ray-task-item', () => {
       const li = feature.buildTaskItem(false, 'Buy milk');
       expect(li.tagName).toBe('LI');
       expect(li.classList.contains('ray-task-item')).toBe(true);
@@ -37,273 +37,229 @@ describe('TaskListFeature', () => {
       expect(li.getAttribute('data-checked')).toBe('true');
     });
 
-    it('creates .ray-task-checkbox span', () => {
+    it('creates a .ray-task-checkbox span', () => {
       const li = feature.buildTaskItem(false, 'Buy milk');
       const checkbox = li.querySelector('.ray-task-checkbox');
       expect(checkbox).not.toBeNull();
       expect(checkbox?.tagName).toBe('SPAN');
     });
 
-    it('checkbox has contenteditable="false"', () => {
+    it('checkbox span has contentEditable="false"', () => {
       const li = feature.buildTaskItem(false, 'Task');
-      const checkbox = li.querySelector('.ray-task-checkbox') as HTMLElement;
-      expect(checkbox.contentEditable).toBe('false');
+      const checkbox = li.querySelector<HTMLElement>('.ray-task-checkbox')!;
+      expect(checkbox.getAttribute('contenteditable')).toBe('false');
     });
 
-    it('checkbox has role="checkbox"', () => {
+    it('checkbox span has aria-label="Task status"', () => {
       const li = feature.buildTaskItem(false, 'Task');
-      const checkbox = li.querySelector('.ray-task-checkbox');
-      expect(checkbox?.getAttribute('role')).toBe('checkbox');
+      const checkbox = li.querySelector<HTMLElement>('.ray-task-checkbox')!;
+      expect(checkbox.getAttribute('aria-label')).toBe('Task status');
     });
 
-    it('unchecked item: checkbox aria-checked="false"', () => {
+    it('checkbox span has role="checkbox"', () => {
       const li = feature.buildTaskItem(false, 'Task');
-      const checkbox = li.querySelector('.ray-task-checkbox');
-      expect(checkbox?.getAttribute('aria-checked')).toBe('false');
+      const checkbox = li.querySelector<HTMLElement>('.ray-task-checkbox')!;
+      expect(checkbox.getAttribute('role')).toBe('checkbox');
     });
 
-    it('checked item: checkbox aria-checked="true"', () => {
+    it('unchecked item: aria-checked is "false"', () => {
+      const li = feature.buildTaskItem(false, 'Task');
+      const checkbox = li.querySelector<HTMLElement>('.ray-task-checkbox')!;
+      expect(checkbox.getAttribute('aria-checked')).toBe('false');
+    });
+
+    it('checked item: aria-checked is "true"', () => {
       const li = feature.buildTaskItem(true, 'Done item');
-      const checkbox = li.querySelector('.ray-task-checkbox');
-      expect(checkbox?.getAttribute('aria-checked')).toBe('true');
+      const checkbox = li.querySelector<HTMLElement>('.ray-task-checkbox')!;
+      expect(checkbox.getAttribute('aria-checked')).toBe('true');
     });
 
-    it('checked item: checkbox has .checked class', () => {
+    it('checked item: checkbox span has .checked class', () => {
       const li = feature.buildTaskItem(true, 'Done item');
-      const checkbox = li.querySelector('.ray-task-checkbox');
-      expect(checkbox?.classList.contains('checked')).toBe(true);
+      const checkbox = li.querySelector<HTMLElement>('.ray-task-checkbox')!;
+      expect(checkbox.classList.contains('checked')).toBe(true);
     });
 
-    it('unchecked item: checkbox does NOT have .checked class', () => {
-      const li = feature.buildTaskItem(false, 'Pending task');
-      const checkbox = li.querySelector('.ray-task-checkbox');
-      expect(checkbox?.classList.contains('checked')).toBe(false);
-    });
-
-    it('checkbox has aria-label="Task status"', () => {
-      const li = feature.buildTaskItem(false, 'Task');
-      const checkbox = li.querySelector('.ray-task-checkbox');
-      expect(checkbox?.getAttribute('aria-label')).toBe('Task status');
-    });
-
-    it('creates .ray-task-text span with correct text', () => {
+    it('unchecked item: checkbox span does not have .checked class', () => {
       const li = feature.buildTaskItem(false, 'Buy milk');
-      const textSpan = li.querySelector('.ray-task-text');
-      expect(textSpan).not.toBeNull();
-      expect(textSpan?.textContent).toBe('Buy milk');
+      const checkbox = li.querySelector<HTMLElement>('.ray-task-checkbox')!;
+      expect(checkbox.classList.contains('checked')).toBe(false);
     });
 
-    it('creates .ray-task-text span for checked item with correct text', () => {
-      const li = feature.buildTaskItem(true, 'Done item');
-      const textSpan = li.querySelector('.ray-task-text');
-      expect(textSpan?.textContent).toBe('Done item');
+    it('task text is a text node (no .ray-task-text span)', () => {
+      const li = feature.buildTaskItem(false, 'Buy milk');
+      expect(li.querySelector('.ray-task-text')).toBeNull();
+      const textNode = Array.from(li.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+      expect(textNode).not.toBeUndefined();
+      expect(textNode?.textContent).toBe('Buy milk');
     });
 
-    it('empty text still creates valid structure', () => {
-      const li = feature.buildTaskItem(false, '');
-      expect(li.classList.contains('ray-task-item')).toBe(true);
-      const checkbox = li.querySelector('.ray-task-checkbox');
-      const textSpan = li.querySelector('.ray-task-text');
-      expect(checkbox).not.toBeNull();
-      expect(textSpan).not.toBeNull();
-      expect(textSpan?.textContent).toBe('');
+    it('li.textContent equals the task text', () => {
+      const li = feature.buildTaskItem(false, 'Buy milk');
+      // span has no text content, so li.textContent === task text
+      expect(li.textContent).toBe('Buy milk');
     });
 
-    it('li contains exactly two child spans', () => {
+    it('li has exactly one element child (the span)', () => {
       const li = feature.buildTaskItem(false, 'Task');
-      expect(li.children.length).toBe(2);
-    });
-
-    it('checkbox span comes before text span', () => {
-      const li = feature.buildTaskItem(false, 'Task');
+      expect(li.children.length).toBe(1);
       expect(li.children[0].classList.contains('ray-task-checkbox')).toBe(true);
-      expect(li.children[1].classList.contains('ray-task-text')).toBe(true);
+    });
+
+    it('span comes before the text node', () => {
+      const li = feature.buildTaskItem(false, 'Task');
+      expect((li.childNodes[0] as HTMLElement).classList?.contains('ray-task-checkbox')).toBe(true);
+      expect(li.childNodes[1].nodeType).toBe(Node.TEXT_NODE);
+    });
+
+    it('empty text creates valid structure', () => {
+      const li = feature.buildTaskItem(false, '');
+      expect(li.querySelector('.ray-task-checkbox')).not.toBeNull();
+      const textNode = Array.from(li.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+      expect(textNode?.textContent).toBe('');
+    });
+
+    it('does not create a native input[type="checkbox"]', () => {
+      const li = feature.buildTaskItem(false, 'Task');
+      expect(li.querySelector('input[type="checkbox"]')).toBeNull();
     });
   });
 
   // ─── TaskListFeature.restoreFromHTML ──────────────────────────────────────
 
   describe('TaskListFeature.restoreFromHTML', () => {
-    it('rebuilds span structure from bare li[data-checked="false"] inside ul.ray-task-list', () => {
+    it('rebuilds span + text node from bare li[data-checked="false"]', () => {
       const container = document.createElement('div');
-      container.innerHTML = `
-        <ul class="ray-task-list">
-          <li data-checked="false">Buy milk</li>
-        </ul>
-      `;
+      container.innerHTML = `<ul class="ray-task-list"><li data-checked="false">Buy milk</li></ul>`;
       TaskListFeature.restoreFromHTML(container);
-      const li = container.querySelector('li');
-      expect(li?.classList.contains('ray-task-item')).toBe(true);
-      expect(li?.querySelector('.ray-task-checkbox')).not.toBeNull();
-      expect(li?.querySelector('.ray-task-text')).not.toBeNull();
+      const li = container.querySelector('li')!;
+      expect(li.classList.contains('ray-task-item')).toBe(true);
+      expect(li.querySelector('.ray-task-checkbox')).not.toBeNull();
+      const textNode = Array.from(li.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+      expect(textNode?.textContent).toBe('Buy milk');
     });
 
     it('sets aria-checked="false" for unchecked item', () => {
       const container = document.createElement('div');
-      container.innerHTML = `
-        <ul class="ray-task-list">
-          <li data-checked="false">Task</li>
-        </ul>
-      `;
+      container.innerHTML = `<ul class="ray-task-list"><li data-checked="false">Task</li></ul>`;
       TaskListFeature.restoreFromHTML(container);
-      const checkbox = container.querySelector('.ray-task-checkbox');
-      expect(checkbox?.getAttribute('aria-checked')).toBe('false');
+      const checkbox = container.querySelector<HTMLElement>('.ray-task-checkbox')!;
+      expect(checkbox.getAttribute('aria-checked')).toBe('false');
     });
 
     it('sets aria-checked="true" and .checked class for checked item', () => {
       const container = document.createElement('div');
-      container.innerHTML = `
-        <ul class="ray-task-list">
-          <li data-checked="true">Done task</li>
-        </ul>
-      `;
+      container.innerHTML = `<ul class="ray-task-list"><li data-checked="true">Done</li></ul>`;
       TaskListFeature.restoreFromHTML(container);
-      const checkbox = container.querySelector('.ray-task-checkbox');
-      expect(checkbox?.getAttribute('aria-checked')).toBe('true');
-      expect(checkbox?.classList.contains('checked')).toBe(true);
+      const checkbox = container.querySelector<HTMLElement>('.ray-task-checkbox')!;
+      expect(checkbox.getAttribute('aria-checked')).toBe('true');
+      expect(checkbox.classList.contains('checked')).toBe(true);
     });
 
-    it('preserves task text in .ray-task-text span', () => {
+    it('preserves task text as a text node', () => {
       const container = document.createElement('div');
-      container.innerHTML = `
-        <ul class="ray-task-list">
-          <li data-checked="false">Buy milk</li>
-        </ul>
-      `;
+      container.innerHTML = `<ul class="ray-task-list"><li data-checked="false">Buy milk</li></ul>`;
       TaskListFeature.restoreFromHTML(container);
-      const textSpan = container.querySelector('.ray-task-text');
-      expect(textSpan?.textContent).toBe('Buy milk');
+      const li = container.querySelector('li')!;
+      const textNode = Array.from(li.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+      expect(textNode?.textContent).toBe('Buy milk');
     });
 
     it('does nothing to empty container', () => {
       const container = document.createElement('div');
-      container.innerHTML = '';
       expect(() => TaskListFeature.restoreFromHTML(container)).not.toThrow();
-      expect(container.children.length).toBe(0);
     });
 
-    it('ignores <li> without data-type="taskItem" that are not in ray-task-list', () => {
+    it('ignores <li> not inside .ray-task-list', () => {
       const container = document.createElement('div');
-      container.innerHTML = `
-        <ul>
-          <li>Regular list item</li>
-        </ul>
-      `;
+      container.innerHTML = `<ul><li>Regular</li></ul>`;
       TaskListFeature.restoreFromHTML(container);
-      const li = container.querySelector('li');
-      expect(li?.querySelector('.ray-task-checkbox')).toBeNull();
+      expect(container.querySelector('.ray-task-checkbox')).toBeNull();
     });
 
-    it('ignores <li> that already have span structure (no double-restore)', () => {
+    it('does not double-restore items already having span', () => {
       const container = document.createElement('div');
-      // Pre-built with full span structure
       container.innerHTML = `
         <ul class="ray-task-list">
           <li class="ray-task-item" data-checked="false">
             <span class="ray-task-checkbox" contenteditable="false" role="checkbox" aria-checked="false" aria-label="Task status"></span>
-            <span class="ray-task-text">Already restored</span>
+            Already restored
           </li>
-        </ul>
-      `;
+        </ul>`;
       TaskListFeature.restoreFromHTML(container);
-      // Should not create duplicate checkboxes
-      const checkboxes = container.querySelectorAll('.ray-task-checkbox');
-      expect(checkboxes.length).toBe(1);
+      expect(container.querySelectorAll('.ray-task-checkbox').length).toBe(1);
     });
 
-    it('handles multiple task items correctly', () => {
+    it('handles multiple task items', () => {
       const container = document.createElement('div');
       container.innerHTML = `
         <ul class="ray-task-list">
           <li data-checked="false">Task one</li>
           <li data-checked="true">Task two</li>
           <li data-checked="false">Task three</li>
-        </ul>
-      `;
+        </ul>`;
       TaskListFeature.restoreFromHTML(container);
-      const items = container.querySelectorAll('.ray-task-item');
-      expect(items.length).toBe(3);
-      const checkboxes = container.querySelectorAll('.ray-task-checkbox');
+      const checkboxes = container.querySelectorAll<HTMLElement>('.ray-task-checkbox');
       expect(checkboxes.length).toBe(3);
       expect(checkboxes[1].getAttribute('aria-checked')).toBe('true');
-      expect(checkboxes[1].classList.contains('checked')).toBe(true);
       expect(checkboxes[0].getAttribute('aria-checked')).toBe('false');
     });
 
-    it('restores items from ol.ray-task-list as well', () => {
+    it('restores from ol.ray-task-list as well', () => {
       const container = document.createElement('div');
-      container.innerHTML = `
-        <ol class="ray-task-list">
-          <li data-checked="false">Ordered task</li>
-        </ol>
-      `;
+      container.innerHTML = `<ol class="ray-task-list"><li data-checked="false">Task</li></ol>`;
       TaskListFeature.restoreFromHTML(container);
-      const checkbox = container.querySelector('.ray-task-checkbox');
-      expect(checkbox).not.toBeNull();
+      expect(container.querySelector('.ray-task-checkbox')).not.toBeNull();
     });
 
-    it('sets contenteditable="false" on restored checkbox span', () => {
+    it('migrates old span+text-span format to new span+text-node format', () => {
       const container = document.createElement('div');
       container.innerHTML = `
         <ul class="ray-task-list">
-          <li data-checked="false">Task</li>
-        </ul>
-      `;
+          <li class="ray-task-item" data-checked="false">
+            <span class="ray-task-checkbox" contenteditable="false"></span>
+            <span class="ray-task-text">Old format text</span>
+          </li>
+        </ul>`;
       TaskListFeature.restoreFromHTML(container);
-      const checkbox = container.querySelector('.ray-task-checkbox') as HTMLElement;
-      expect(checkbox.contentEditable).toBe('false');
+      const li = container.querySelector('li')!;
+      expect(li.querySelector('.ray-task-text')).toBeNull();
+      expect(li.querySelector('.ray-task-checkbox')).not.toBeNull();
+      const textNode = Array.from(li.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+      expect(textNode?.textContent).toBe('Old format text');
+    });
+
+    it('migrates native input format to span format', () => {
+      const container = document.createElement('div');
+      container.innerHTML = `
+        <ul class="ray-task-list">
+          <li class="ray-task-item" data-checked="true">
+            <input type="checkbox" checked>Done task</li>
+        </ul>`;
+      TaskListFeature.restoreFromHTML(container);
+      const li = container.querySelector('li')!;
+      expect(li.querySelector('input[type="checkbox"]')).toBeNull();
+      expect(li.querySelector('.ray-task-checkbox')).not.toBeNull();
+      const checkbox = li.querySelector<HTMLElement>('.ray-task-checkbox')!;
+      expect(checkbox.getAttribute('aria-checked')).toBe('true');
     });
   });
 
   // ─── serializeTaskLists ───────────────────────────────────────────────────
 
   describe('serializeTaskLists', () => {
-    it('converts .ray-task-item span structure to clean li with data-checked', () => {
+    it('removes checkbox span and preserves task text', () => {
       const container = document.createElement('div');
       container.innerHTML = `
         <ul class="ray-task-list">
           <li class="ray-task-item" data-checked="false">
-            <span class="ray-task-checkbox" contenteditable="false"></span>
-            <span class="ray-task-text">Buy milk</span>
-          </li>
-        </ul>
-      `;
+            <span class="ray-task-checkbox" contenteditable="false"></span>Buy milk</li>
+        </ul>`;
       serializeTaskLists(container);
-      const li = container.querySelector('li');
-      expect(li?.querySelector('.ray-task-checkbox')).toBeNull();
-      expect(li?.querySelector('.ray-task-text')).toBeNull();
-      expect(li?.textContent?.trim()).toBe('Buy milk');
-      expect(li?.getAttribute('data-checked')).toBe('false');
-    });
-
-    it('unchecked item → data-checked="false"', () => {
-      const container = document.createElement('div');
-      container.innerHTML = `
-        <ul class="ray-task-list">
-          <li class="ray-task-item" data-checked="false">
-            <span class="ray-task-checkbox"></span>
-            <span class="ray-task-text">Unchecked task</span>
-          </li>
-        </ul>
-      `;
-      serializeTaskLists(container);
-      const li = container.querySelector('li');
-      expect(li?.getAttribute('data-checked')).toBe('false');
-    });
-
-    it('checked item → data-checked="true"', () => {
-      const container = document.createElement('div');
-      container.innerHTML = `
-        <ul class="ray-task-list">
-          <li class="ray-task-item" data-checked="true">
-            <span class="ray-task-checkbox checked"></span>
-            <span class="ray-task-text">Checked task</span>
-          </li>
-        </ul>
-      `;
-      serializeTaskLists(container);
-      const li = container.querySelector('li');
-      expect(li?.getAttribute('data-checked')).toBe('true');
+      const li = container.querySelector('li')!;
+      expect(li.querySelector('.ray-task-checkbox')).toBeNull();
+      expect(li.textContent?.trim()).toBe('Buy milk');
+      expect(li.getAttribute('data-checked')).toBe('false');
     });
 
     it('removes ray-task-item class from serialized li', () => {
@@ -311,85 +267,61 @@ describe('TaskListFeature', () => {
       container.innerHTML = `
         <ul class="ray-task-list">
           <li class="ray-task-item" data-checked="false">
-            <span class="ray-task-checkbox"></span>
-            <span class="ray-task-text">Task</span>
-          </li>
-        </ul>
-      `;
+            <span class="ray-task-checkbox" contenteditable="false"></span>Task</li>
+        </ul>`;
       serializeTaskLists(container);
-      const li = container.querySelector('li');
-      expect(li?.hasAttribute('class')).toBe(false);
+      expect(container.querySelector('li')?.hasAttribute('class')).toBe(false);
     });
 
-    it('does nothing when container has no .ray-task-item elements', () => {
-      const container = document.createElement('div');
-      container.innerHTML = '<p>Not a task list</p><ul><li>Regular item</li></ul>';
-      const originalHTML = container.innerHTML;
-      serializeTaskLists(container);
-      expect(container.innerHTML).toBe(originalHTML);
-    });
-
-    it('preserves surrounding non-task-list content', () => {
+    it('preserves data-checked="true" for checked items', () => {
       const container = document.createElement('div');
       container.innerHTML = `
-        <p>Before content</p>
         <ul class="ray-task-list">
-          <li class="ray-task-item" data-checked="false">
-            <span class="ray-task-checkbox"></span>
-            <span class="ray-task-text">Task</span>
-          </li>
-        </ul>
-        <p>After content</p>
-      `;
+          <li class="ray-task-item" data-checked="true">
+            <span class="ray-task-checkbox checked" contenteditable="false"></span>Done</li>
+        </ul>`;
       serializeTaskLists(container);
-      expect(container.textContent).toContain('Before content');
-      expect(container.textContent).toContain('After content');
-      expect(container.textContent).toContain('Task');
+      expect(container.querySelector('li')?.getAttribute('data-checked')).toBe('true');
     });
 
     it('serializes multiple tasks correctly', () => {
       const container = document.createElement('div');
       container.innerHTML = `
         <ul class="ray-task-list">
-          <li class="ray-task-item" data-checked="false">
-            <span class="ray-task-checkbox"></span>
-            <span class="ray-task-text">Task one</span>
-          </li>
-          <li class="ray-task-item" data-checked="true">
-            <span class="ray-task-checkbox checked"></span>
-            <span class="ray-task-text">Task two</span>
-          </li>
-        </ul>
-      `;
+          <li class="ray-task-item" data-checked="false"><span class="ray-task-checkbox" contenteditable="false"></span>Task one</li>
+          <li class="ray-task-item" data-checked="true"><span class="ray-task-checkbox checked" contenteditable="false"></span>Task two</li>
+        </ul>`;
       serializeTaskLists(container);
       const items = container.querySelectorAll('li');
-      expect(items.length).toBe(2);
-      expect(items[0].getAttribute('data-checked')).toBe('false');
       expect(items[0].textContent?.trim()).toBe('Task one');
-      expect(items[1].getAttribute('data-checked')).toBe('true');
+      expect(items[0].getAttribute('data-checked')).toBe('false');
       expect(items[1].textContent?.trim()).toBe('Task two');
+      expect(items[1].getAttribute('data-checked')).toBe('true');
     });
 
-    it('removes all internal span elements', () => {
+    it('does nothing when no .ray-task-item elements present', () => {
+      const container = document.createElement('div');
+      container.innerHTML = '<p>Normal</p><ul><li>Item</li></ul>';
+      const original = container.innerHTML;
+      serializeTaskLists(container);
+      expect(container.innerHTML).toBe(original);
+    });
+
+    it('removes all .ray-task-checkbox spans after serialization', () => {
       const container = document.createElement('div');
       container.innerHTML = `
         <ul class="ray-task-list">
-          <li class="ray-task-item" data-checked="false">
-            <span class="ray-task-checkbox"></span>
-            <span class="ray-task-text">Task</span>
-          </li>
-        </ul>
-      `;
+          <li class="ray-task-item" data-checked="false"><span class="ray-task-checkbox" contenteditable="false"></span>Task</li>
+        </ul>`;
       serializeTaskLists(container);
-      expect(container.querySelectorAll('span').length).toBe(0);
+      expect(container.querySelectorAll('.ray-task-checkbox').length).toBe(0);
     });
   });
 
-  // ─── Round-trip test ──────────────────────────────────────────────────────
+  // ─── Round-trip ───────────────────────────────────────────────────────────
 
   describe('Round-trip: buildTaskItem → serializeTaskLists → restoreFromHTML', () => {
-    it('produces equivalent structure after round-trip for unchecked item', () => {
-      // Build
+    it('round-trips unchecked item correctly', () => {
       const li = feature.buildTaskItem(false, 'Buy groceries');
       const ul = document.createElement('ul');
       ul.className = 'ray-task-list';
@@ -397,24 +329,20 @@ describe('TaskListFeature', () => {
       const container = document.createElement('div');
       container.appendChild(ul);
 
-      // Serialize
       serializeTaskLists(container);
-      const serializedLi = container.querySelector('li');
-      expect(serializedLi?.textContent?.trim()).toBe('Buy groceries');
-      expect(serializedLi?.getAttribute('data-checked')).toBe('false');
+      expect(container.querySelector('li')?.textContent?.trim()).toBe('Buy groceries');
+      expect(container.querySelector('li')?.getAttribute('data-checked')).toBe('false');
 
-      // Restore
       TaskListFeature.restoreFromHTML(container);
-      const restoredLi = container.querySelector('li');
-      expect(restoredLi?.classList.contains('ray-task-item')).toBe(true);
-      expect(restoredLi?.getAttribute('data-checked')).toBe('false');
-      expect(restoredLi?.querySelector('.ray-task-checkbox')).not.toBeNull();
-      expect(restoredLi?.querySelector('.ray-task-text')?.textContent).toBe('Buy groceries');
-      expect(restoredLi?.querySelector('.ray-task-checkbox')?.getAttribute('aria-checked')).toBe('false');
+      const restoredLi = container.querySelector('li')!;
+      expect(restoredLi.classList.contains('ray-task-item')).toBe(true);
+      expect(restoredLi.querySelector('.ray-task-checkbox')).not.toBeNull();
+      const textNode = Array.from(restoredLi.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+      expect(textNode?.textContent).toBe('Buy groceries');
     });
 
-    it('produces equivalent structure after round-trip for checked item', () => {
-      const li = feature.buildTaskItem(true, 'Completed task');
+    it('round-trips checked item correctly', () => {
+      const li = feature.buildTaskItem(true, 'Completed');
       const ul = document.createElement('ul');
       ul.className = 'ray-task-list';
       ul.appendChild(li);
@@ -422,55 +350,53 @@ describe('TaskListFeature', () => {
       container.appendChild(ul);
 
       serializeTaskLists(container);
-      const serializedLi = container.querySelector('li');
-      expect(serializedLi?.getAttribute('data-checked')).toBe('true');
-      expect(serializedLi?.textContent?.trim()).toBe('Completed task');
-
       TaskListFeature.restoreFromHTML(container);
-      const restoredLi = container.querySelector('li');
-      expect(restoredLi?.classList.contains('ray-task-item')).toBe(true);
-      expect(restoredLi?.getAttribute('data-checked')).toBe('true');
-      const checkbox = restoredLi?.querySelector('.ray-task-checkbox');
-      expect(checkbox?.getAttribute('aria-checked')).toBe('true');
-      expect(checkbox?.classList.contains('checked')).toBe(true);
-      expect(restoredLi?.querySelector('.ray-task-text')?.textContent).toBe('Completed task');
+
+      const checkbox = container.querySelector<HTMLElement>('.ray-task-checkbox')!;
+      expect(checkbox.getAttribute('aria-checked')).toBe('true');
+      expect(checkbox.classList.contains('checked')).toBe(true);
+      expect(container.querySelector('li')?.getAttribute('data-checked')).toBe('true');
     });
   });
 
-  // ─── Click handler ────────────────────────────────────────────────────────
+  // ─── Checkbox toggle (click handler) ──────────────────────────────────────
 
-  describe('Click handler (toggle)', () => {
-    it('toggles unchecked task to checked on checkbox click', () => {
+  describe('Checkbox toggle via click', () => {
+    function fireClick(target: HTMLElement): void {
+      target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    }
+
+    it('toggles unchecked to checked on click', () => {
       const li = feature.buildTaskItem(false, 'Toggle me');
       const ul = document.createElement('ul');
       ul.className = 'ray-task-list';
       ul.appendChild(li);
       editorArea.appendChild(ul);
 
-      const checkbox = li.querySelector('.ray-task-checkbox') as HTMLElement;
-      checkbox.click();
+      const checkbox = li.querySelector<HTMLElement>('.ray-task-checkbox')!;
+      fireClick(checkbox);
 
-      expect(li.getAttribute('data-checked')).toBe('true');
       expect(checkbox.getAttribute('aria-checked')).toBe('true');
       expect(checkbox.classList.contains('checked')).toBe(true);
+      expect(li.getAttribute('data-checked')).toBe('true');
     });
 
-    it('toggles checked task to unchecked on checkbox click', () => {
+    it('toggles checked to unchecked on click', () => {
       const li = feature.buildTaskItem(true, 'Already done');
       const ul = document.createElement('ul');
       ul.className = 'ray-task-list';
       ul.appendChild(li);
       editorArea.appendChild(ul);
 
-      const checkbox = li.querySelector('.ray-task-checkbox') as HTMLElement;
-      checkbox.click();
+      const checkbox = li.querySelector<HTMLElement>('.ray-task-checkbox')!;
+      fireClick(checkbox);
 
-      expect(li.getAttribute('data-checked')).toBe('false');
       expect(checkbox.getAttribute('aria-checked')).toBe('false');
       expect(checkbox.classList.contains('checked')).toBe(false);
+      expect(li.getAttribute('data-checked')).toBe('false');
     });
 
-    it('fires input event on checkbox toggle', () => {
+    it('fires input event on toggle', () => {
       let fired = false;
       editorArea.addEventListener('input', () => { fired = true; });
 
@@ -480,23 +406,185 @@ describe('TaskListFeature', () => {
       ul.appendChild(li);
       editorArea.appendChild(ul);
 
-      const checkbox = li.querySelector('.ray-task-checkbox') as HTMLElement;
-      checkbox.click();
-
+      fireClick(li.querySelector('.ray-task-checkbox')!);
       expect(fired).toBe(true);
     });
 
-    it('does not toggle when clicking outside checkbox', () => {
+    it('does not toggle when click is on the text (not checkbox span)', () => {
       const li = feature.buildTaskItem(false, 'Task');
       const ul = document.createElement('ul');
       ul.className = 'ray-task-list';
       ul.appendChild(li);
       editorArea.appendChild(ul);
 
-      const textSpan = li.querySelector('.ray-task-text') as HTMLElement;
-      textSpan.click();
+      fireClick(li); // fires on li, not the checkbox span
+      const checkbox = li.querySelector<HTMLElement>('.ray-task-checkbox')!;
+      expect(checkbox.getAttribute('aria-checked')).toBe('false');
+    });
+  });
 
-      expect(li.getAttribute('data-checked')).toBe('false');
+  // ─── handleKeydown ────────────────────────────────────────────────────────
+
+  describe('handleKeydown', () => {
+    function makeKeyEvent(key: string): KeyboardEvent {
+      return new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+    }
+
+    function setSelectionInTextNode(li: HTMLLIElement, offset = 0): void {
+      const textNode = Array.from(li.childNodes).find(n => n.nodeType === Node.TEXT_NODE) as Text;
+      const r = document.createRange();
+      r.setStart(textNode ?? li, offset);
+      r.collapse(true);
+      const sel = window.getSelection()!;
+      sel.removeAllRanges();
+      sel.addRange(r);
+    }
+
+    it('Enter on empty item removes it and inserts <p>', () => {
+      const li = feature.buildTaskItem(false, '');
+      const ul = document.createElement('ul');
+      ul.className = 'ray-task-list';
+      ul.appendChild(li);
+      editorArea.appendChild(ul);
+
+      setSelectionInTextNode(li, 0);
+      const e = makeKeyEvent('Enter');
+      feature.handleKeydown(e);
+
+      expect(e.defaultPrevented).toBe(true);
+      expect(editorArea.querySelector('.ray-task-item')).toBeNull();
+      expect(editorArea.querySelector('p')).not.toBeNull();
+    });
+
+    it('Enter on empty item replaces empty list with <p>', () => {
+      const li = feature.buildTaskItem(false, '');
+      const ul = document.createElement('ul');
+      ul.className = 'ray-task-list';
+      ul.appendChild(li);
+      editorArea.appendChild(ul);
+
+      setSelectionInTextNode(li, 0);
+      feature.handleKeydown(makeKeyEvent('Enter'));
+
+      expect(editorArea.querySelector('.ray-task-list')).toBeNull();
+      expect(editorArea.querySelector('p')).not.toBeNull();
+    });
+
+    it('Enter on non-empty item creates a new task item', () => {
+      const li = feature.buildTaskItem(false, 'Buy milk');
+      const ul = document.createElement('ul');
+      ul.className = 'ray-task-list';
+      ul.appendChild(li);
+      editorArea.appendChild(ul);
+
+      setSelectionInTextNode(li, 8);
+      feature.handleKeydown(makeKeyEvent('Enter'));
+
+      expect(editorArea.querySelectorAll('.ray-task-item').length).toBe(2);
+    });
+
+    it('Enter splits text at cursor', () => {
+      const li = feature.buildTaskItem(false, 'BuyMilk');
+      const ul = document.createElement('ul');
+      ul.className = 'ray-task-list';
+      ul.appendChild(li);
+      editorArea.appendChild(ul);
+
+      setSelectionInTextNode(li, 3);
+      feature.handleKeydown(makeKeyEvent('Enter'));
+
+      const items = editorArea.querySelectorAll('.ray-task-item');
+      expect(items[0].textContent).toBe('Buy');
+      expect(items[1].textContent).toBe('Milk');
+    });
+
+    it('new item from Enter is unchecked', () => {
+      const li = feature.buildTaskItem(true, 'Done');
+      const ul = document.createElement('ul');
+      ul.className = 'ray-task-list';
+      ul.appendChild(li);
+      editorArea.appendChild(ul);
+
+      setSelectionInTextNode(li, 4);
+      feature.handleKeydown(makeKeyEvent('Enter'));
+
+      const newItem = editorArea.querySelectorAll('.ray-task-item')[1];
+      expect(newItem.getAttribute('data-checked')).toBe('false');
+      const newCheckbox = newItem.querySelector<HTMLElement>('.ray-task-checkbox')!;
+      expect(newCheckbox.getAttribute('aria-checked')).toBe('false');
+      expect(newCheckbox.classList.contains('checked')).toBe(false);
+    });
+
+    it('Backspace at start removes item and creates <p> with text', () => {
+      const li = feature.buildTaskItem(false, 'Hello');
+      const ul = document.createElement('ul');
+      ul.className = 'ray-task-list';
+      ul.appendChild(li);
+      editorArea.appendChild(ul);
+
+      setSelectionInTextNode(li, 0);
+      const e = makeKeyEvent('Backspace');
+      feature.handleKeydown(e);
+
+      expect(e.defaultPrevented).toBe(true);
+      expect(editorArea.querySelector('.ray-task-item')).toBeNull();
+      expect(editorArea.querySelector('p')?.textContent).toBe('Hello');
+    });
+
+    it('Backspace at start replaces empty list with <p>', () => {
+      const li = feature.buildTaskItem(false, '');
+      const ul = document.createElement('ul');
+      ul.className = 'ray-task-list';
+      ul.appendChild(li);
+      editorArea.appendChild(ul);
+
+      setSelectionInTextNode(li, 0);
+      feature.handleKeydown(makeKeyEvent('Backspace'));
+
+      expect(editorArea.querySelector('.ray-task-list')).toBeNull();
+    });
+
+    it('Backspace mid-text does not intercept', () => {
+      const li = feature.buildTaskItem(false, 'Hello');
+      const ul = document.createElement('ul');
+      ul.className = 'ray-task-list';
+      ul.appendChild(li);
+      editorArea.appendChild(ul);
+
+      setSelectionInTextNode(li, 3);
+      const e = makeKeyEvent('Backspace');
+      feature.handleKeydown(e);
+
+      expect(e.defaultPrevented).toBe(false);
+    });
+
+    it('non-Enter/Backspace keys are ignored', () => {
+      const li = feature.buildTaskItem(false, 'Task');
+      const ul = document.createElement('ul');
+      ul.className = 'ray-task-list';
+      ul.appendChild(li);
+      editorArea.appendChild(ul);
+
+      setSelectionInTextNode(li, 0);
+      const e = makeKeyEvent('ArrowDown');
+      feature.handleKeydown(e);
+      expect(e.defaultPrevented).toBe(false);
+    });
+
+    it('Enter outside a task item does nothing', () => {
+      const p = document.createElement('p');
+      p.textContent = 'Normal';
+      editorArea.appendChild(p);
+
+      const r = document.createRange();
+      r.setStart(p.firstChild!, 0);
+      r.collapse(true);
+      window.getSelection()!.removeAllRanges();
+      window.getSelection()!.addRange(r);
+
+      const e = makeKeyEvent('Enter');
+      feature.handleKeydown(e);
+      expect(e.defaultPrevented).toBe(false);
     });
   });
 });

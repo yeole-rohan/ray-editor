@@ -383,36 +383,38 @@ describe('ContentManager — extended edge cases (v2.0.5)', () => {
   // ─── setContent — task list restoration ──────────────────────────────────
 
   describe('setContent — task list restoration', () => {
-    it('setContent with <li data-type="taskItem" data-checked="true"> rebuilds span structure', () => {
+    it('setContent with data-checked="true" restores checked checkbox span', () => {
       contentManager.setContent(`
         <ul class="ray-task-list">
           <li data-checked="true">Completed task</li>
         </ul>
       `);
-      const checkbox = editorArea.querySelector('.ray-task-checkbox');
+      const checkbox = editorArea.querySelector<HTMLElement>('.ray-task-checkbox');
       expect(checkbox).not.toBeNull();
       expect(checkbox?.getAttribute('aria-checked')).toBe('true');
+      expect(checkbox?.classList.contains('checked')).toBe(true);
     });
 
-    it('setContent with data-checked="false" restores unchecked checkbox', () => {
+    it('setContent with data-checked="false" restores unchecked checkbox span', () => {
       contentManager.setContent(`
         <ul class="ray-task-list">
           <li data-checked="false">Pending task</li>
         </ul>
       `);
-      const checkbox = editorArea.querySelector('.ray-task-checkbox');
+      const checkbox = editorArea.querySelector<HTMLElement>('.ray-task-checkbox');
       expect(checkbox?.getAttribute('aria-checked')).toBe('false');
       expect(checkbox?.classList.contains('checked')).toBe(false);
     });
 
-    it('setContent rebuilds .ray-task-text span with correct text', () => {
+    it('setContent rebuilds task item with correct text node', () => {
       contentManager.setContent(`
         <ul class="ray-task-list">
           <li data-checked="false">Buy groceries</li>
         </ul>
       `);
-      const textSpan = editorArea.querySelector('.ray-task-text');
-      expect(textSpan?.textContent).toBe('Buy groceries');
+      const li = editorArea.querySelector('.ray-task-item')!;
+      const textNode = Array.from(li.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+      expect(textNode?.textContent).toBe('Buy groceries');
     });
   });
 

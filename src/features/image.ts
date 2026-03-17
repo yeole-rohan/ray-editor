@@ -162,26 +162,93 @@ export class ImageFeature {
 
     wrapper.appendChild(img);
 
-    // Resize handle
-    const handle = document.createElement('div');
-    Object.assign(handle.style, {
-      position: 'absolute',
-      width: '12px',
-      height: '12px',
-      right: '0',
-      bottom: '0',
-      cursor: 'se-resize',
-      background: 'hsl(220, 100%, 60%)',
-      border: '1px solid white',
-      borderRadius: '2px',
-      opacity: '0',
-      transition: 'opacity 0.2s ease',
-    });
-    wrapper.appendChild(handle);
+    // ── 8-direction resize handles ──────────────────────────────────────────
+    type HandlePos = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
 
-    // Remove button
+    const handlePositions: Array<{ pos: HandlePos; styles: Partial<CSSStyleDeclaration> }> = [
+      { pos: 'n',  styles: { top: '-5px',    left: '50%',  transform: 'translateX(-50%)', cursor: 'n-resize'  } },
+      { pos: 'ne', styles: { top: '-5px',    right: '-5px',                                cursor: 'ne-resize' } },
+      { pos: 'e',  styles: { top: '50%',     right: '-5px', transform: 'translateY(-50%)', cursor: 'e-resize'  } },
+      { pos: 'se', styles: { bottom: '-5px', right: '-5px',                                cursor: 'se-resize' } },
+      { pos: 's',  styles: { bottom: '-5px', left: '50%',  transform: 'translateX(-50%)', cursor: 's-resize'  } },
+      { pos: 'sw', styles: { bottom: '-5px', left: '-5px',                                cursor: 'sw-resize' } },
+      { pos: 'w',  styles: { top: '50%',     left: '-5px',  transform: 'translateY(-50%)', cursor: 'w-resize'  } },
+      { pos: 'nw', styles: { top: '-5px',    left: '-5px',                                cursor: 'nw-resize' } },
+    ];
+
+    const handles: HTMLElement[] = [];
+
+    const createHandle = (pos: HandlePos, positionStyles: Partial<CSSStyleDeclaration>): HTMLElement => {
+      const h = document.createElement('div');
+      h.dataset.handlePos = pos;
+      h.setAttribute('aria-label', `Resize image ${pos}`);
+      Object.assign(h.style, {
+        position: 'absolute',
+        width: '10px',
+        height: '10px',
+        background: 'hsl(220, 100%, 60%)',
+        border: '1px solid white',
+        borderRadius: '2px',
+        opacity: '0',
+        transition: 'opacity 0.2s ease',
+        zIndex: '10',
+        ...positionStyles,
+      });
+
+      let startX: number, startY: number, startWidth: number, startHeight: number;
+
+      h.addEventListener('mousedown', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        startX = e.clientX;
+        startY = e.clientY;
+        startWidth = img.offsetWidth;
+        startHeight = img.offsetHeight;
+        const ratio = startHeight / startWidth;
+
+        const onMouseMove = (ev: MouseEvent) => {
+          const dx = ev.clientX - startX;
+          const dy = ev.clientY - startY;
+          let newWidth = startWidth;
+          let newHeight = startHeight;
+
+          switch (pos) {
+            case 'e':                  newWidth = startWidth + dx;  newHeight = newWidth * ratio;  break;
+            case 'w':                  newWidth = startWidth - dx;  newHeight = newWidth * ratio;  break;
+            case 's':                  newHeight = startHeight + dy; newWidth = newHeight / ratio;  break;
+            case 'n':                  newHeight = startHeight - dy; newWidth = newHeight / ratio;  break;
+            case 'se': case 'ne':      newWidth = startWidth + dx;  newHeight = newWidth * ratio;  break;
+            case 'sw': case 'nw':      newWidth = startWidth - dx;  newHeight = newWidth * ratio;  break;
+          }
+
+          newWidth = Math.max(50, newWidth);
+          newHeight = Math.max(30, newHeight);
+          img.style.width = `${newWidth}px`;
+          img.style.height = `${newHeight}px`;
+        };
+
+        const onMouseUp = () => {
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      });
+
+      return h;
+    };
+
+    for (const { pos, styles } of handlePositions) {
+      const h = createHandle(pos, styles);
+      handles.push(h);
+      wrapper.appendChild(h);
+    }
+
+    // ── Remove button ───────────────────────────────────────────────────────
     const closeBtn = document.createElement('div');
     closeBtn.innerHTML = '×';
+    closeBtn.setAttribute('aria-label', 'Remove image');
     Object.assign(closeBtn.style, {
       position: 'absolute',
       top: '0',
@@ -206,9 +273,10 @@ export class ImageFeature {
     });
     wrapper.appendChild(closeBtn);
 
-    // Edit button
+    // ── Edit button ─────────────────────────────────────────────────────────
     const editBtn = document.createElement('button');
     editBtn.textContent = '✎ Edit';
+    editBtn.setAttribute('aria-label', 'Edit image');
     Object.assign(editBtn.style, {
       position: 'absolute',
       bottom: '0',
@@ -228,41 +296,14 @@ export class ImageFeature {
     });
     wrapper.appendChild(editBtn);
 
-    // BUG FIX #3: resize mousedown listener is correctly placed OUTSIDE editBtn click handler
-    let startX: number, startY: number, startWidth: number, startHeight: number;
-    handle.addEventListener('mousedown', e => {
-      e.preventDefault();
-      e.stopPropagation();
-      startX = e.clientX;
-      startY = e.clientY;
-      startWidth = img.offsetWidth;
-      startHeight = img.offsetHeight;
-
-      const onMouseMove = (ev: MouseEvent) => {
-        const dx = ev.clientX - startX;
-        const ratio = startHeight / startWidth;
-        const newWidth = Math.max(50, startWidth + dx);
-        img.style.width = `${newWidth}px`;
-        img.style.height = `${newWidth * ratio}px`;
-      };
-
-      const onMouseUp = () => {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-      };
-
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
-    });
-
-    // Hover show/hide controls
+    // ── Hover show/hide controls ────────────────────────────────────────────
     wrapper.addEventListener('mouseenter', () => {
-      handle.style.opacity = '1';
+      handles.forEach(h => (h.style.opacity = '1'));
       closeBtn.style.opacity = '1';
       editBtn.style.opacity = '1';
     });
     wrapper.addEventListener('mouseleave', () => {
-      handle.style.opacity = '0';
+      handles.forEach(h => (h.style.opacity = '0'));
       closeBtn.style.opacity = '0';
       editBtn.style.opacity = '0';
     });
@@ -299,9 +340,9 @@ export class ImageFeature {
     editorModal.innerHTML = `
       <h3 style="margin:0 0 12px;">Edit Image</h3>
       <canvas id="ray-crop-canvas" style="max-width:100%;border:1px dashed #ccc;margin-bottom:12px;display:block;"></canvas>
-      <label style="display:block;margin-bottom:6px;">Alt text<br><input type="text" id="ray-alt-input" value="${altVal}" style="width:100%;padding:6px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;" /></label>
-      <label style="display:block;margin-bottom:6px;">Title<br><input type="text" id="ray-title-input" value="${titleVal}" style="width:100%;padding:6px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;" /></label>
-      <label style="display:block;margin-bottom:12px;">Caption <span style="color:#94a3b8;font-size:12px;">(optional)</span><br><input type="text" id="ray-caption-input" value="${captionVal}" placeholder="Image caption…" style="width:100%;padding:6px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;" /></label>
+      <label for="ray-alt-input" style="display:block;margin-bottom:6px;">Alt text<br><input type="text" id="ray-alt-input" aria-label="Alt text" value="${altVal}" style="width:100%;padding:6px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;" /></label>
+      <label for="ray-title-input" style="display:block;margin-bottom:6px;">Title<br><input type="text" id="ray-title-input" aria-label="Title" value="${titleVal}" style="width:100%;padding:6px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;" /></label>
+      <label for="ray-caption-input" style="display:block;margin-bottom:12px;">Caption <span style="color:#94a3b8;font-size:12px;">(optional)</span><br><input type="text" id="ray-caption-input" aria-label="Caption" value="${captionVal}" placeholder="Image caption…" style="width:100%;padding:6px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;" /></label>
       <div style="display:flex;gap:8px;">
         <button id="ray-img-save" style="padding:8px 16px;background:#3b82f6;color:white;border:none;border-radius:4px;cursor:pointer;">✅ Save</button>
         <button id="ray-img-cancel" style="padding:8px 16px;background:#eee;border:none;border-radius:4px;cursor:pointer;">Cancel</button>

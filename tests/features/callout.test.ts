@@ -141,16 +141,14 @@ describe('CalloutFeature', () => {
       expect(p?.textContent).toContain('Error:');
     });
 
-    it('inserts spacer paragraphs before and after callout when no selection', () => {
+    it('inserts callout and spacer paragraph after it when no selection', () => {
       feature.insertCallout('info');
       const children = Array.from(editorArea.children);
-      expect(children.length).toBe(3);
-      // spacer before
-      expect(children[0].tagName).toBe('P');
+      expect(children.length).toBe(2);
       // callout
-      expect(children[1].classList.contains('ray-callout')).toBe(true);
+      expect(children[0].classList.contains('ray-callout')).toBe(true);
       // spacer after
-      expect(children[2].tagName).toBe('P');
+      expect(children[1].tagName).toBe('P');
     });
 
     it('multiple insertions create separate callouts', () => {
