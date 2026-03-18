@@ -1,0 +1,57 @@
+<!--
+  Fixture: XSS attack payloads
+  A realistic collection of XSS vectors an attacker might paste into the editor.
+  Used by tests/e2e/security/xss.spec.ts to verify NONE of these execute.
+  Each payload is separated so tests can use individual ones or the full block.
+-->
+
+<!-- 1. Classic script tag -->
+<p>Normal text <script>window.__xss_fired = true; alert('xss1');</script> after</p>
+
+<!-- 2. img onerror -->
+<p><img src="x" onerror="window.__xss_fired = true; alert('xss2')"></p>
+
+<!-- 3. javascript: href -->
+<p><a href="javascript:window.__xss_fired=true;alert('xss3')">click me</a></p>
+
+<!-- 4. data: URI image with script -->
+<p><img src="data:text/html,<script>window.__xss_fired=true</script>"></p>
+
+<!-- 5. svg onload -->
+<svg onload="window.__xss_fired = true; alert('xss5')"><circle r="10"/></svg>
+
+<!-- 6. iframe srcdoc -->
+<iframe srcdoc="<script>window.parent.__xss_fired=true</script>"></iframe>
+
+<!-- 7. style tag with expression (IE) -->
+<style>body { background: expression(window.__xss_fired=true) }</style>
+
+<!-- 8. noscript with meta refresh -->
+<noscript><meta http-equiv="refresh" content="0;url=javascript:alert('xss8')"></noscript>
+
+<!-- 9. template tag -->
+<template><script>window.__xss_fired = true;</script></template>
+
+<!-- 10. base tag redirect -->
+<base href="javascript://">
+
+<!-- 11. Object/embed -->
+<object data="javascript:window.__xss_fired=true"></object>
+<embed src="javascript:window.__xss_fired=true">
+
+<!-- 12. Event handler on regular element -->
+<div onmouseover="window.__xss_fired=true">hover me</div>
+<p onclick="window.__xss_fired=true">click me</p>
+<span onkeydown="window.__xss_fired=true">text</span>
+
+<!-- 13. vbscript: href -->
+<a href="vbscript:window.__xss_fired=true">vbscript link</a>
+
+<!-- 14. Obfuscated javascript: (whitespace in scheme) -->
+<a href="j a v a s c r i p t:window.__xss_fired=true">obfuscated</a>
+
+<!-- 15. srcset with javascript -->
+<img srcset="javascript:window.__xss_fired=true 1x">
+
+<!-- 16. form action -->
+<form action="javascript:window.__xss_fired=true"><button>submit</button></form>

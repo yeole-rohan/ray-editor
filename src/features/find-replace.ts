@@ -178,21 +178,40 @@ export class FindReplaceFeature {
   }
 
   private highlightMatches(): void {
-    this.highlights = [];
+    // Pre-allocate slots so navigation order matches findMatches order.
+    this.highlights = new Array(this.matches.length).fill(null);
 
+    // Group match indices by their start text node.
+    // Within the same text node, surroundContents() splits the node and
+    // invalidates the offsets of any match to the left — so we must wrap
+    // right-to-left (highest offset first) inside each text node.
+    const byNode = new Map<Node, number[]>();
     this.matches.forEach((range, i) => {
-      const mark = document.createElement('mark');
-      mark.className =
-        i === this.currentIdx
-          ? 'ray-find-match ray-find-active'
-          : 'ray-find-match';
-      try {
-        range.surroundContents(mark);
-        this.highlights.push(mark);
-      } catch {
-        // Range spans multiple elements — skip
+      const node = range.startContainer;
+      if (!byNode.has(node)) byNode.set(node, []);
+      byNode.get(node)!.push(i);
+    });
+
+    byNode.forEach(indices => {
+      // Process highest-offset match first so splits don't shift earlier positions
+      for (const i of [...indices].reverse()) {
+        const range = this.matches[i];
+        const mark = document.createElement('mark');
+        mark.className =
+          i === this.currentIdx
+            ? 'ray-find-match ray-find-active'
+            : 'ray-find-match';
+        try {
+          range.surroundContents(mark);
+          this.highlights[i] = mark;
+        } catch {
+          // Range spans multiple nodes (e.g. bold mid-word) — skip silently
+        }
       }
     });
+
+    // Drop null slots from failed wraps (keeps indices stable for navigation)
+    this.highlights = this.highlights.filter(Boolean) as HTMLElement[];
   }
 
   private clearHighlights(): void {

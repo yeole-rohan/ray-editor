@@ -1,0 +1,42 @@
+<!--
+  Fixture: Notion paste HTML
+  Captured from Notion (Chrome) with a page containing:
+  - Heading 1, Heading 2
+  - Paragraph with inline bold, italic, code
+  - Bulleted and numbered lists
+  - A code block (language: javascript)
+  - A callout block
+  Notion wraps everything in a <meta charset> + <article> with data-* attributes.
+-->
+<meta charset="utf-8" /><article>
+  <header>
+    <h1>Getting Started with RayEditor</h1>
+  </header>
+  <h2>Installation</h2>
+  <p>Install via npm: <code>npm install @rohanyeole/ray-editor</code></p>
+  <p>This is a <strong>bold</strong> word and an <em>italic</em> phrase together.</p>
+  <h2>Features</h2>
+  <ul>
+    <li>Zero dependencies</li>
+    <li>TypeScript support</li>
+    <li><strong>Slash commands</strong> — type / to open palette</li>
+  </ul>
+  <ol>
+    <li>Install the package</li>
+    <li>Import the CSS</li>
+    <li>Create an instance</li>
+  </ol>
+  <pre><code class="language-javascript">const editor = new RayEditor('container', {
+  toolbar: ['bold', 'italic', 'link'],
+  theme: 'dark',
+});
+editor.on('content:change', ({ html }) => {
+  console.log(html);
+});</code></pre>
+  <figure class="callout">
+    <div class="callout-icon">💡</div>
+    <p>You can use <strong>plugins</strong> to extend the editor with custom toolbar buttons and slash commands.</p>
+  </figure>
+  <h2>Links</h2>
+  <p>Visit the <a href="https://ray-editor.rohanyeole.com">documentation site</a> for full API reference.</p>
+</article>

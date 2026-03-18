@@ -338,12 +338,29 @@ export class CodeBlockFeature {
     if (!e.shiftKey && currentLine === '' && lineAfterCursor === '' && hasContent) {
       e.preventDefault();
 
-      // Remove the trailing empty newline from the code block
+      // Remove only the trailing \n character (the empty line the cursor is on).
+      // Previously this incorrectly deleted from the start of the code block to
+      // the cursor, erasing all preceding code content.
       if (textBefore.endsWith('\n')) {
-        const preRange2 = document.createRange();
-        preRange2.setStart(codeContent, 0);
-        preRange2.setEnd(range.startContainer, range.startOffset);
-        preRange2.deleteContents();
+        const r2 = document.createRange();
+        if (range.startOffset > 0 && range.startContainer.nodeType === Node.TEXT_NODE) {
+          // Cursor is mid-text-node — the \n is at startOffset - 1
+          r2.setStart(range.startContainer, range.startOffset - 1);
+          r2.setEnd(range.startContainer, range.startOffset);
+          if (r2.toString() === '\n') r2.deleteContents();
+        } else if (range.startOffset === 0) {
+          // Cursor is at start of a text node — find the \n at end of previous sibling
+          let prev = range.startContainer.previousSibling as ChildNode | null;
+          while (prev && prev.nodeType !== Node.TEXT_NODE) prev = prev.previousSibling;
+          if (prev && prev.nodeType === Node.TEXT_NODE) {
+            const t = prev as Text;
+            if (t.data.endsWith('\n')) {
+              r2.setStart(t, t.data.length - 1);
+              r2.setEnd(t, t.data.length);
+              r2.deleteContents();
+            }
+          }
+        }
       }
 
       const newPara = document.createElement('p');
