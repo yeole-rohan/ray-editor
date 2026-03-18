@@ -130,7 +130,9 @@ function deepNormalize(root: HTMLElement): void {
       if (
         name.startsWith('on') ||
         (name === 'href' && /^(javascript|vbscript|data):/.test(val)) ||
-        (name === 'src' && /^(javascript|data):/.test(val))
+        (name === 'src' && /^(javascript|data):/.test(val)) ||
+        name === 'srcdoc' ||
+        (name === 'srcset' && /javascript:|data:/.test(val))
       ) {
         el.removeAttribute(attr.name);
       }

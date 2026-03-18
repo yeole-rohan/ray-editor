@@ -11,6 +11,9 @@ export class FontSizeFeature {
   private previewSpan: HTMLElement | null = null;
   private _pickerAC: AbortController | null = null;
 
+  /** Called after a size is successfully applied — used by RayEditor to push history. */
+  onApply?: () => void;
+
   constructor(editorArea: HTMLElement) {
     this.editorArea = editorArea;
   }
@@ -179,6 +182,9 @@ export class FontSizeFeature {
     this.picker?.remove();
     this.picker = null;
     this.savedRange = null;
+
+    // Notify host (RayEditor) so it can push to history + emit content:change
+    this.onApply?.();
   }
 
   private wrapWithSize(range: Range, px: number): void {

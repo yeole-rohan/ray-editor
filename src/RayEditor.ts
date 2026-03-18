@@ -150,6 +150,11 @@ export class RayEditor implements RayEditorInstance {
       this.editorElement,
       this.options.historySize ?? 100
     );
+    // Re-wire interactive structures (table handles, code selects, task checkboxes)
+    // after every undo/redo restore — innerHTML replacement detaches them.
+    this.historyManager.onRestore = () => {
+      this.contentManager.applyStructure(this.editorElement);
+    };
 
     // Feature modules
     this.formattingFeature = new FormattingFeature(this.editorElement);
@@ -198,6 +203,10 @@ export class RayEditor implements RayEditorInstance {
     this.calloutFeature = new CalloutFeature(this.editorElement);
     this.specialCharsFeature = new SpecialCharsFeature();
     this.fontSizeFeature = new FontSizeFeature(this.editorElement);
+    this.fontSizeFeature.onApply = () => {
+      this.historyManager.push(this.editorElement.innerHTML);
+      this.eventBus.emit('content:change', { html: this.getContent() });
+    };
 
     // Toolbar
     this.toolbarManager = new ToolbarManager(
@@ -588,7 +597,9 @@ export class RayEditor implements RayEditorInstance {
       case 'fontSize': {
         const fsBtn = this.toolbarElement.querySelector<HTMLElement>('.ray-btn-fontSize');
         if (fsBtn) this.fontSizeFeature.show(fsBtn);
-        break;
+        // History push happens via fontSizeFeature.onApply after user selects a size
+        this.toolbarManager.updateActiveStates();
+        return;
       }
       case 'spellCheck': {
         const isOn = this.editorElement.spellcheck;

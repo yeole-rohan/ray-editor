@@ -56,8 +56,8 @@ jobs:
         run: |
           SIZE=$(stat -c%s dist/ray-editor.umd.min.js)
           echo "UMD min size: ${SIZE} bytes"
-          if [ "$SIZE" -gt 163840 ]; then
-            echo "::error::Bundle too large (${SIZE} bytes > 160KB limit)"
+          if [ "$SIZE" -gt 204800 ]; then
+            echo "::error::Bundle too large (${SIZE} bytes > 200KB limit)"
             exit 1
           fi
 

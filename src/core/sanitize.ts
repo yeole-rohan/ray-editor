@@ -64,6 +64,7 @@ export function applySanitizedHTML(target: HTMLElement, html: string): void {
     'object', 'embed', 'applet',
     'form', 'input', 'button', 'select', 'option', 'textarea',
     'base', 'link', 'meta',
+    'style', 'noscript', 'template',
   ]);
 
   const URL_ATTRS = new Set(['href', 'src', 'action', 'formaction', 'data']);

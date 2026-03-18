@@ -93,11 +93,25 @@ export function buildCodeBlock(lang: string, codeHtml: string): HTMLDivElement {
   pre.setAttribute('spellcheck', 'false');
 
   const code = document.createElement('code');
-  // If codeHtml already has a wrapping <code>, unwrap it
+  // Extract plain text from pasted HTML — code blocks are always plain text;
+  // hljs reads textContent and re-formats after insertion.
+  // Using textContent (not innerHTML) prevents XSS via pasted event handlers.
   const tmp = document.createElement('div');
-  tmp.innerHTML = codeHtml;
+  tmp.innerHTML = codeHtml; // parse in detached sandbox (scripts never run here)
   const innerCode = tmp.querySelector('code');
-  code.innerHTML = innerCode ? innerCode.innerHTML : (tmp.innerHTML || '<br>');
+  const text = (innerCode ?? tmp).textContent ?? '';
+  if (text) {
+    code.textContent = text;
+  } else {
+    // Empty block — insert a BR so contenteditable can place the cursor inside
+    code.appendChild(document.createElement('br'));
+  }
+
+  // Remove placeholder BR on first real keystroke so it doesn't pollute code content
+  pre.addEventListener('beforeinput', () => {
+    const br = code.querySelector('br');
+    if (br && (code.textContent ?? '').trim() === '') br.remove();
+  }, { once: true });
 
   pre.appendChild(code);
   wrapper.appendChild(header);
@@ -318,7 +332,10 @@ export class CodeBlockFeature {
     const nlIdx = textAfter.indexOf('\n');
     const lineAfterCursor = nlIdx === -1 ? textAfter : textAfter.slice(0, nlIdx);
 
-    if (!e.shiftKey && currentLine === '' && lineAfterCursor === '') {
+    // Only exit if there's actual code content above the cursor (prevents
+    // an empty freshly-inserted block from exiting on the very first Enter)
+    const hasContent = (codeContent.textContent ?? '').trim().length > 0;
+    if (!e.shiftKey && currentLine === '' && lineAfterCursor === '' && hasContent) {
       e.preventDefault();
 
       // Remove the trailing empty newline from the code block
@@ -346,6 +363,12 @@ export class CodeBlockFeature {
     // ── Regular Enter: insert literal \n instead of letting the browser
     //    create block elements (<div>, <pre>, etc.) inside the code block ──────
     e.preventDefault();
+    // Remove placeholder BR if present (inserted for empty-block cursor support)
+    const code = codeContent.querySelector('code');
+    if (code) {
+      const br = code.querySelector('br');
+      if (br && (code.textContent ?? '').trim() === '') br.remove();
+    }
     range.deleteContents();
     const nl = document.createTextNode('\n');
     range.insertNode(nl);

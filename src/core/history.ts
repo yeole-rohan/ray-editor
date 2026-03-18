@@ -8,6 +8,13 @@ export class HistoryManager {
   private maxSize: number;
   private editorArea: HTMLElement;
 
+  /**
+   * Called after every undo/redo restore so the host can re-wire interactive
+   * structures (table resize handles, code block selects, task checkboxes, etc.)
+   * that are lost when innerHTML is replaced.
+   */
+  onRestore?: () => void;
+
   constructor(editorArea: HTMLElement, maxSize = 100) {
     this.editorArea = editorArea;
     this.maxSize = maxSize;
@@ -33,6 +40,7 @@ export class HistoryManager {
     if (this.index <= 0) return;
     this.index--;
     this.editorArea.innerHTML = this.stack[this.index];
+    this.onRestore?.();
     this.moveCursorToEnd();
   }
 
@@ -40,6 +48,7 @@ export class HistoryManager {
     if (this.index >= this.stack.length - 1) return;
     this.index++;
     this.editorArea.innerHTML = this.stack[this.index];
+    this.onRestore?.();
     this.moveCursorToEnd();
   }
 

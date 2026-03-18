@@ -104,3 +104,27 @@ Recommended approach:
 
 The same applies to `fileUploadUrl` — RayEditor performs no MIME validation for general
 file uploads (any file type is allowed through the file upload button by design).
+
+---
+
+### highlight.js loaded from CDN (no SRI)
+
+When code blocks are used, RayEditor dynamically loads highlight.js from
+`cdnjs.cloudflare.com`. Because the script is injected at runtime, a
+`<script integrity="...">` SRI hash cannot be applied (SRI requires the tag to
+be present in the original HTML at parse time).
+
+**Risk:** If the CDN or the package is compromised, malicious script could run
+in the editor context.
+
+**Mitigations available to integrators:**
+
+1. **Bundle highlight.js yourself** — install `highlight.js` as a dependency and
+   import it before RayEditor loads. RayEditor detects an existing `window.hljs`
+   and will not load its own copy.
+2. **Content Security Policy** — restrict `script-src` to your own origin plus
+   the specific CDN host; pair with a hash or nonce policy if your CSP setup
+   allows it.
+3. **Subresource Integrity** — if you add the `<script>` tag yourself in HTML
+   (not via RayEditor's dynamic loader) you can add `integrity="sha384-..."` and
+   `crossorigin="anonymous"` to enforce SRI.

@@ -94,12 +94,23 @@ export class LinkFeature {
         return;
       }
 
+      const isBlank = targetSelect.value === '_blank';
+      // Merge noopener noreferrer when opening in new tab (prevents reverse tabnapping)
+      const mergeRel = (base: string): string => {
+        if (!isBlank) return base;
+        const parts = new Set(base.split(/\s+/).filter(Boolean));
+        parts.add('noopener');
+        parts.add('noreferrer');
+        return Array.from(parts).join(' ');
+      };
+
       if (anchor) {
         // codeql[js/xss-through-dom] -- safeUrl has passed through sanitizeUrl(), blocking javascript:, vbscript:, and data: schemes.
         anchor.setAttribute('href', safeUrl);
         anchor.setAttribute('target', targetSelect.value);
-        if (relSelect.value) {
-          anchor.setAttribute('rel', relSelect.value);
+        const rel = mergeRel(relSelect.value);
+        if (rel) {
+          anchor.setAttribute('rel', rel);
         } else {
           anchor.removeAttribute('rel');
         }
@@ -108,7 +119,7 @@ export class LinkFeature {
           this.applyLinkToSelection({
             href: safeUrl,
             target: targetSelect.value,
-            rel: relSelect.value,
+            rel: mergeRel(relSelect.value),
           });
         } catch (err) {
           urlError.textContent = 'Invalid selection. Select clean inline text.';
@@ -260,6 +271,21 @@ export class LinkFeature {
       e.stopPropagation();
       const openNewTab = anchor.target !== '_blank';
       anchor.target = openNewTab ? '_blank' : '_self';
+      if (openNewTab) {
+        // Add noopener noreferrer to prevent reverse tabnapping
+        const parts = new Set((anchor.getAttribute('rel') ?? '').split(/\s+/).filter(Boolean));
+        parts.add('noopener');
+        parts.add('noreferrer');
+        anchor.setAttribute('rel', Array.from(parts).join(' '));
+      } else {
+        // Remove security attrs that only apply to _blank
+        const parts = new Set((anchor.getAttribute('rel') ?? '').split(/\s+/).filter(Boolean));
+        parts.delete('noopener');
+        parts.delete('noreferrer');
+        const rel = Array.from(parts).join(' ');
+        if (rel) anchor.setAttribute('rel', rel);
+        else anchor.removeAttribute('rel');
+      }
       tabBtn.classList.toggle('active', openNewTab);
       tabBtn.setAttribute('aria-label', openNewTab ? 'Remove new tab' : 'Open in new tab');
     });

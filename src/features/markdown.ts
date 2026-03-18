@@ -6,6 +6,8 @@
  * MarkdownFeature — manages mode toggle and .md file import
  */
 
+import { sanitizeUrl } from '../core/sanitize';
+
 // ─── Markdown → HTML ────────────────────────────────────────────────────────
 
 function escapeHtml(str: string): string {
@@ -21,14 +23,16 @@ function processInline(text: string, codes: string[]): string {
   text = text.replace(/\x00IC(\d+)\x00/g, (_, i) =>
     `<code>${escapeHtml(codes[parseInt(i)])}</code>`
   );
-  // Images before links (overlapping syntax) — escape alt and src to prevent XSS
-  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) =>
-    `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}">`
-  );
-  // Links — escape href to prevent attribute injection
-  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) =>
-    `<a href="${escapeHtml(url)}">${label}</a>`
-  );
+  // Images before links (overlapping syntax) — sanitize src to block javascript:/data:, escape alt
+  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {
+    const safeSrc = escapeHtml(sanitizeUrl(src));
+    return `<img src="${safeSrc}" alt="${escapeHtml(alt)}">`;
+  });
+  // Links — sanitize href to block javascript:/data:, escape for attribute safety
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) => {
+    const safeHref = escapeHtml(sanitizeUrl(url));
+    return `<a href="${safeHref}">${label}</a>`;
+  });
   // Bold (** or __)
   text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   text = text.replace(/__(.+?)__/g, '<strong>$1</strong>');
