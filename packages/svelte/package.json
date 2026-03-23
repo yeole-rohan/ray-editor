@@ -24,6 +24,6 @@
   },
   "devDependencies": {
     "svelte": ">=4.0.0",
-    "typescript": "^5.4.2"
+    "typescript": "^6.0.2"
   }
 }
