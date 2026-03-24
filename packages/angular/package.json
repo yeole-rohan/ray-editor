@@ -21,6 +21,6 @@
     "ray-editor": "^2.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.4.2"
+    "typescript": "^6.0.2"
   }
 }
