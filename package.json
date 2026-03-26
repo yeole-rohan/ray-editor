@@ -24,6 +24,11 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:chrome": "playwright test --project=chromium",
+    "test:e2e:debug": "playwright test --debug",
     "lint": "tsc --noEmit",
     "clean": "rimraf dist",
     "prepublishOnly": "npm run lint && npm run test:run && npm run build"
@@ -66,6 +71,7 @@
     "url": "https://github.com/yeole-rohan/ray-editor/issues"
   },
   "devDependencies": {
+    "@playwright/test": "^1.44.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",

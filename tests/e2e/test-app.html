@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<!--
+  E2E Test Harness — RayEditor
+  ─────────────────────────────────────────────────────────────────────────────
+  This page is the sole entry-point for all Playwright E2E tests.
+  It is NOT the local dev scratchpad (local-test.html) — it's a minimal,
+  deterministic fixture that contributors can rely on.
+
+  Rules for editing this file:
+    • Keep it minimal — no initial content, no decorative UI
+    • window.editor MUST stay exposed so tests can call API methods
+    • Every toolbar feature must be listed in the toolbar array below
+    • Mock upload handlers live at the bottom of this file
+    • Served by http-server from the repo root at /tests/e2e/test-app.html
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RayEditor — E2E Test App</title>
+  <link rel="stylesheet" href="/dist/ray-editor.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f8fafc; padding: 24px; }
+    #editor-wrapper { max-width: 900px; margin: 0 auto; }
+    /* Status line used by word-count tests */
+    #status {
+      font-size: 12px;
+      color: #64748b;
+      padding: 6px 0;
+      display: flex;
+      gap: 16px;
+    }
+    #status span { display: flex; align-items: center; gap: 4px; }
+  </style>
+</head>
+<body>
+<div id="editor-wrapper">
+  <div id="editor1"></div>
+  <div id="status">
+    <span>Words: <b id="sb-words">0</b></span>
+    <span>Chars: <b id="sb-chars">0</b></span>
+  </div>
+</div>
+
+<script src="/dist/ray-editor.umd.min.js"></script>
+<script>
+// ─── Resolve UMD export ──────────────────────────────────────────────────────
+const EditorClass =
+  (window.RayEditor && (window.RayEditor.RayEditor || window.RayEditor.default)) ||
+  window.RayEditor;
+
+// ─── Initialise editor ───────────────────────────────────────────────────────
+const editor = new EditorClass('editor1', {
+  // Light theme keeps assertions predictable (no theme-class variance)
+  theme: 'light',
+
+  // Core features — all enabled so every feature spec can run against this page
+  markdownShortcuts: true,
+  wordCount: true,
+  findReplace: true,
+  slashCommands: true,
+  historySize: 100,
+
+  imageUpload: {
+    imageUploadUrl: '/api/test/image-upload',
+    imageMaxSize: 10 * 1024 * 1024,
+    accept: 'image/*',
+  },
+
+  fileUpload: {
+    fileUploadUrl: '/api/test/file-upload',
+    fileMaxSize: 10 * 1024 * 1024,
+    accept: '*/*',
+  },
+
+  mentions: {
+    enableMentions: true,
+    mentionTag: '@',
+    mentionElement: 'span',
+  },
+
+  // Full toolbar — every toolbar key that exists in RayEditor
+  toolbar: [
+    ['bold', 'italic', 'underline', 'strikethrough', 'highlight'],
+    ['superscript', 'subscript'],
+    ['uppercase', 'lowercase', 'toggleCase'],
+    ['textColor', 'backgroundColor', 'fontSize'],
+    ['fonts'],
+    ['headings', 'blockquote', 'callout'],
+    ['orderedList', 'unorderedList', 'taskList', 'indent', 'outdent'],
+    ['textAlignment', 'lineHeight', 'hr'],
+    ['codeBlock', 'codeInline'],
+    ['link', 'imageUpload', 'fileUpload', 'table'],
+    ['emoji', 'specialChars', 'insertDateTime'],
+    ['markdownToggle', 'importMarkdown', 'exportMarkdown'],
+    ['undo', 'redo', 'removeFormat'],
+    ['showSource', 'fullscreen', 'print'],
+    ['wordCount'],
+  ],
+
+  onChange(html) {
+    const wc = editor.getWordCount();
+    const wordsEl = document.getElementById('sb-words');
+    const charsEl = document.getElementById('sb-chars');
+    if (wordsEl) wordsEl.textContent = wc.words;
+    if (charsEl) charsEl.textContent = wc.chars;
+  },
+});
+
+// ─── Expose for Playwright ───────────────────────────────────────────────────
+// Tests call window.editor.setContent(), getWordCount(), setTheme(), etc.
+window.editor = editor;
+
+// ─── Mock upload endpoints ───────────────────────────────────────────────────
+// Intercept fetch() for upload URLs so tests don't need a real server.
+const _fetch = window.fetch.bind(window);
+window.fetch = async function(input, init) {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+  if (url.includes('/api/test/image-upload')) {
+    return new Response(
+      JSON.stringify({ url: 'https://via.placeholder.com/400x300.png' }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+  if (url.includes('/api/test/file-upload')) {
+    return new Response(
+      JSON.stringify({ url: '#', name: 'test-file.txt' }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+  return _fetch(input, init);
+};
+</script>
+</body>
+</html>
