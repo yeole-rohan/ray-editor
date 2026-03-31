@@ -258,13 +258,13 @@ export class CodeBlockFeature {
 
     if (!html) return false;
 
-    // Use DOMParser sandbox so on* handlers in pasted HTML never fire during detection
+    // Use DOMParser sandbox so on* handlers in pasted HTML never fire during detection.
+    // Reuse the parsed nodes directly — never assign the untrusted string to innerHTML.
     const sandboxDoc = new DOMParser().parseFromString(html, 'text/html');
     if (!sandboxDoc.body.querySelector('pre, .ray-code-block')) return false;
 
-    // Safe to build live DOM now — content is confirmed to contain only code blocks
     const tmp = document.createElement('div');
-    tmp.innerHTML = html;
+    Array.from(sandboxDoc.body.childNodes).forEach(node => tmp.appendChild(document.adoptNode(node)));
 
     e.preventDefault();
 
