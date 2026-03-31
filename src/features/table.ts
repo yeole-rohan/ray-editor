@@ -10,6 +10,7 @@ export class TableFeature {
   private picker: HTMLElement | null = null;
   private contextToolbar: HTMLElement | null = null;
   private activeCell: HTMLTableCellElement | null = null;
+  onInsert: (() => void) | null = null;
 
   constructor(editorArea: HTMLElement, selectionManager: SelectionManager) {
     this.editorArea = editorArea;
@@ -128,6 +129,7 @@ export class TableFeature {
     }
 
     this.initResizeHandles(table);
+    this.onInsert?.();
   }
 
   // ── Floating Context Toolbar ─────────────────────────────────────────────────

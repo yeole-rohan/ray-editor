@@ -79,9 +79,9 @@ test.describe('Task list — typing', () => {
     await editorPage.page.keyboard.type('after list');
     const html = await editorPage.getHTML();
     expect(html).toContain('after list');
-    // "after list" should not be inside a task item
-    const inTask = html.match(/ray-task-checkbox[\s\S]*?after list/);
-    expect(inTask).toBeNull();
+    // "after list" should not be inside a task item (must appear after closing </ul>)
+    const afterListInTask = /<li[^>]*>(?:(?!<\/li>)[\s\S])*?after list/.test(html);
+    expect(afterListInTask).toBe(false);
   });
 
   test('Backspace at start of task item does not delete checkbox content', async ({ editorPage }) => {
@@ -145,8 +145,8 @@ test.describe('Task list — edge cases', () => {
     await editorPage.settle();
 
     const html = await editorPage.getHTML();
-    // Exactly one item should be checked
-    const checkedCount = (html.match(/data-checked="true"|class="[^"]*checked/g) ?? []).length;
+    // Exactly one item should have data-checked="true"
+    const checkedCount = (html.match(/data-checked="true"/g) ?? []).length;
     expect(checkedCount).toBe(1);
   });
 

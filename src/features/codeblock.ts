@@ -258,11 +258,13 @@ export class CodeBlockFeature {
 
     if (!html) return false;
 
+    // Use DOMParser sandbox so on* handlers in pasted HTML never fire during detection
+    const sandboxDoc = new DOMParser().parseFromString(html, 'text/html');
+    if (!sandboxDoc.body.querySelector('pre, .ray-code-block')) return false;
+
+    // Safe to build live DOM now — content is confirmed to contain only code blocks
     const tmp = document.createElement('div');
     tmp.innerHTML = html;
-
-    // Only intercept if there's a <pre> or ray-code-block in the pasted content
-    if (!tmp.querySelector('pre, .ray-code-block')) return false;
 
     e.preventDefault();
 

@@ -161,6 +161,10 @@ export class RayEditor implements RayEditorInstance {
     this.codeBlockFeature = new CodeBlockFeature(this.editorElement);
     this.linkFeature = new LinkFeature(this.editorElement, this.selectionManager);
     this.tableFeature = new TableFeature(this.editorElement, this.selectionManager);
+    this.tableFeature.onInsert = () => {
+      this.historyManager.push(this.editorElement.innerHTML);
+      this.eventBus.emit('content:change', { html: this.getContent() });
+    };
     this.youtubeFeature = new YouTubeFeature();
     this.markdownFeature = new MarkdownFeature(this.editorElement, this.wrapper, this.toolbarElement);
 

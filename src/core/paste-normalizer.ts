@@ -145,6 +145,12 @@ function deepNormalize(root: HTMLElement): void {
     const id = el.getAttribute('id') ?? '';
     if (id && !id.startsWith('ray-')) el.removeAttribute('id');
 
+    // ── For spans: promote semantically BEFORE filterStyle strips font-weight/font-style ──
+    if (tag === 'span' && el.getAttribute('style')) {
+      promoteSpan(el as HTMLElement);
+      if (!el.isConnected) continue; // was replaced by strong/em/u/s/mark or unwrapped
+    }
+
     // ── Filter inline styles ───────────────────────────────────────────────
     const rawStyle = el.getAttribute('style');
     if (rawStyle) {
