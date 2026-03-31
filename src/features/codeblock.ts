@@ -224,6 +224,34 @@ export class CodeBlockFeature {
 
   handlePaste(e: ClipboardEvent): boolean {
     const html = e.clipboardData?.getData('text/html') ?? '';
+
+    // Check selection before any interception
+    const sel = window.getSelection();
+    if (!sel?.rangeCount || !this.editorArea.contains(sel.anchorNode)) return false;
+
+    // If cursor is inside a code block, strip HTML and insert plain text
+    const anchorNode = sel.anchorNode as Node;
+    const insideCode = (anchorNode.nodeType === Node.ELEMENT_NODE
+      ? (anchorNode as Element).closest('.ray-code-content')
+      : anchorNode.parentElement?.closest('.ray-code-content')) ?? null;
+    if (insideCode) {
+      e.preventDefault();
+      const plainText = html
+        ? (() => { const t = document.createElement('div'); t.innerHTML = html; return t.textContent ?? ''; })()
+        : (e.clipboardData?.getData('text/plain') ?? '');
+      if (plainText) {
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+        const node = document.createTextNode(plainText);
+        range.insertNode(node);
+        range.setStartAfter(node);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+      return true;
+    }
+
     if (!html) return false;
 
     const tmp = document.createElement('div');
@@ -231,10 +259,6 @@ export class CodeBlockFeature {
 
     // Only intercept if there's a <pre> or ray-code-block in the pasted content
     if (!tmp.querySelector('pre, .ray-code-block')) return false;
-
-    // Check selection before swallowing the event
-    const sel = window.getSelection();
-    if (!sel?.rangeCount || !this.editorArea.contains(sel.anchorNode)) return false;
 
     e.preventDefault();
 

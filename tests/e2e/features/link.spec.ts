@@ -16,7 +16,7 @@ test.describe('Link — modal', () => {
     await editorPage.type('click here');
     await editorPage.selectAll();
     await editorPage.clickBtn('link');
-    await expect(editorPage.page.locator('.ray-link-modal, [role="dialog"]')).toBeVisible();
+    await expect(editorPage.page.locator('.ray-editor-link-modal, [role="dialog"]')).toBeVisible();
   });
 
   test('modal does not open when nothing is selected', async ({ editorPage }) => {
@@ -24,7 +24,7 @@ test.describe('Link — modal', () => {
     await editorPage.clickBtn('link');
     await editorPage.settle();
     // Modal should not appear (nothing to link)
-    const modal = editorPage.page.locator('.ray-link-modal');
+    const modal = editorPage.page.locator('.ray-editor-link-modal');
     const visible = await modal.isVisible().catch(() => false);
     // This is expected behavior — modal may or may not open; if it does, URL field should be empty
     if (visible) {
@@ -47,7 +47,7 @@ test.describe('Link — modal', () => {
     await editorPage.type('text');
     await editorPage.selectAll();
     await editorPage.clickBtn('link');
-    const modal = editorPage.page.locator('.ray-link-modal');
+    const modal = editorPage.page.locator('.ray-editor-link-modal');
     // Click on the backdrop (the modal overlay itself)
     await modal.click({ position: { x: 5, y: 5 }, force: true });
     await editorPage.settle();
@@ -169,7 +169,7 @@ test.describe('Link — edit popup', () => {
     const link = editorPage.editor.locator('a').first();
     await link.click();
     await editorPage.settle();
-    const tabBtn = editorPage.page.locator('.ray-editor-link-edit-remove button[title*="tab"], button[title*="Tab"]').first();
+    const tabBtn = editorPage.page.locator('.ray-editor-link-edit-remove .ray-link-newtab-btn');
     await tabBtn.click();
     await editorPage.settle();
     const html = await editorPage.getHTML();
@@ -217,6 +217,6 @@ test.describe('Link — edge cases', () => {
     await editorPage.settle();
     const html = await editorPage.getHTML();
     expect(html).toContain('<a');
-    expect(html).toMatch(/<strong>|font-weight.*bold/);
+    expect(html).toMatch(/<strong>|<b>|font-weight.*bold/);
   });
 });

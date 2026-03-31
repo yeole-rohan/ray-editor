@@ -278,11 +278,13 @@ test.describe('Find — edge cases', () => {
   });
 
   test('search works across heading and paragraph', async ({ editorPage }) => {
-    const { page, editor, clickBtn } = editorPage;
+    const { page, editor } = editorPage;
     await editor.click();
-    await clickBtn('headings');
-    const h2 = editorPage.page.locator('[data-value="h2"]').first();
-    if (await h2.isVisible({ timeout: 500 }).catch(() => false)) await h2.click();
+    // Use headings dropdown (select element) to set h2
+    const headingsSelect = editorPage.page.locator('.ray-dropdown-headings');
+    if (await headingsSelect.isVisible({ timeout: 500 }).catch(() => false)) {
+      await headingsSelect.selectOption('<h2>');
+    }
     await page.keyboard.type('common word');
     await page.keyboard.press('Enter');
     await page.keyboard.press('Enter');

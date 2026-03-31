@@ -97,8 +97,8 @@ export const test = base.extend<{ editorPage: EditorPage }>({
       },
 
       async pasteText(text: string) {
-        await editor.click();
-        // Editor delegates plain-text paste to browser default (not fired for synthetic events).
+        // Do NOT click the editor here — that would reset the cursor position.
+        // The caller is responsible for positioning the cursor before calling pasteText.
         // Use execCommand('insertText') which goes through the editor's beforeinput handler.
         await page.evaluate((t: string) => {
           const el = document.querySelector('.ray-editor-content') as HTMLElement;

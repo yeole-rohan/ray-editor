@@ -78,6 +78,34 @@ export class MarkdownShortcutsFeature {
       }
       return;
     }
+
+    // Unordered list: "- "
+    if (textBefore === '-') {
+      e.preventDefault();
+      const block = range.commonAncestorContainer.parentElement?.closest(
+        'p, h1, h2, h3, h4, h5, h6, div'
+      );
+      if (block) {
+        const textNode = range.startContainer as Text;
+        textNode.textContent = '';
+        document.execCommand('insertUnorderedList');
+      }
+      return;
+    }
+
+    // Ordered list: "1. "
+    if (textBefore === '1.') {
+      e.preventDefault();
+      const block = range.commonAncestorContainer.parentElement?.closest(
+        'p, h1, h2, h3, h4, h5, h6, div'
+      );
+      if (block) {
+        const textNode = range.startContainer as Text;
+        textNode.textContent = '';
+        document.execCommand('insertOrderedList');
+      }
+      return;
+    }
   }
 
   /** Handle "---" Enter → horizontal rule */

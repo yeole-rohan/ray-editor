@@ -200,7 +200,10 @@ export class RayEditor implements RayEditorInstance {
 
     this.emojiFeature = new EmojiFeature(this.editorElement);
     this.taskListFeature = new TaskListFeature(this.editorElement);
-    this.calloutFeature = new CalloutFeature(this.editorElement);
+    this.calloutFeature = new CalloutFeature(this.editorElement, () => {
+      this.historyManager.push(this.editorElement.innerHTML);
+      this.eventBus.emit('content:change', { html: this.getContent() });
+    });
     this.specialCharsFeature = new SpecialCharsFeature();
     this.fontSizeFeature = new FontSizeFeature(this.editorElement);
     this.fontSizeFeature.onApply = () => {
@@ -376,6 +379,8 @@ export class RayEditor implements RayEditorInstance {
   /** Set theme */
   setTheme(theme: 'light' | 'dark'): void {
     this.wrapper?.setAttribute('data-ray-theme', theme);
+    this.wrapper?.classList.remove('dark', 'light');
+    this.wrapper?.classList.add(theme);
     this.eventBus?.emit('theme:change', { theme });
   }
 
@@ -674,8 +679,9 @@ export class RayEditor implements RayEditorInstance {
         if (evt === 'keyup') {
           this.mentionsFeature?.handleKeyUp(event as KeyboardEvent, elementNode);
 
-          // Push to history on every word completion (space/enter)
-          if (event.key === ' ' || event.key === 'Enter') {
+          // Push to history on word completion (space only — Enter push would
+          // cause a single Ctrl+Z to only undo the newline, not the last word)
+          if (event.key === ' ') {
             this.historyManager.push(this.editorElement.innerHTML);
             this.eventBus.emit('content:change', { html: this.getContent() });
           }

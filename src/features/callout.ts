@@ -39,14 +39,25 @@ export class CalloutFeature {
   private editorArea: HTMLElement;
   private activePopup: HTMLElement | null = null;
   private _pickerAC: AbortController | null = null;
+  private _savedRange: Range | null = null;
+  private _onInsert: (() => void) | null;
 
-  constructor(editorArea: HTMLElement) {
+  constructor(editorArea: HTMLElement, onInsert?: () => void) {
     this.editorArea = editorArea;
+    this._onInsert = onInsert ?? null;
   }
 
   /** Show 4-item picker anchored to the toolbar button, then insert chosen callout */
   showPicker(anchorBtn: HTMLElement): void {
     this.closePicker();
+
+    // Save selection so it can be restored after picker interaction steals focus
+    const sel = window.getSelection();
+    if (sel?.rangeCount && this.editorArea.contains(sel.getRangeAt(0).commonAncestorContainer)) {
+      this._savedRange = sel.getRangeAt(0).cloneRange();
+    } else {
+      this._savedRange = null;
+    }
 
     const popup = document.createElement('div');
     popup.className = 'ray-callout-picker';
@@ -91,6 +102,17 @@ export class CalloutFeature {
   }
 
   insertCallout(type: CalloutType): void {
+    // Restore saved selection (picker interaction may have stolen focus)
+    if (this._savedRange) {
+      this.editorArea.focus();
+      const sel = window.getSelection();
+      try {
+        sel?.removeAllRanges();
+        sel?.addRange(this._savedRange);
+      } catch { /* range may be stale */ }
+      this._savedRange = null;
+    }
+
     const sel = window.getSelection();
 
     // Bail out if the selection is not inside the editor area
@@ -99,10 +121,29 @@ export class CalloutFeature {
       if (!this.editorArea.contains(range.commonAncestorContainer)) return;
     }
 
-    // Capture selected content (as a live DocumentFragment — no innerHTML serialization)
+    // Capture selected content, expanding to block boundaries so inline
+    // formatting wrappers (<b>, <strong>, etc.) are included in the clone.
     let selectedFrag: DocumentFragment | null = null;
     if (sel?.rangeCount && !sel.isCollapsed) {
-      selectedFrag = sel.getRangeAt(0).cloneContents();
+      const range = sel.getRangeAt(0);
+      const getBlock = (node: Node): Element | null => {
+        let el: Node | null = node.nodeType === Node.TEXT_NODE ? node.parentElement : node as Element;
+        while (el && el !== this.editorArea) {
+          if (['P','H1','H2','H3','H4','H5','H6','LI','BLOCKQUOTE','DIV'].includes((el as Element).tagName.toUpperCase())) return el as Element;
+          el = (el as Element).parentElement;
+        }
+        return null;
+      };
+      const startBlock = getBlock(range.startContainer);
+      const endBlock = getBlock(range.endContainer);
+      if (startBlock && startBlock === endBlock) {
+        // Single block — clone its full contents to preserve inline formatting
+        const expanded = document.createRange();
+        expanded.selectNodeContents(startBlock);
+        selectedFrag = expanded.cloneContents();
+      } else {
+        selectedFrag = range.cloneContents();
+      }
     }
 
     const callout = document.createElement('div');
@@ -150,6 +191,9 @@ export class CalloutFeature {
       this.editorArea.appendChild(spacer);
       body.focus();
     }
+
+    // Notify host so history can be pushed (enables Ctrl+Z undo)
+    this._onInsert?.();
   }
 
   destroy(): void {
