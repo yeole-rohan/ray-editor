@@ -220,22 +220,33 @@ function promoteSpan(span: HTMLElement): void {
   const bg = props['background-color'] ?? '';
 
   // font-weight:bold/700 → <strong>
+  // If already inside a <strong>, just unwrap to avoid <strong><strong> nesting
   if (fw === '700' || fw === 'bold') {
+    if (span.parentElement?.tagName.toLowerCase() === 'strong') {
+      unwrap(span);
+      return;
+    }
     delete props['font-weight'];
+    delete props['font-style']; // italic in remaining style would be stripped by filterStyle anyway
     const strong = document.createElement('strong');
     strong.innerHTML = span.innerHTML;
-    const rem = serializeProps(props);
+    const rem = filterStyle(serializeProps(props));
     if (rem) strong.setAttribute('style', rem);
     span.parentNode?.replaceChild(strong, span);
     return;
   }
 
   // font-style:italic → <em>
+  // If already inside a <em>, just unwrap to avoid <em><em> nesting
   if (fs === 'italic') {
+    if (span.parentElement?.tagName.toLowerCase() === 'em') {
+      unwrap(span);
+      return;
+    }
     delete props['font-style'];
     const em = document.createElement('em');
     em.innerHTML = span.innerHTML;
-    const rem = serializeProps(props);
+    const rem = filterStyle(serializeProps(props));
     if (rem) em.setAttribute('style', rem);
     span.parentNode?.replaceChild(em, span);
     return;

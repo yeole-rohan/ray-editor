@@ -570,12 +570,17 @@ test.describe('Dark mode', () => {
 test.describe('Long-form content', () => {
   test('editor remains responsive after 50 paragraphs', async ({ editorPage }) => {
     const { page, editor } = editorPage;
+    // Inject 50 paragraphs via setContent (faster than keyboard simulation)
+    const bulkHTML = Array.from({ length: 50 }, (_, i) =>
+      `<p>Paragraph ${i + 1} with some content to make it realistic.</p>`
+    ).join('');
+    await page.evaluate((html) => {
+      (window as any).editor?.setContent(html);
+    }, bulkHTML);
+    await editorPage.settle();
+    // Click end of editor and type — should be instant, not laggy
     await editor.click();
-    for (let i = 1; i <= 50; i++) {
-      await page.keyboard.type(`Paragraph ${i} with some content to make it realistic.`);
-      await page.keyboard.press('Enter');
-    }
-    // Type one more — should be instant, not laggy
+    await page.keyboard.press('Control+End');
     await page.keyboard.type('Final paragraph');
     const text = await editorPage.getText();
     expect(text).toContain('Final paragraph');
