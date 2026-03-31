@@ -96,14 +96,14 @@ test.describe('Paste from Google Docs', () => {
     const { pasteFixture, getHTML } = editorPage;
     await pasteFixture('google-docs');
     const html = await getHTML();
-    expect(html).toMatch(/<strong>/);
+    expect(html).toMatch(/<strong[\s>]/);
   });
 
   test('promotes italic spans to <em>', async ({ editorPage }) => {
     const { pasteFixture, getHTML } = editorPage;
     await pasteFixture('google-docs');
     const html = await getHTML();
-    expect(html).toMatch(/<em>/);
+    expect(html).toMatch(/<em[\s>]/);
   });
 
   test('strips layout-only inline styles (margin, padding, line-height)', async ({ editorPage }) => {

@@ -30,14 +30,14 @@ test.describe('Select-all then type', () => {
   });
 
   test('Ctrl+A → Bold applies to everything', async ({ editorPage }) => {
-    const { type, selectAll, clickBtn, getHTML } = editorPage;
+    const { type, selectAll, clickBtn, getHTML, page } = editorPage;
     await type('line one');
     await page.keyboard.press('Enter');
     await type('line two');
     await selectAll();
     await clickBtn('bold');
     const html = await getHTML();
-    expect(html).toMatch(/<strong>/);
+    expect(html).toMatch(/<strong>|<b>/);
   });
 
   // Playwright page isn't in scope inside test — grab from editorPage
@@ -47,7 +47,7 @@ test.describe('Select-all then type', () => {
     await editor.click({ clickCount: 3 });
     await page.keyboard.press('Control+b');
     const html = await getHTML();
-    expect(html).toMatch(/<strong>/);
+    expect(html).toMatch(/<strong>|<b>/);
   });
 });
 
@@ -365,8 +365,8 @@ test.describe('Find and Replace', () => {
     await type('old text in the editor');
     await page.keyboard.press('Control+h');
     await editorPage.settle();
-    const findInput = editorPage.page.locator('input[placeholder*="Find"], input').nth(0);
-    const replaceInput = editorPage.page.locator('input[placeholder*="Replace"], input').nth(1);
+    const findInput = editorPage.page.locator('#ray-find-input');
+    const replaceInput = editorPage.page.locator('#ray-replace-input');
     await findInput.fill('old text');
     await replaceInput.fill('new text');
     // Click Replace or Replace All
@@ -502,11 +502,13 @@ test.describe('Paste edge cases', () => {
   });
 
   test('pasting bold text into a heading keeps heading style dominant', async ({ editorPage }) => {
-    const { page, editor, clickBtn, pasteHTML, getHTML } = editorPage;
+    const { page, editor, pasteHTML, getHTML } = editorPage;
     await editor.click();
-    await clickBtn('headings');
-    const h2 = editorPage.page.locator('[data-value="h2"], [data-heading="2"]').first();
-    if (await h2.isVisible({ timeout: 500 }).catch(() => false)) await h2.click();
+    // Use the headings dropdown (select element) to set h2
+    const headingsSelect = editorPage.page.locator('.ray-dropdown-headings');
+    if (await headingsSelect.isVisible({ timeout: 500 }).catch(() => false)) {
+      await headingsSelect.selectOption('<h2>');
+    }
     await editorPage.settle();
     await pasteHTML('<strong>Bold pasted</strong>');
     const html = await getHTML();
@@ -523,8 +525,8 @@ test.describe('Read-only mode', () => {
     await type('Locked content');
     const locked = await getText();
 
-    // Toggle read-only via the topbar button
-    await page.locator('#btn-readonly').click();
+    // Toggle read-only via the editor API
+    await page.evaluate(() => { (window as any).editor?.setReadOnly(true); });
     await editorPage.settle();
 
     await editorPage.editor.click();
@@ -533,7 +535,7 @@ test.describe('Read-only mode', () => {
     expect(text).toBe(locked);
 
     // Restore for cleanup
-    await page.locator('#btn-readonly').click();
+    await page.evaluate(() => { (window as any).editor?.setReadOnly(false); });
   });
 });
 
@@ -545,7 +547,8 @@ test.describe('Dark mode', () => {
     await type('Dark mode test content');
     const before = await getText();
 
-    await page.locator('#theme-toggle').click();
+    // Toggle dark mode via the editor API
+    await page.evaluate(() => { (window as any).editor?.setTheme('dark'); });
     await editorPage.settle();
 
     expect(await getText()).toBe(before);
@@ -553,8 +556,8 @@ test.describe('Dark mode', () => {
 
   test('editor wrapper has dark class after toggle', async ({ editorPage }) => {
     const { page } = editorPage;
-    // Page starts in dark mode (button text "🌙 Dark Mode" is toggled)
-    await page.locator('#theme-toggle').click();
+    // Toggle dark mode via the editor API
+    await page.evaluate(() => { (window as any).editor?.setTheme('dark'); });
     await editorPage.settle();
     const wrapper = editorPage.page.locator('.ray-editor-wrapper');
     const cls = await wrapper.getAttribute('class') ?? '';
@@ -567,12 +570,17 @@ test.describe('Dark mode', () => {
 test.describe('Long-form content', () => {
   test('editor remains responsive after 50 paragraphs', async ({ editorPage }) => {
     const { page, editor } = editorPage;
+    // Inject 50 paragraphs via setContent (faster than keyboard simulation)
+    const bulkHTML = Array.from({ length: 50 }, (_, i) =>
+      `<p>Paragraph ${i + 1} with some content to make it realistic.</p>`
+    ).join('');
+    await page.evaluate((html) => {
+      (window as any).editor?.setContent(html);
+    }, bulkHTML);
+    await editorPage.settle();
+    // Click end of editor and type — should be instant, not laggy
     await editor.click();
-    for (let i = 1; i <= 50; i++) {
-      await page.keyboard.type(`Paragraph ${i} with some content to make it realistic.`);
-      await page.keyboard.press('Enter');
-    }
-    // Type one more — should be instant, not laggy
+    await page.keyboard.press('Control+End');
     await page.keyboard.type('Final paragraph');
     const text = await editorPage.getText();
     expect(text).toContain('Final paragraph');

@@ -224,17 +224,47 @@ export class CodeBlockFeature {
 
   handlePaste(e: ClipboardEvent): boolean {
     const html = e.clipboardData?.getData('text/html') ?? '';
-    if (!html) return false;
 
-    const tmp = document.createElement('div');
-    tmp.innerHTML = html;
-
-    // Only intercept if there's a <pre> or ray-code-block in the pasted content
-    if (!tmp.querySelector('pre, .ray-code-block')) return false;
-
-    // Check selection before swallowing the event
+    // Check selection before any interception
     const sel = window.getSelection();
     if (!sel?.rangeCount || !this.editorArea.contains(sel.anchorNode)) return false;
+
+    // If cursor is inside a code block, strip HTML and insert plain text
+    const anchorNode = sel.anchorNode as Node;
+    const insideCode = (anchorNode.nodeType === Node.ELEMENT_NODE
+      ? (anchorNode as Element).closest('.ray-code-content')
+      : anchorNode.parentElement?.closest('.ray-code-content')) ?? null;
+    if (insideCode) {
+      e.preventDefault();
+      // Prefer text/plain (always clean). Only strip HTML as a last resort — and
+      // use DOMParser (sandboxed document) rather than innerHTML on a detached node
+      // so CodeQL's xss-through-dom rule is fully satisfied.
+      const plain = e.clipboardData?.getData('text/plain') ?? '';
+      const plainText = plain || (html
+        ? new DOMParser().parseFromString(html, 'text/html').body.textContent ?? ''
+        : '');
+      if (plainText) {
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+        const node = document.createTextNode(plainText);
+        range.insertNode(node);
+        range.setStartAfter(node);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+      return true;
+    }
+
+    if (!html) return false;
+
+    // Use DOMParser sandbox so on* handlers in pasted HTML never fire during detection.
+    // Reuse the parsed nodes directly — never assign the untrusted string to innerHTML.
+    const sandboxDoc = new DOMParser().parseFromString(html, 'text/html');
+    if (!sandboxDoc.body.querySelector('pre, .ray-code-block')) return false;
+
+    const tmp = document.createElement('div');
+    Array.from(sandboxDoc.body.childNodes).forEach(node => tmp.appendChild(document.adoptNode(node)));
 
     e.preventDefault();
 

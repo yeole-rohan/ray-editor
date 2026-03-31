@@ -223,6 +223,8 @@ export class FindReplaceFeature {
       parent.removeChild(mark);
     });
     this.highlights = [];
+    // Merge fragmented text nodes so subsequent regex searches work on complete words
+    this.editorArea.normalize();
   }
 
   private navigate(dir: 1 | -1): void {

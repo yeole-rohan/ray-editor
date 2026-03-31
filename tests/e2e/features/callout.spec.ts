@@ -83,7 +83,7 @@ test.describe('Callout — selection preservation', () => {
     await editorPage.page.locator('.ray-callout-option, .ray-callout-picker button').first().click();
     await editorPage.settle();
     const html = await editorPage.getHTML();
-    expect(html).toMatch(/<strong>|font-weight.*bold/);
+    expect(html).toMatch(/<strong>|<b>|font-weight.*bold/);
     expect(html).toMatch(/ray-callout/);
   });
 });

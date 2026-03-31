@@ -43,38 +43,81 @@ export class MarkdownShortcutsFeature {
       e.preventDefault();
       const level = headingMatch[1].length;
 
-      // Clear the current block content
-      const block = range.commonAncestorContainer.parentElement?.closest(
+      // Replace the current block with a heading element directly
+      // (execCommand('formatBlock') is unreliable in headless Chrome)
+      const block = (node as Text).parentElement?.closest(
         'p, h1, h2, h3, h4, h5, h6, div'
       );
       if (!block) return;
 
-      document.execCommand('formatBlock', false, `<h${level}>`);
-
-      // Clear the # characters
-      const newSel = window.getSelection();
-      if (newSel?.rangeCount) {
-        const newRange = newSel.getRangeAt(0);
-        const newNode = newRange.startContainer;
-        if (newNode.textContent?.startsWith(headingMatch[1])) {
-          newNode.textContent = newNode.textContent.slice(headingMatch[1].length);
-          newRange.setStart(newNode, 0);
-          newRange.setEnd(newNode, 0);
-          newSel.removeAllRanges();
-          newSel.addRange(newRange);
+      const heading = document.createElement(`h${level}`);
+      // Copy all children except the # text node
+      Array.from(block.childNodes).forEach(child => {
+        if (child === node) {
+          // Replace the # text with an empty text node
+          heading.appendChild(document.createTextNode(''));
+        } else {
+          heading.appendChild(child.cloneNode(true));
         }
-      }
+      });
+      block.replaceWith(heading);
+
+      // Move cursor to start of new heading
+      const textTarget = heading.firstChild ?? heading;
+      const newRange = document.createRange();
+      newRange.setStart(textTarget, 0);
+      newRange.collapse(true);
+      const newSel = window.getSelection();
+      newSel?.removeAllRanges();
+      newSel?.addRange(newRange);
       return;
     }
 
     // Blockquote: "> "
     if (textBefore === '>') {
       e.preventDefault();
-      document.execCommand('formatBlock', false, 'blockquote');
+      const block = (node as Text).parentElement?.closest(
+        'p, h1, h2, h3, h4, h5, h6, div'
+      );
+      if (!block) return;
+      const bq = document.createElement('blockquote');
+      const p = document.createElement('p');
+      p.innerHTML = '<br>';
+      bq.appendChild(p);
+      block.replaceWith(bq);
+      const newRange = document.createRange();
+      newRange.setStart(p, 0);
+      newRange.collapse(true);
       const newSel = window.getSelection();
-      if (newSel?.rangeCount) {
-        const newNode = newSel.getRangeAt(0).startContainer;
-        if (newNode.textContent === '>') newNode.textContent = '';
+      newSel?.removeAllRanges();
+      newSel?.addRange(newRange);
+      return;
+    }
+
+    // Unordered list: "- "
+    if (textBefore === '-') {
+      e.preventDefault();
+      const block = range.commonAncestorContainer.parentElement?.closest(
+        'p, h1, h2, h3, h4, h5, h6, div'
+      );
+      if (block) {
+        const textNode = range.startContainer as Text;
+        textNode.textContent = '';
+        document.execCommand('insertUnorderedList');
+      }
+      return;
+    }
+
+    // Ordered list: "1. "
+    if (textBefore === '1.') {
+      e.preventDefault();
+      const block = range.commonAncestorContainer.parentElement?.closest(
+        'p, h1, h2, h3, h4, h5, h6, div'
+      );
+      if (block) {
+        const textNode = range.startContainer as Text;
+        textNode.textContent = '';
+        document.execCommand('insertOrderedList');
       }
       return;
     }

@@ -258,7 +258,7 @@ export class EmojiFeature {
       searchGrid.classList.remove('ray-emoji-grid-hidden');
     });
 
-    // ── Outside-click close ────────────────────────────────────────────────
+    // ── Outside-click and Escape close ────────────────────────────────────
     this._closeAC = new AbortController();
     const { signal } = this._closeAC;
     const onOutside = (e: MouseEvent) => {
@@ -266,7 +266,13 @@ export class EmojiFeature {
         this.close();
       }
     };
-    setTimeout(() => document.addEventListener('click', onOutside, { signal }), 0);
+    const onKeydown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { e.preventDefault(); this.close(); }
+    };
+    setTimeout(() => {
+      document.addEventListener('click', onOutside, { signal });
+      document.addEventListener('keydown', onKeydown, { signal });
+    }, 0);
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────
@@ -276,7 +282,7 @@ export class EmojiFeature {
     tab.type = 'button';
     tab.className = 'ray-emoji-tab';
     tab.textContent = icon;
-    tab.title = name;
+    // Use aria-label only (no title) so `button[title]` selectors find emoji buttons, not tabs
     tab.setAttribute('aria-label', name);
     tab.dataset.tabName = name;
     return tab;
@@ -314,14 +320,33 @@ export class EmojiFeature {
   }
 
   private insertEmoji(emoji: string): void {
+    const savedRange = this.savedRange;
     this.close();
-    if (this.savedRange) {
-      const sel = window.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(this.savedRange);
-    }
     this.editorArea.focus();
+    const sel = window.getSelection();
+    if (savedRange) {
+      try {
+        sel?.removeAllRanges();
+        sel?.addRange(savedRange);
+      } catch { /* range may have become invalid */ }
+    }
+    if (sel?.rangeCount) {
+      const range = sel.getRangeAt(0);
+      if (this.editorArea.contains(range.commonAncestorContainer)) {
+        range.deleteContents();
+        const node = document.createTextNode(emoji);
+        range.insertNode(node);
+        range.setStartAfter(node);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        this.savedRange = null;
+        this.saveRecent(emoji);
+        return;
+      }
+    }
     document.execCommand('insertText', false, emoji);
+    this.savedRange = null;
     this.saveRecent(emoji);
   }
 

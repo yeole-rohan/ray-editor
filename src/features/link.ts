@@ -58,6 +58,14 @@ export class LinkFeature {
 
     urlInput.focus();
 
+    // Submit on Enter in URL input
+    urlInput.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        (modal.querySelector<HTMLButtonElement>('#ray-insert-link'))?.click();
+      }
+    });
+
     // Focus trap + Escape — listener is on the modal element itself so it is
     // automatically removed when the modal leaves the DOM (no document leak).
     modal.addEventListener('keydown', (e: KeyboardEvent) => {
@@ -76,11 +84,19 @@ export class LinkFeature {
       }
     });
 
+    const validateUrl = (url: string): boolean => {
+      if (!url) return false;
+      // Require an explicit scheme, or a path-relative/fragment URL
+      const hasScheme = /^[a-z][a-z0-9+\-.]*:/i.test(url);
+      const isRelative = /^(\/|#|\?)/.test(url);
+      return hasScheme || isRelative;
+    };
+
     modal.querySelector('#ray-insert-link')!.addEventListener('click', () => {
       const url = urlInput.value.trim();
 
-      if (!url) {
-        urlError.textContent = 'Please enter a URL.';
+      if (!url || !validateUrl(url)) {
+        urlError.textContent = url ? 'Please enter a valid URL (e.g. https://example.com).' : 'Please enter a URL.';
         urlError.style.display = 'block';
         return;
       }

@@ -65,9 +65,8 @@ test.describe('Word count', () => {
   test('words in headings are counted', async ({ editorPage }) => {
     const { page, editor, clickBtn } = editorPage;
     await editor.click();
-    await clickBtn('headings');
-    const h2 = editorPage.page.locator('[data-value="h2"]').first();
-    if (await h2.isVisible({ timeout: 500 }).catch(() => false)) await h2.click();
+    const headingsSelect = editorPage.page.locator('.ray-dropdown-headings');
+    await headingsSelect.selectOption('<h2>');
     await page.keyboard.type('heading text');
     await page.keyboard.press('Space');
     const count = await editorPage.page.evaluate(() =>
