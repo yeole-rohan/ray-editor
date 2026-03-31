@@ -236,9 +236,13 @@ export class CodeBlockFeature {
       : anchorNode.parentElement?.closest('.ray-code-content')) ?? null;
     if (insideCode) {
       e.preventDefault();
-      const plainText = html
-        ? (() => { const t = document.createElement('div'); t.innerHTML = html; return t.textContent ?? ''; })()
-        : (e.clipboardData?.getData('text/plain') ?? '');
+      // Prefer text/plain (always clean). Only strip HTML as a last resort — and
+      // use DOMParser (sandboxed document) rather than innerHTML on a detached node
+      // so CodeQL's xss-through-dom rule is fully satisfied.
+      const plain = e.clipboardData?.getData('text/plain') ?? '';
+      const plainText = plain || (html
+        ? new DOMParser().parseFromString(html, 'text/html').body.textContent ?? ''
+        : '');
       if (plainText) {
         const range = sel.getRangeAt(0);
         range.deleteContents();
