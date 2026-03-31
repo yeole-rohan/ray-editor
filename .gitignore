@@ -9,6 +9,9 @@ coverage/
 .claude/
 local-test.html
 DEPLOYMENT.md
+*.md
+!README.md
+!SECURITY.md
 
 # Playwright
 /playwright-report/
