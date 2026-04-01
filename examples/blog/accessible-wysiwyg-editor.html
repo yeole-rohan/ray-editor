@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accessible WYSIWYG Editor: ARIA &amp; Keyboard Navigation Guide (v2.0.10)</title>
+  <meta name="description" content="How RayEditor v2.0.10 implements ARIA roles, keyboard navigation, and screen reader support for an accessible WYSIWYG rich text editor. WCAG 2.1 checklist included." />
+  <meta name="keywords" content="accessible wysiwyg editor, rich text editor accessibility, aria wysiwyg, keyboard navigation editor, wcag rich text editor" />
+  <meta name="author" content="Rohan Yeole" />
+  <link rel="canonical" href="https://ray-editor.rohanyeole.com/blog/accessible-wysiwyg-editor.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://ray-editor.rohanyeole.com/blog/accessible-wysiwyg-editor.html" />
+  <meta property="og:site_name" content="RayEditor" />
+  <meta property="og:title" content="Accessible WYSIWYG Editor: ARIA &amp; Keyboard Navigation Guide (v2.0.10)" />
+  <meta property="og:description" content="How RayEditor v2.0.10 implements ARIA roles, keyboard navigation, and screen reader support for an accessible WYSIWYG rich text editor. WCAG 2.1 checklist included." />
+  <meta property="og:image" content="https://ray-editor.rohanyeole.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Accessible WYSIWYG Editor: ARIA &amp; Keyboard Navigation Guide (v2.0.10)" />
+  <meta name="twitter:description" content="How RayEditor v2.0.10 implements ARIA roles, keyboard navigation, and screen reader support for an accessible WYSIWYG rich text editor. WCAG 2.1 checklist included." />
+  <meta name="twitter:image" content="https://ray-editor.rohanyeole.com/og-image.png" />
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Accessible WYSIWYG Editor: ARIA &amp; Keyboard Navigation Guide (v2.0.10)","description":"How RayEditor v2.0.10 implements ARIA roles, keyboard navigation, and screen reader support for an accessible WYSIWYG rich text editor. WCAG 2.1 checklist included.","url":"https://ray-editor.rohanyeole.com/blog/accessible-wysiwyg-editor.html","image":"https://ray-editor.rohanyeole.com/og-image.png","datePublished":"2026-03-31","dateModified":"2026-03-31","author":{"@type":"Person","name":"Rohan Yeole","url":"https://rohanyeole.com"},"keywords":"accessible wysiwyg editor, rich text editor accessibility, aria wysiwyg, keyboard navigation editor, wcag rich text editor"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"RayEditor","item":"https://ray-editor.rohanyeole.com/"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://ray-editor.rohanyeole.com/blog/"},{"@type":"ListItem","position":3,"name":"Accessible WYSIWYG Editor","item":"https://ray-editor.rohanyeole.com/blog/accessible-wysiwyg-editor.html"}]}</script>
+  <style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#FFF7ED;--surface:#FFFBF5;--surface2:#FEF3E2;--border:#FED7AA;--text:#451A03;--muted:#92400E;--accent:#F97316;--accent-dark:#D97706;--accent-light:#FFEDD5;--code-bg:#0d1117;--code-text:#e6edf3}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+  a{color:var(--accent)}
+  nav{position:sticky;top:0;z-index:200;backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 28px;height:54px;display:flex;align-items:center;gap:14px}
+  .nav-logo{font-weight:900;font-size:18px;color:var(--accent);text-decoration:none}
+  .nav-version{background:#D1FAE5;color:#065F46;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px}
+  .nav-links{display:flex;gap:2px;margin-left:auto}
+  .nav-links a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:6px}
+  .nav-links a:hover{background:var(--border);color:var(--text)}
+  .nav-links a.cta{background:var(--accent);color:#fff;padding:5px 14px}
+  .wrap{max-width:780px;margin:0 auto;padding:0 24px 72px}
+  .breadcrumb{font-size:13px;color:var(--muted);padding:16px 0 0}
+  .breadcrumb a{color:var(--muted);text-decoration:none}
+  .breadcrumb a:hover{color:var(--accent)}
+  .ah{padding:36px 0 28px;border-bottom:1px solid var(--border);margin-bottom:32px}
+  .tag{display:inline-block;background:var(--accent-light);color:var(--accent);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:3px 10px;border-radius:99px;margin-bottom:14px}
+  h1{font-size:clamp(24px,4vw,36px);font-weight:900;letter-spacing:-0.5px;line-height:1.15;margin-bottom:14px}
+  .byline{font-size:13px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+  .byline .ver-badge{background:var(--accent-light);color:var(--accent);font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px}
+  .sb{background:var(--surface2);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:8px;padding:18px 22px;margin-bottom:32px}
+  .sb h2{font-size:14px;font-weight:700;margin-bottom:8px;color:var(--accent)}
+  .sb ul{padding-left:18px;font-size:14px;color:var(--muted)}
+  .sb li{margin-bottom:4px}
+  article h2{font-size:22px;font-weight:800;margin:36px 0 12px}
+  article h3{font-size:17px;font-weight:700;margin:24px 0 8px}
+  article p{margin-bottom:16px;font-size:15.5px}
+  article ul,article ol{padding-left:22px;margin-bottom:16px;font-size:15.5px}
+  article li{margin-bottom:6px}
+  .tw{overflow-x:auto;margin-bottom:24px;border-radius:8px;border:1px solid var(--border)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+  th{background:var(--surface2);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted)}
+  tr:last-child td{border-bottom:none}
+  .yes{color:#16a34a;font-weight:700}.no{color:#dc2626}.paid{color:var(--muted);font-style:italic}.hl{color:var(--accent);font-weight:700}
+  pre{background:var(--code-bg);color:var(--code-text);padding:20px;border-radius:8px;overflow-x:auto;font-size:13.5px;line-height:1.6;margin-bottom:24px;font-family:"SFMono-Regular",Consolas,monospace}
+  code{font-family:"SFMono-Regular",Consolas,monospace;font-size:0.9em;background:var(--surface2);padding:2px 5px;border-radius:4px;border:1px solid var(--border)}
+  pre code{background:none;padding:0;border:none;font-size:inherit}
+  .step{display:flex;gap:16px;margin-bottom:24px}
+  .step-num{flex-shrink:0;width:32px;height:32px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+  .step-body h3{font-size:16px;font-weight:700;margin-bottom:6px}
+  .callout{background:var(--accent-light);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:8px;padding:14px 18px;margin-bottom:20px;font-size:14px}
+  .cta-box{background:var(--accent);color:#fff;border-radius:12px;padding:32px;text-align:center;margin:40px 0}
+  .cta-box h2{font-size:22px;font-weight:800;margin-bottom:10px;color:#fff}
+  .cta-box p{opacity:0.9;margin-bottom:20px;font-size:15px}
+  .cta-btn{display:inline-block;background:#fff;color:var(--accent);font-weight:700;font-size:14px;padding:10px 24px;border-radius:8px;text-decoration:none}
+  footer{border-top:1px solid var(--border);padding:28px 24px;text-align:center;font-size:13px;color:var(--muted)}
+  footer a{color:var(--muted);text-decoration:none}
+  footer a:hover{color:var(--accent)}</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="/">RayEditor</a>
+  <span class="nav-version">v2.0.10</span>
+  <div class="nav-links">
+    <a href="/demos.html">Demos</a>
+    <a href="/docs.html">Docs</a>
+    <a href="/blog/">Blog</a>
+    <a href="https://github.com/yeole-rohan/ray-editor" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://www.npmjs.com/package/@rohanyeole/ray-editor" target="_blank" rel="noopener" class="cta">npm</a>
+  </div>
+</nav>
+<div class="wrap">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a> &rsaquo; <a href="/blog/">Blog</a> &rsaquo; Accessible WYSIWYG Editor
+  </nav>
+  <header class="ah">
+    <div class="tag">Guide</div>
+    <h1>Accessible WYSIWYG Editor: ARIA &amp; Keyboard Navigation Guide (v2.0.10)</h1>
+    <div class="byline">
+      <span>By <a href="https://rohanyeole.com" rel="author">Rohan Yeole</a></span>
+      <time datetime="2026-03-31">March 31, 2026</time>
+      <span class="ver-badge">v2.0.10</span>
+    </div>
+  </header>
+  <aside class="sb"><h2>Quick Summary</h2><ul>
+  <li>RayEditor uses <code>role="toolbar"</code>, <code>role="textbox"</code>, <code>aria-label</code>, and <code>aria-pressed</code> on all controls.</li>
+  <li>Full keyboard navigation: Tab through toolbar, Enter/Space to activate buttons, Escape to close modals.</li>
+  <li>All toolbar buttons have visible focus indicators and descriptive ARIA labels.</li>
+  <li>Modals (link, image, find &amp; replace) trap focus and are dismissible with Escape.</li>
+  <li>Dark mode support benefits users with light sensitivity.</li>
+</ul></aside>
+<article>
+  <h2>Why Accessibility Matters for WYSIWYG Editors</h2>
+  <p>A WYSIWYG editor that is not accessible locks out users who rely on keyboards, screen readers, or high contrast modes. WCAG 2.1 AA compliance is increasingly required for government and enterprise projects. A rich text editor sits at the heart of many content creation workflows &#8212; making it accessible benefits every user, not just those with disabilities.</p>
+  <p>Accessible WYSIWYG editors are rare. Most editors treat accessibility as an afterthought. RayEditor was built with keyboard navigation and ARIA semantics from the start.</p>
+
+  <h2>ARIA Implementation in RayEditor</h2>
+  <h3>Toolbar</h3>
+  <pre><code>&lt;!-- RayEditor renders the toolbar like this --&gt;
+&lt;div role="toolbar" aria-label="Text formatting" aria-orientation="horizontal"&gt;
+  &lt;button
+    role="button"
+    aria-label="Bold"
+    aria-pressed="false"
+    title="Bold (Ctrl+B)"
+  &gt;...&lt;/button&gt;
+  &lt;button
+    role="button"
+    aria-label="Italic"
+    aria-pressed="true"    &lt;!-- updates when active --&gt;
+    title="Italic (Ctrl+I)"
+  &gt;...&lt;/button&gt;
+&lt;/div&gt;</code></pre>
+
+  <h3>Editor Content Area</h3>
+  <pre><code>&lt;div
+  role="textbox"
+  aria-multiline="true"
+  aria-label="Rich text editor"
+  contenteditable="true"
+  aria-placeholder="Start typing..."
+&gt;&lt;/div&gt;</code></pre>
+
+  <h2>Keyboard Navigation Reference</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Key</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Tab</kbd></td><td>Move focus from content area to toolbar</td></tr>
+      <tr><td><kbd>&#8592;</kbd> / <kbd>&#8594;</kbd></td><td>Navigate between toolbar buttons</td></tr>
+      <tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>Activate focused toolbar button</td></tr>
+      <tr><td><kbd>Escape</kbd></td><td>Close open modal/dropdown, return focus to editor</td></tr>
+      <tr><td><kbd>Ctrl+B</kbd></td><td>Bold</td></tr>
+      <tr><td><kbd>Ctrl+I</kbd></td><td>Italic</td></tr>
+      <tr><td><kbd>Ctrl+U</kbd></td><td>Underline</td></tr>
+      <tr><td><kbd>Ctrl+K</kbd></td><td>Insert/edit link</td></tr>
+      <tr><td><kbd>Ctrl+F</kbd></td><td>Find &amp; Replace</td></tr>
+      <tr><td><kbd>Ctrl+Z</kbd></td><td>Undo</td></tr>
+      <tr><td><kbd>Ctrl+Y</kbd></td><td>Redo</td></tr>
+      <tr><td><kbd>/</kbd> (blank line)</td><td>Open slash command palette</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Modal Focus Traps</h2>
+  <p>All RayEditor modals &#8212; link insertion, image upload, find &amp; replace &#8212; implement focus trapping. When a modal opens, focus moves to the first interactive element inside. Tab cycles through modal controls only. Escape dismisses the modal and restores focus to the editor.</p>
+  <pre><code>// RayEditor dispatches accessibility events you can hook into
+editor.on('modal:open', ({ id }) => {
+  console.log('Modal opened:', id); // 'link', 'image', 'find-replace'
+});
+editor.on('modal:close', ({ id }) => {
+  console.log('Modal closed:', id);
+});</code></pre>
+
+  <h2>WCAG 2.1 AA Checklist for RayEditor</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Criterion</th><th>Status</th><th>Implementation</th></tr></thead>
+    <tbody>
+      <tr><td>1.3.1 Info and Relationships</td><td class="yes">&#10003;</td><td>Semantic HTML headings, lists, tables in content</td></tr>
+      <tr><td>1.4.3 Contrast (Minimum)</td><td class="yes">&#10003;</td><td>4.5:1 ratio on all text in both light and dark themes</td></tr>
+      <tr><td>2.1.1 Keyboard</td><td class="yes">&#10003;</td><td>Full keyboard navigation, all actions reachable</td></tr>
+      <tr><td>2.1.2 No Keyboard Trap</td><td class="yes">&#10003;</td><td>Escape always dismisses modals and returns focus</td></tr>
+      <tr><td>2.4.3 Focus Order</td><td class="yes">&#10003;</td><td>Logical tab order: editor &rarr; toolbar &rarr; modal</td></tr>
+      <tr><td>2.4.7 Focus Visible</td><td class="yes">&#10003;</td><td>Visible focus ring on all interactive elements</td></tr>
+      <tr><td>4.1.2 Name, Role, Value</td><td class="yes">&#10003;</td><td>role, aria-label, aria-pressed on all toolbar buttons</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Screen Reader Tips</h2>
+  <ul>
+    <li>RayEditor announces toolbar button state changes via <code>aria-pressed</code> live updates.</li>
+    <li>The content area uses <code>role="textbox" aria-multiline="true"</code> &#8212; compatible with NVDA, JAWS, and VoiceOver.</li>
+    <li>Modals use <code>role="dialog"</code> with <code>aria-labelledby</code> pointing to the modal title.</li>
+    <li>Slash command palette uses <code>role="listbox"</code> with <code>aria-activedescendant</code> for navigation announcements.</li>
+  </ul>
+
+  <h2>Conclusion</h2>
+  <p>RayEditor is one of the few WYSIWYG editors that implements ARIA semantics, keyboard navigation, and modal focus traps correctly. For projects that require WCAG 2.1 AA compliance or serve users with accessibility needs, RayEditor provides a solid foundation without additional cost or configuration.</p>
+</article>
+  <div class="cta-box">
+    <h2>Try RayEditor for free</h2>
+    <p>No sign-up. No credit card. MIT licensed. Works in React, Vue, Angular, and Svelte.</p>
+    <a href="/demos.html" class="cta-btn">See live demos</a>
+  </div>
+</div>
+<footer>
+  <nav style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin-bottom:14px;font-size:13px">
+    <strong style="color:var(--text)">Comparisons:</strong>
+    <a href="/blog/rayeditor-vs-tinymce.html">vs TinyMCE</a>
+    <a href="/blog/rayeditor-vs-ckeditor.html">vs CKEditor</a>
+    <a href="/blog/rayeditor-vs-quill.html">vs Quill</a>
+    <a href="/blog/rayeditor-vs-froala.html">vs Froala</a>
+    <a href="/blog/wysiwyg-editor-wordpress.html">vs WordPress</a>
+    <a href="/blog/best-free-wysiwyg-html-editor.html">Best Free WYSIWYG</a>
+    <a href="/blog/wysiwyg-editor-npm.html">npm Packages</a>
+    <span style="color:var(--border)">|</span>
+    <strong style="color:var(--text)">Guides:</strong>
+    <a href="/blog/react-rich-text-editor.html">React</a>
+    <a href="/blog/angular-wysiwyg-editor.html">Angular</a>
+    <a href="/blog/vue-wysiwyg-editor.html">Vue</a>
+    <a href="/blog/svelte-wysiwyg-editor.html">Svelte</a>
+    <a href="/blog/markdown-editor-javascript.html">Markdown</a>
+    <span style="color:var(--border)">|</span>
+    <strong style="color:var(--text)">Tutorials:</strong>
+    <a href="/blog/wysiwyg-editor-dark-mode.html">Dark Mode</a>
+    <a href="/blog/implement-markdown-mode.html">Markdown Mode</a>
+    <a href="/blog/slash-commands-wysiwyg-editor.html">Slash Commands</a>
+    <a href="/blog/react-blog-editor-markdown.html">React Blog Editor</a>
+    <a href="/blog/accessible-wysiwyg-editor.html">Accessibility</a>
+  </nav>
+  <p>RayEditor v2.0.10 &middot; MIT License &middot; <a href="https://github.com/yeole-rohan/ray-editor" target="_blank" rel="noopener">GitHub</a> &middot; <a href="https://www.npmjs.com/package/@rohanyeole/ray-editor" target="_blank" rel="noopener">npm</a> &middot; Built by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a></p>
+</footer>
+</body>
+</html>

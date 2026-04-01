@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO -->
+  <title>RayEditor vs CKEditor 5 in 2026: Open Source WYSIWYG Comparison</title>
+  <meta name="description" content="RayEditor vs CKEditor 5 compared on licensing, pricing, features, and bundle size. Find out why RayEditor is the best open-source CKEditor alternative — MIT licensed, zero dependencies." />
+  <meta name="keywords" content="ckeditor alternative, ckeditor pricing, best wysiwyg html editor, wysiwyg html editor open source, rayeditor vs ckeditor, free rich text editor" />
+  <meta name="author" content="Rohan Yeole" />
+  <link rel="canonical" href="https://ray-editor.rohanyeole.com/blog/rayeditor-vs-ckeditor.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="RayEditor vs CKEditor 5 in 2026: Open Source WYSIWYG Comparison" />
+  <meta property="og:description" content="RayEditor vs CKEditor 5 compared on licensing, pricing, features, and bundle size. Find out why RayEditor is the best open-source CKEditor alternative — MIT licensed, zero dependencies." />
+  <meta property="og:image" content="https://ray-editor.rohanyeole.com/og-image.png" />
+  <meta property="og:url" content="https://ray-editor.rohanyeole.com/blog/rayeditor-vs-ckeditor.html" />
+  <meta property="og:site_name" content="RayEditor" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="RayEditor vs CKEditor 5 in 2026: Open Source WYSIWYG Comparison" />
+  <meta name="twitter:description" content="Compare RayEditor and CKEditor 5 on licensing, features, and pricing. MIT-licensed, zero-dependency alternative that ships everything for free." />
+  <meta name="twitter:image" content="https://ray-editor.rohanyeole.com/og-image.png" />
+
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+
+  <!-- JSON-LD BlogPosting -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "RayEditor vs CKEditor 5 in 2026: Open Source WYSIWYG Comparison",
+    "description": "RayEditor vs CKEditor 5 compared on licensing, pricing, features, and bundle size. Find out why RayEditor is the best open-source CKEditor alternative — MIT licensed, zero dependencies.",
+    "image": "https://ray-editor.rohanyeole.com/og-image.png",
+    "url": "https://ray-editor.rohanyeole.com/blog/rayeditor-vs-ckeditor.html",
+    "datePublished": "2026-03-31",
+    "dateModified": "2026-03-31",
+    "author": {
+      "@type": "Person",
+      "name": "Rohan Yeole",
+      "url": "https://rohanyeole.com"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "RayEditor",
+      "url": "https://ray-editor.rohanyeole.com/"
+    },
+    "keywords": "ckeditor alternative, ckeditor pricing, best wysiwyg html editor, wysiwyg html editor open source"
+  }
+  </script>
+
+  <!-- JSON-LD BreadcrumbList -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://ray-editor.rohanyeole.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "https://ray-editor.rohanyeole.com/blog/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "RayEditor vs CKEditor 5 in 2026",
+        "item": "https://ray-editor.rohanyeole.com/blog/rayeditor-vs-ckeditor.html"
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #FFF7ED;
+      --surface:      #FFFBF5;
+      --surface2:     #FEF3E2;
+      --border:       #FED7AA;
+      --text:         #451A03;
+      --muted:        #92400E;
+      --accent:       #F97316;
+      --accent-dark:  #D97706;
+      --accent-light: #FFEDD5;
+      --success:      #10B981;
+      --success-bg:   #D1FAE5;
+      --success-text: #065F46;
+      --danger:       #EF4444;
+      --code-bg:      #0d1117;
+      --code-text:    #e6edf3;
+      --shadow-sm:    0 1px 4px rgba(0,0,0,0.07);
+      --shadow-md:    0 4px 16px rgba(0,0,0,0.09);
+      --radius:       12px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    a { color: var(--accent); }
+    a:hover { color: var(--accent-dark); }
+
+    nav {
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(255,251,245,0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px; height: 54px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .nav-logo { font-weight: 900; font-size: 18px; color: var(--accent); text-decoration: none; letter-spacing: -0.5px; }
+    .nav-version { background: var(--success-bg); color: var(--success-text); font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 99px; }
+    .nav-links { display: flex; gap: 2px; margin-left: auto; align-items: center; }
+    .nav-links a { font-size: 13px; font-weight: 500; color: var(--muted); text-decoration: none; padding: 5px 10px; border-radius: 6px; transition: background 0.15s, color 0.15s; }
+    .nav-links a:hover { background: var(--border); color: var(--text); }
+    .nav-links a.cta { background: var(--accent); color: #fff; padding: 5px 14px; }
+    .nav-links a.cta:hover { background: var(--accent-dark); }
+
+    .breadcrumb { max-width: 780px; margin: 0 auto; padding: 16px 24px 0; font-size: 13px; color: var(--muted); }
+    .breadcrumb a { color: var(--muted); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--accent); }
+    .breadcrumb span { margin: 0 6px; }
+
+    .article-wrap { max-width: 780px; margin: 0 auto; padding: 32px 24px 80px; }
+
+    .article-header { margin-bottom: 32px; }
+    .article-tag { display: inline-block; background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 3px 10px; border-radius: 99px; margin-bottom: 14px; }
+    .article-header h1 { font-size: clamp(26px, 4vw, 40px); font-weight: 900; letter-spacing: -1px; line-height: 1.15; margin-bottom: 14px; }
+    .article-meta { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .article-meta strong { color: var(--text); }
+
+    aside.quick-summary {
+      background: var(--surface2);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 20px 24px; margin: 28px 0;
+    }
+    aside.quick-summary h2 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 10px; }
+    aside.quick-summary ul { padding-left: 18px; }
+    aside.quick-summary li { font-size: 14px; margin-bottom: 5px; color: var(--muted); }
+    aside.quick-summary li strong { color: var(--text); }
+
+    article h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; margin: 40px 0 12px; color: var(--text); }
+    article h3 { font-size: 17px; font-weight: 700; margin: 28px 0 10px; color: var(--text); }
+    article p { margin-bottom: 16px; color: var(--muted); }
+    article p strong { color: var(--text); }
+    article ul, article ol { padding-left: 22px; margin-bottom: 16px; color: var(--muted); }
+    article li { margin-bottom: 6px; }
+
+    .table-wrap { overflow-x: auto; margin: 24px 0; border-radius: var(--radius); box-shadow: var(--shadow-sm); }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); font-size: 14px; }
+    thead th { background: var(--accent); color: #fff; padding: 12px 16px; text-align: left; font-weight: 700; }
+    tbody td { padding: 11px 16px; border-bottom: 1px solid var(--border); color: var(--muted); }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--surface2); }
+    .check { color: var(--success); font-weight: 700; }
+    .cross { color: var(--danger); font-weight: 700; }
+    .partial { color: var(--accent-dark); font-weight: 600; }
+
+    .code-block { background: var(--code-bg); color: var(--code-text); border-radius: var(--radius); padding: 20px 24px; overflow-x: auto; margin: 20px 0; font-size: 13.5px; line-height: 1.6; }
+    .code-block pre { margin: 0; }
+    .code-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px; }
+
+    .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+    @media (max-width: 560px) { .pricing-grid { grid-template-columns: 1fr; } }
+    .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+    .pricing-card.highlight { border-color: var(--accent); }
+    .pricing-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .pricing-card .price { font-size: 26px; font-weight: 900; color: var(--accent); margin-bottom: 4px; }
+    .pricing-card .price span { font-size: 13px; font-weight: 400; color: var(--muted); }
+    .pricing-card p { font-size: 13px; color: var(--muted); margin: 0; }
+
+    .cta-box { background: var(--accent); color: #fff; border-radius: var(--radius); padding: 36px 32px; text-align: center; margin: 48px 0 0; }
+    .cta-box h2 { font-size: 22px; font-weight: 900; margin-bottom: 10px; color: #fff; }
+    .cta-box p { font-size: 15px; margin-bottom: 22px; opacity: 0.9; color: #fff; }
+    .cta-btn { display: inline-block; background: #fff; color: var(--accent); font-weight: 800; font-size: 15px; padding: 12px 28px; border-radius: 8px; text-decoration: none; transition: transform 0.15s; }
+    .cta-btn:hover { transform: translateY(-2px); color: var(--accent-dark); }
+    .cta-secondary { display: inline-block; margin-left: 12px; color: rgba(255,255,255,0.85); font-size: 14px; text-decoration: underline; }
+    .cta-secondary:hover { color: #fff; }
+
+    footer { border-top: 1px solid var(--border); padding: 28px 24px; text-align: center; font-size: 13px; color: var(--muted); }
+    footer a { color: var(--muted); text-decoration: none; margin: 0 8px; }
+    footer a:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="https://ray-editor.rohanyeole.com/" class="nav-logo">&#9654; RayEditor</a>
+    <span class="nav-version">v2.0.10</span>
+    <div class="nav-links">
+      <a href="https://ray-editor.rohanyeole.com/docs.html">Docs</a>
+      <a href="https://ray-editor.rohanyeole.com/demos.html">Demos</a>
+      <a href="https://github.com/yeole-rohan/ray-editor" rel="noopener" target="_blank">GitHub</a>
+      <a href="https://ray-editor.rohanyeole.com/" class="cta">Get Started</a>
+    </div>
+  </nav>
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://ray-editor.rohanyeole.com/">Home</a>
+    <span>&#8250;</span>
+    <a href="https://ray-editor.rohanyeole.com/blog/">Blog</a>
+    <span>&#8250;</span>
+    RayEditor vs CKEditor 5 in 2026
+  </nav>
+
+  <div class="article-wrap">
+
+    <header class="article-header">
+      <span class="article-tag">Comparison</span>
+      <h1>RayEditor vs CKEditor 5 in 2026: Open Source WYSIWYG Comparison</h1>
+      <div class="article-meta">
+        <span>By <strong>Rohan Yeole</strong></span>
+        <span>&#183;</span>
+        <time datetime="2026-03-31">March 31, 2026</time>
+        <span>&#183;</span>
+        <span>9 min read</span>
+      </div>
+    </header>
+
+    <aside class="quick-summary">
+      <h2>Quick Summary</h2>
+      <ul>
+        <li><strong>CKEditor 5</strong> has a complex dual license (GPL + commercial) and charges for production use beyond a basic threshold.</li>
+        <li><strong>RayEditor</strong> is MIT licensed, costs nothing, weighs ~65 KB, and has zero dependencies.</li>
+        <li>CKEditor 5's architecture is powerful but requires substantial setup; RayEditor is ready in under 5 minutes.</li>
+        <li>Both offer framework wrappers, but RayEditor ships native TypeScript types without extra packages.</li>
+      </ul>
+    </aside>
+
+    <article>
+
+      <h2>Introducing the Contenders</h2>
+      <p>
+        CKEditor 5 is widely regarded as one of the most technically sophisticated open-source rich text editors
+        available. Its plugin architecture is flexible, its document model is robust, and the editing experience is
+        polished. Yet beneath the surface, CKEditor 5 carries a pricing model that surprises many developers:
+        while the source code is available on GitHub, <strong>commercial use in production requires a paid license</strong>
+        once you exceed certain thresholds under its GPL + commercial dual-licensing terms.
+      </p>
+      <p>
+        RayEditor approaches the problem differently. It is a free, MIT-licensed WYSIWYG HTML editor built with
+        TypeScript, shipping every feature — slash commands, dark mode, markdown mode, callout blocks, task lists,
+        syntax highlighting, and more — at no cost, with no usage-based pricing.
+      </p>
+
+      <h2>Licensing: GPL + Commercial vs MIT</h2>
+      <p>
+        CKEditor 5 is distributed under a <strong>dual license</strong>: the open-source edition uses GPL 2+
+        (which requires your application to also be GPL-compatible), and the commercial edition requires a paid
+        subscription from CKSource. For SaaS developers and commercial product teams, this creates a real cost
+        and compliance burden.
+      </p>
+      <p>
+        RayEditor uses the <strong>MIT license</strong> — unconditionally. There is no open-core model, no usage
+        cap, no "community edition" vs "enterprise edition" distinction. The full source code on GitHub is exactly
+        what you get on npm, licensed to use freely in any product.
+      </p>
+
+      <h2>CKEditor 5 Pricing vs RayEditor</h2>
+
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <h3>CKEditor 5</h3>
+          <div class="price">$0 <span>/ GPL open-source only</span></div>
+          <p>Free only if your project is GPL-compatible. Commercial use requires a paid plan starting at hundreds of dollars per month for production environments.</p>
+        </div>
+        <div class="pricing-card highlight">
+          <h3>RayEditor</h3>
+          <div class="price">$0 <span>/ forever, MIT</span></div>
+          <p>Completely free for commercial and personal use. No seat limits, no usage caps, no expiry. MIT license applies to every feature.</p>
+        </div>
+      </div>
+
+      <h2>Feature Comparison</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>CKEditor 5 (free/GPL)</th>
+              <th>RayEditor (MIT)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>License</td><td class="partial">GPL 2+ / commercial (paid)</td><td class="check">MIT &#10003;</td></tr>
+            <tr><td>Commercial use free</td><td class="cross">&#10007; Requires paid plan</td><td class="check">&#10003; Always free</td></tr>
+            <tr><td>Zero dependencies</td><td class="cross">&#10007; Has dependencies</td><td class="check">&#10003; Yes</td></tr>
+            <tr><td>Bundle size (min)</td><td class="partial">~300–500 KB (varies by build)</td><td class="check">~65 KB &#10003;</td></tr>
+            <tr><td>TypeScript types</td><td class="check">&#10003; Yes</td><td class="check">&#10003; Yes</td></tr>
+            <tr><td>Dark mode</td><td class="partial">Theme customization only</td><td class="check">&#10003; Built-in toggle</td></tr>
+            <tr><td>Markdown mode</td><td class="partial">Plugin available (GPL)</td><td class="check">&#10003; Built-in</td></tr>
+            <tr><td>Slash commands</td><td class="partial">Paid feature</td><td class="check">&#10003; Built-in</td></tr>
+            <tr><td>Task lists</td><td class="check">&#10003; Available</td><td class="check">&#10003; Built-in</td></tr>
+            <tr><td>Callout / alert blocks</td><td class="cross">&#10007; Not built-in</td><td class="check">&#10003; Built-in</td></tr>
+            <tr><td>Find &amp; Replace</td><td class="check">&#10003; Available</td><td class="check">&#10003; Built-in</td></tr>
+            <tr><td>Syntax highlighting</td><td class="partial">Code blocks (no highlighting free)</td><td class="check">&#10003; Built-in highlighting</td></tr>
+            <tr><td>Plugin API</td><td class="check">&#10003; Extensive</td><td class="check">&#10003; Lightweight API</td></tr>
+            <tr><td>React / Vue / Angular</td><td class="check">&#10003; Official wrappers</td><td class="check">&#10003; Official wrappers</td></tr>
+            <tr><td>Setup time</td><td class="partial">30–60 min (build config)</td><td class="check">&#10003; Under 5 minutes</td></tr>
+            <tr><td>Real-time collaboration</td><td class="partial">Paid (CKEditor Cloud)</td><td class="cross">&#10007; Roadmap</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>The Zero-Dependency Advantage</h2>
+      <p>
+        CKEditor 5 ships with its own set of internal packages and peer dependencies, which means your
+        <code>node_modules</code> grows and your supply-chain attack surface widens. Security audits of third-party
+        dependencies add engineering overhead.
+      </p>
+      <p>
+        RayEditor has <strong>zero runtime dependencies</strong>. The entire editor — toolbar, slash commands,
+        markdown engine, paste normalizer, plugin system — is implemented in a single TypeScript codebase with
+        no third-party runtime code. This means fewer vulnerabilities to track, faster installs, and a dramatically
+        smaller dependency tree to audit.
+      </p>
+
+      <h2>Setup Complexity</h2>
+      <p>
+        CKEditor 5 is powerful, but that power comes with configuration complexity. You typically choose a
+        "build" (Classic, Inline, Balloon, Document), configure which plugins to include, set up the toolbar order,
+        and wire up the framework wrapper. For teams with specific needs, this flexibility is valuable. For teams
+        who want to ship quickly, it can be a significant time sink.
+      </p>
+      <p>
+        RayEditor is designed to work in under five minutes. Install the package, import the CSS, initialize
+        with a selector, and you have a fully featured editor. Advanced configuration is available via options —
+        but it is never required.
+      </p>
+
+      <div class="code-label">RayEditor — installed and running</div>
+      <div class="code-block">
+        <pre><code>npm install @rohanyeole/ray-editor</code></pre>
+      </div>
+
+      <div class="code-block">
+        <pre><code>import { RayEditor } from '@rohanyeole/ray-editor';
+import '@rohanyeole/ray-editor/dist/ray-editor.css';
+
+const editor = new RayEditor('#editor', {
+  theme: 'auto',          // respects system dark/light mode
+  placeholder: 'Write something...',
+  onChange: (html) =&gt; console.log(html),
+});</code></pre>
+      </div>
+
+      <div class="code-label">CKEditor 5 — minimum viable setup (Classic Build)</div>
+      <div class="code-block">
+        <pre><code>npm install @ckeditor/ckeditor5-react @ckeditor/ckeditor5-build-classic</code></pre>
+      </div>
+
+      <div class="code-block">
+        <pre><code>import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+
+// Note: custom plugin combinations require a custom build
+// which involves webpack and CKEditor's build toolchain
+&lt;CKEditor
+  editor={ClassicEditor}
+  data="&lt;p&gt;Hello world!&lt;/p&gt;"
+  onChange={(event, editor) =&gt; console.log(editor.getData())}
+/&gt;</code></pre>
+      </div>
+
+      <h2>Use-Case Recommendations</h2>
+      <h3>Choose RayEditor when:</h3>
+      <ul>
+        <li>You need a <strong>commercially safe MIT license</strong> without legal review overhead.</li>
+        <li>Speed to production matters — you want a working editor in minutes, not hours.</li>
+        <li>Bundle size and performance are constraints (mobile users, CDN costs).</li>
+        <li>You want modern features (slash commands, dark mode, callouts) without paying extra.</li>
+        <li>Your team prefers a zero-dependency codebase for security and auditability.</li>
+      </ul>
+
+      <h3>Consider CKEditor 5 when:</h3>
+      <ul>
+        <li>You need <strong>real-time collaborative editing</strong> with conflict resolution and are willing to pay for CKEditor Cloud.</li>
+        <li>Your team has existing CKEditor expertise and deeply customized plugin builds.</li>
+        <li>You require track-changes and revision history with an enterprise SLA.</li>
+      </ul>
+
+      <h2>Conclusion</h2>
+      <p>
+        CKEditor 5 is an excellent piece of engineering, but its licensing complexity and commercial pricing make it
+        a poor fit for most independent developers and small teams. RayEditor delivers a comparable — and in many
+        areas superior — editing experience under a genuinely free MIT license with zero dependencies and a fraction
+        of the bundle weight.
+      </p>
+      <p>
+        If you are evaluating <strong>open-source WYSIWYG HTML editors</strong> for your next project, RayEditor
+        should be your starting point, not a fallback.
+      </p>
+
+      <div class="cta-box">
+        <h2>Try RayEditor for Free</h2>
+        <p>No sign-up. No credit card. No licensing headaches. MIT license, forever.</p>
+        <a href="https://ray-editor.rohanyeole.com/" class="cta-btn">Get Started Free</a>
+        <a href="https://github.com/yeole-rohan/ray-editor" rel="noopener" target="_blank" class="cta-secondary">View on GitHub</a>
+      </div>
+
+    </article>
+  </div>
+
+  <footer>
+  <nav style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin-bottom:14px;font-size:13px">
+    <strong style="color:var(--text)">Comparisons:</strong>
+    <a href="/blog/rayeditor-vs-tinymce.html">vs TinyMCE</a>
+    <a href="/blog/rayeditor-vs-ckeditor.html">vs CKEditor</a>
+    <a href="/blog/rayeditor-vs-quill.html">vs Quill</a>
+    <a href="/blog/rayeditor-vs-froala.html">vs Froala</a>
+    <a href="/blog/wysiwyg-editor-wordpress.html">vs WordPress</a>
+    <a href="/blog/best-free-wysiwyg-html-editor.html">Best Free WYSIWYG</a>
+    <a href="/blog/wysiwyg-editor-npm.html">npm Packages</a>
+    <span style="color:var(--border)">|</span>
+    <strong style="color:var(--text)">Guides:</strong>
+    <a href="/blog/react-rich-text-editor.html">React</a>
+    <a href="/blog/angular-wysiwyg-editor.html">Angular</a>
+    <a href="/blog/vue-wysiwyg-editor.html">Vue</a>
+    <a href="/blog/svelte-wysiwyg-editor.html">Svelte</a>
+    <a href="/blog/markdown-editor-javascript.html">Markdown</a>
+    <span style="color:var(--border)">|</span>
+    <strong style="color:var(--text)">Tutorials:</strong>
+    <a href="/blog/wysiwyg-editor-dark-mode.html">Dark Mode</a>
+    <a href="/blog/implement-markdown-mode.html">Markdown Mode</a>
+    <a href="/blog/slash-commands-wysiwyg-editor.html">Slash Commands</a>
+    <a href="/blog/react-blog-editor-markdown.html">React Blog Editor</a>
+    <a href="/blog/accessible-wysiwyg-editor.html">Accessibility</a>
+  </nav>
+  <p>RayEditor v2.0.10 &middot; MIT License &middot; <a href="https://github.com/yeole-rohan/ray-editor" target="_blank" rel="noopener">GitHub</a> &middot; <a href="https://www.npmjs.com/package/@rohanyeole/ray-editor" target="_blank" rel="noopener">npm</a> &middot; Built by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a></p>
+</footer>
+
+</body>
+</html>

@@ -8,28 +8,29 @@
   <!-- ── SEO ──────────────────────────────────────────────────────────────── -->
   <title>RayEditor — Free WYSIWYG Rich Text Editor for JavaScript, React, Vue & Angular</title>
   <meta name="description" content="RayEditor is a free, lightweight, dependency-free WYSIWYG rich text editor for JavaScript, TypeScript, React, Vue, Angular, and Svelte. Includes slash commands, dark mode, markdown mode, task lists, callouts, tables, find & replace, plugin API, and syntax highlighting. MIT licensed.">
-  <meta name="keywords" content="wysiwyg editor, rich text editor, javascript editor, react editor, vue editor, angular editor, tinymce alternative, quill alternative, ckeditor alternative, free editor, markdown editor, contenteditable, typescript editor, open source editor">
+  <meta name="keywords" content="wysiwyg editor, rich text editor, free wysiwyg html editor, wysiwyg html editor, markdown editor, react rich text editor, react wysiwyg editor, angular wysiwyg editor, angular text editor, vue wysiwyg editor, javascript editor, typescript editor, wysiwyg html editor open source, tinymce alternative, ckeditor alternative, quill alternative, contenteditable, zero dependencies, rich text editor javascript">
   <meta name="author" content="Rohan Yeole">
   <link rel="canonical" href="https://ray-editor.rohanyeole.com/">
 
   <!-- ── Open Graph ────────────────────────────────────────────────────────── -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://ray-editor.rohanyeole.com/">
-  <meta property="og:title" content="RayEditor — Free WYSIWYG Editor">
-  <meta property="og:description" content="Lightweight, dependency-free WYSIWYG editor. Free alternative to TinyMCE, Quill & CKEditor. Slash commands, dark mode, markdown mode, task lists, plugin API. MIT license.">
+  <meta property="og:site_name" content="RayEditor">
+  <meta property="og:title" content="RayEditor — Free WYSIWYG Rich Text Editor">
+  <meta property="og:description" content="The best free, open-source WYSIWYG HTML editor for JavaScript, React, Vue &amp; Angular. Zero dependencies, MIT license. Slash commands, dark mode, markdown mode, task lists, plugin API.">
   <meta property="og:image" content="https://ray-editor.rohanyeole.com/og-image.png">
 
   <!-- ── Twitter Card ──────────────────────────────────────────────────────── -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="RayEditor — Free WYSIWYG Editor">
-  <meta name="twitter:description" content="Lightweight, dependency-free WYSIWYG editor. MIT. Slash commands, dark mode, markdown mode, task lists, plugin API.">
+  <meta name="twitter:title" content="RayEditor — Free WYSIWYG Rich Text Editor">
+  <meta name="twitter:description" content="Free, open-source WYSIWYG HTML editor. Zero dependencies, MIT license. Slash commands, dark mode, markdown mode, task lists, plugin API.">
   <meta name="twitter:image" content="https://ray-editor.rohanyeole.com/og-image.png">
 
   <!-- ── Favicon ───────────────────────────────────────────────────────────── -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" href="favicon.svg">
 
-  <!-- ── Schema.org ───────────────────────────────────────────────────────── -->
+  <!-- ── Schema.org: SoftwareApplication ─────────────────────────────────── -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -38,13 +39,65 @@
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Web",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-    "description": "Free, lightweight WYSIWYG rich text editor for JavaScript, React, Vue, Angular, and Svelte.",
+    "description": "Free, lightweight WYSIWYG rich text editor for JavaScript, React, Vue, Angular, and Svelte. Zero dependencies, MIT licensed.",
     "url": "https://ray-editor.rohanyeole.com/",
     "downloadUrl": "https://www.npmjs.com/package/@rohanyeole/ray-editor",
     "author": { "@type": "Person", "name": "Rohan Yeole", "url": "https://rohanyeole.com" },
     "license": "https://opensource.org/licenses/MIT",
     "softwareVersion": "2.0.9",
-    "keywords": "wysiwyg, rich text editor, javascript, react, vue, angular, free, open source"
+    "keywords": "wysiwyg editor, rich text editor, javascript, react, vue, angular, free, open source, markdown editor"
+  }
+  </script>
+
+  <!-- ── Schema.org: WebSite ─────────────────────────────────────────────── -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "RayEditor",
+    "url": "https://ray-editor.rohanyeole.com/",
+    "description": "Free, open-source WYSIWYG rich text editor for JavaScript, React, Vue, Angular, and Svelte.",
+    "publisher": { "@type": "Person", "name": "Rohan Yeole", "url": "https://rohanyeole.com" }
+  }
+  </script>
+
+  <!-- ── Schema.org: FAQPage ─────────────────────────────────────────────── -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is RayEditor free to use?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. RayEditor is MIT licensed — free for personal and commercial use, forever. No paid tier, no vendor lock-in." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a WYSIWYG editor?",
+        "acceptedAnswer": { "@type": "Answer", "text": "WYSIWYG stands for 'What You See Is What You Get'. A WYSIWYG editor lets you format content visually — bold, headings, tables — and see the result immediately, without writing HTML. RayEditor is a free, open-source WYSIWYG HTML editor for JavaScript and TypeScript." }
+      },
+      {
+        "@type": "Question",
+        "name": "Does RayEditor work with React?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. RayEditor ships an official React wrapper with value/onChange props. Install @rohanyeole/ray-editor-react via npm and use the RayEditor component directly in your React app." }
+      },
+      {
+        "@type": "Question",
+        "name": "Is RayEditor a good TinyMCE alternative?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. RayEditor includes features that require a paid TinyMCE plan — dark mode, find & replace, tables, word count — all free and MIT licensed. Bundle size is also significantly smaller." }
+      },
+      {
+        "@type": "Question",
+        "name": "Does RayEditor support Markdown?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. RayEditor has a bidirectional Markdown mode. Toggle between rich text and raw Markdown at any time, or use importMarkdown() / exportMarkdown() via the JavaScript API." }
+      },
+      {
+        "@type": "Question",
+        "name": "Does RayEditor work with Angular and Vue?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. RayEditor ships official wrappers for React, Vue 3, Angular, and Svelte. Each wrapper provides two-way binding so you can integrate the rich text editor with your existing framework." }
+      }
+    ]
   }
   </script>
 
@@ -219,7 +272,7 @@
     <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#F97316"/><text x="16" y="22.5" font-family="system-ui,Arial,sans-serif" font-weight="900" font-size="20" fill="#fff" text-anchor="middle">R</text></svg>
     RayEditor
   </a>
-  <span class="nav-version">v2.0.9</span>
+  <span class="nav-version">v2.0.10</span>
   <div class="nav-links">
     <a href="demos.html">Demos</a>
     <a href="docs.html">Docs</a>
@@ -232,7 +285,7 @@
 
 <!-- ── Hero ─────────────────────────────────────────────────────────────────── -->
 <section class="hero" id="home">
-  <div class="hero-eyebrow">⚡ Zero dependencies · MIT License · v2.0.9</div>
+  <div class="hero-eyebrow">⚡ Zero dependencies · MIT License · v2.0.10</div>
   <h1>The free rich-text editor<br><span>your app deserves</span></h1>
   <p class="hero-sub">
     RayEditor is a lightweight WYSIWYG editor for JavaScript, TypeScript, React, Vue, Angular, and Svelte.
@@ -319,7 +372,7 @@
 <section class="section" id="compare">
   <div class="section-label">Editor comparison</div>
   <div class="section-title">Why RayEditor?</div>
-  <p class="section-desc">The only free editor with slash commands, markdown mode, task lists, callouts, find/replace, and a plugin API — all in one package.</p>
+  <p class="section-desc">The only free, open-source WYSIWYG HTML editor with slash commands, markdown mode, task lists, callouts, find/replace, and a plugin API — all in one package. A lightweight alternative to TinyMCE, Quill, and CKEditor that works with React, Vue, Angular, and Svelte.</p>
   <div class="card">
     <div class="card-body" style="padding:0;overflow-x:auto">
       <table class="cmp-table">
@@ -350,12 +403,31 @@
 
 <!-- ── Footer ────────────────────────────────────────────────────────────────── -->
 <footer>
-  <p>
-    RayEditor v2.0.9 · MIT License ·
-    <a href="https://github.com/yeole-rohan/ray-editor" target="_blank" rel="noopener">GitHub</a> ·
-    <a href="https://www.npmjs.com/package/@rohanyeole/ray-editor" target="_blank" rel="noopener">npm</a> ·
-    Built by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a>
-  </p>
+  <nav style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin-bottom:14px;font-size:13px">
+    <strong style="color:var(--text)">Comparisons:</strong>
+    <a href="blog/rayeditor-vs-tinymce.html">vs TinyMCE</a>
+    <a href="blog/rayeditor-vs-ckeditor.html">vs CKEditor</a>
+    <a href="blog/rayeditor-vs-quill.html">vs Quill</a>
+    <a href="blog/rayeditor-vs-froala.html">vs Froala</a>
+    <a href="blog/wysiwyg-editor-wordpress.html">vs WordPress</a>
+    <a href="blog/best-free-wysiwyg-html-editor.html">Best Free WYSIWYG</a>
+    <a href="blog/wysiwyg-editor-npm.html">npm Packages</a>
+    <span style="color:var(--border)">|</span>
+    <strong style="color:var(--text)">Guides:</strong>
+    <a href="blog/react-rich-text-editor.html">React</a>
+    <a href="blog/angular-wysiwyg-editor.html">Angular</a>
+    <a href="blog/vue-wysiwyg-editor.html">Vue</a>
+    <a href="blog/svelte-wysiwyg-editor.html">Svelte</a>
+    <a href="blog/markdown-editor-javascript.html">Markdown</a>
+    <span style="color:var(--border)">|</span>
+    <strong style="color:var(--text)">Tutorials:</strong>
+    <a href="blog/wysiwyg-editor-dark-mode.html">Dark Mode</a>
+    <a href="blog/implement-markdown-mode.html">Markdown Mode</a>
+    <a href="blog/slash-commands-wysiwyg-editor.html">Slash Commands</a>
+    <a href="blog/react-blog-editor-markdown.html">React Blog Editor</a>
+    <a href="blog/accessible-wysiwyg-editor.html">Accessibility</a>
+  </nav>
+  <p>RayEditor v2.0.10 &middot; MIT License &middot; <a href="https://github.com/yeole-rohan/ray-editor" target="_blank" rel="noopener">GitHub</a> &middot; <a href="https://www.npmjs.com/package/@rohanyeole/ray-editor" target="_blank" rel="noopener">npm</a> &middot; Built by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a></p>
 </footer>
 
 </body>

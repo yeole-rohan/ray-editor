@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JavaScript Markdown Editor with Rich Text in 2026: Why You Need Both</title>
+  <meta name="description" content="RayEditor gives you bidirectional Markdown mode in a free WYSIWYG editor. Toggle between rich text and Markdown, import/export .md files, and use Markdown shortcuts. MIT licensed." />
+  <meta name="keywords" content="markdown editor, markdown editor online, markdown editor javascript, markdown editor react, wysiwyg markdown editor" />
+  <meta name="author" content="Rohan Yeole" />
+  <link rel="canonical" href="https://ray-editor.rohanyeole.com/blog/markdown-editor-javascript.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://ray-editor.rohanyeole.com/blog/markdown-editor-javascript.html" />
+  <meta property="og:site_name" content="RayEditor" />
+  <meta property="og:title" content="JavaScript Markdown Editor with Rich Text in 2026: Why You Need Both" />
+  <meta property="og:description" content="RayEditor gives you bidirectional Markdown mode in a free WYSIWYG editor. Toggle between rich text and Markdown, import/export .md files, and use Markdown shortcuts. MIT licensed." />
+  <meta property="og:image" content="https://ray-editor.rohanyeole.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="JavaScript Markdown Editor with Rich Text in 2026: Why You Need Both" />
+  <meta name="twitter:description" content="RayEditor gives you bidirectional Markdown mode in a free WYSIWYG editor. Toggle between rich text and Markdown, import/export .md files, and use Markdown shortcuts. MIT licensed." />
+  <meta name="twitter:image" content="https://ray-editor.rohanyeole.com/og-image.png" />
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"JavaScript Markdown Editor with Rich Text in 2026: Why You Need Both","description":"RayEditor gives you bidirectional Markdown mode in a free WYSIWYG editor. Toggle between rich text and Markdown, import/export .md files, and use Markdown shortcuts. MIT licensed.","url":"https://ray-editor.rohanyeole.com/blog/markdown-editor-javascript.html","image":"https://ray-editor.rohanyeole.com/og-image.png","datePublished":"2026-03-31","dateModified":"2026-03-31","author":{"@type":"Person","name":"Rohan Yeole","url":"https://rohanyeole.com"},"keywords":"markdown editor, markdown editor online, markdown editor javascript, markdown editor react, wysiwyg markdown editor"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"RayEditor","item":"https://ray-editor.rohanyeole.com/"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://ray-editor.rohanyeole.com/blog/"},{"@type":"ListItem","position":3,"name":"JavaScript Markdown Editor","item":"https://ray-editor.rohanyeole.com/blog/markdown-editor-javascript.html"}]}</script>
+  <style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#FFF7ED;--surface:#FFFBF5;--surface2:#FEF3E2;--border:#FED7AA;--text:#451A03;--muted:#92400E;--accent:#F97316;--accent-light:#FFEDD5;--code-bg:#0d1117;--code-text:#e6edf3}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+  a{color:var(--accent)}
+  nav{position:sticky;top:0;z-index:200;backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 28px;height:54px;display:flex;align-items:center;gap:14px}
+  .nav-logo{font-weight:900;font-size:18px;color:var(--accent);text-decoration:none}
+  .nav-version{background:#D1FAE5;color:#065F46;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px}
+  .nav-links{display:flex;gap:2px;margin-left:auto}
+  .nav-links a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:6px}
+  .nav-links a:hover{background:var(--border);color:var(--text)}
+  .nav-links a.cta{background:var(--accent);color:#fff;padding:5px 14px}
+  .wrap{max-width:780px;margin:0 auto;padding:0 24px 72px}
+  .breadcrumb{font-size:13px;color:var(--muted);padding:16px 0 0}
+  .breadcrumb a{color:var(--muted);text-decoration:none}
+  .breadcrumb a:hover{color:var(--accent)}
+  .ah{padding:36px 0 28px;border-bottom:1px solid var(--border);margin-bottom:32px}
+  .tag{display:inline-block;background:var(--accent-light);color:var(--accent);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:3px 10px;border-radius:99px;margin-bottom:14px}
+  h1{font-size:clamp(24px,4vw,36px);font-weight:900;letter-spacing:-0.5px;line-height:1.15;margin-bottom:14px}
+  .byline{font-size:13px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap}
+  .sb{background:var(--surface2);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:8px;padding:18px 22px;margin-bottom:32px}
+  .sb h2{font-size:14px;font-weight:700;margin-bottom:8px;color:var(--accent)}
+  .sb ul{padding-left:18px;font-size:14px;color:var(--muted)}
+  .sb li{margin-bottom:4px}
+  article h2{font-size:22px;font-weight:800;margin:36px 0 12px}
+  article h3{font-size:17px;font-weight:700;margin:24px 0 8px}
+  article p{margin-bottom:16px;font-size:15.5px}
+  article ul,article ol{padding-left:22px;margin-bottom:16px;font-size:15.5px}
+  article li{margin-bottom:6px}
+  .tw{overflow-x:auto;margin-bottom:24px;border-radius:8px;border:1px solid var(--border)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+  th{background:var(--surface2);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted)}
+  tr:last-child td{border-bottom:none}
+  .yes{color:#16a34a;font-weight:700}.no{color:#dc2626}.paid{color:var(--muted);font-style:italic}.hl{color:var(--accent);font-weight:700}
+  pre{background:var(--code-bg);color:var(--code-text);padding:20px;border-radius:8px;overflow-x:auto;font-size:13.5px;line-height:1.6;margin-bottom:24px;font-family:"SFMono-Regular",Consolas,monospace}
+  code{font-family:"SFMono-Regular",Consolas,monospace;font-size:0.9em;background:var(--surface2);padding:2px 5px;border-radius:4px;border:1px solid var(--border)}
+  pre code{background:none;padding:0;border:none;font-size:inherit}
+  .cta-box{background:var(--accent);color:#fff;border-radius:12px;padding:32px;text-align:center;margin:40px 0}
+  .cta-box h2{font-size:22px;font-weight:800;margin-bottom:10px;color:#fff}
+  .cta-box p{opacity:0.9;margin-bottom:20px;font-size:15px}
+  .cta-btn{display:inline-block;background:#fff;color:var(--accent);font-weight:700;font-size:14px;padding:10px 24px;border-radius:8px;text-decoration:none}
+  footer{border-top:1px solid var(--border);padding:28px 24px;text-align:center;font-size:13px;color:var(--muted)}
+  footer a{color:var(--muted);text-decoration:none}
+  footer a:hover{color:var(--accent)}</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="/">RayEditor</a>
+  <span class="nav-version">v2.0.10</span>
+  <div class="nav-links">
+    <a href="/demos.html">Demos</a>
+    <a href="/docs.html">Docs</a>
+    <a href="https://github.com/yeole-rohan/ray-editor" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://www.npmjs.com/package/@rohanyeole/ray-editor" target="_blank" rel="noopener" class="cta">npm</a>
+  </div>
+</nav>
+<div class="wrap">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a> &rsaquo; <a href="/blog/">Blog</a> &rsaquo; JavaScript Markdown Editor
+  </nav>
+  <header class="ah">
+    <div class="tag">Guide</div>
+    <h1>JavaScript Markdown Editor with Rich Text in 2026: Why You Need Both</h1>
+    <div class="byline">
+      <span>By <a href="https://rohanyeole.com" rel="author">Rohan Yeole</a></span>
+      <time datetime="2026-03-31">March 31, 2026</time>
+    </div>
+  </header>
+  <aside class="sb"><h2>Quick Summary</h2><ul>
+  <li>RayEditor is the only free WYSIWYG editor with true bidirectional Markdown mode.</li>
+  <li>Toggle between rich text and raw Markdown with a single toolbar click.</li>
+  <li>Import/export .md files via API: <code>importMarkdown()</code> / <code>exportMarkdown()</code>.</li>
+  <li>Markdown keyboard shortcuts work in rich text mode: <code>**bold**</code>, <code>## heading</code>, <code>&gt; blockquote</code>.</li>
+  <li>MIT licensed, zero dependencies, React/Vue/Angular/Svelte wrappers.</li>
+</ul></aside>
+<article>
+  <h2>The Markdown vs WYSIWYG Debate</h2>
+  <p>Developers love Markdown for its simplicity and portability. Non-technical writers prefer WYSIWYG editing where they can see bold text and headings without memorizing syntax. In 2026, the best content editors support <em>both</em> &mdash; letting users switch freely between visual and Markdown modes.</p>
+  <p>A good JavaScript markdown editor should let developers import existing Markdown files, convert them to rich text, let users edit visually, and export clean Markdown back out. RayEditor is the only free editor that does this without a paid plan.</p>
+
+  <h2>Markdown Mode in RayEditor</h2>
+  <p>RayEditor includes a <strong>Markdown toggle button</strong> (MD) in the toolbar. Clicking it switches between rich text and raw Markdown. The conversion is bidirectional and lossless for all supported elements: headings, bold, italic, lists, task lists, tables, blockquotes, code blocks, links, and images.</p>
+
+  <h2>Editor Markdown Support Comparison</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Editor</th><th>Markdown Mode</th><th>Import .md</th><th>Export .md</th><th>MD Shortcuts</th><th>License</th></tr></thead>
+    <tbody>
+      <tr><td class="hl">RayEditor</td><td class="yes">&#10003; Bidirectional</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">MIT</td></tr>
+      <tr><td>TinyMCE</td><td class="paid">Paid only</td><td class="paid">Paid</td><td class="paid">Paid</td><td class="no">&#10007;</td><td class="no">GPLv2/Paid</td></tr>
+      <tr><td>CKEditor 5</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="paid">GPL/Paid</td></tr>
+      <tr><td>Quill.js</td><td class="no">&#10007;</td><td class="no">&#10007;</td><td class="no">&#10007;</td><td class="no">&#10007;</td><td class="yes">MIT</td></tr>
+      <tr><td>Trix</td><td class="no">&#10007;</td><td class="no">&#10007;</td><td class="no">&#10007;</td><td class="no">&#10007;</td><td class="yes">MIT</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>JavaScript API</h2>
+  <pre><code>import { RayEditor } from '@rohanyeole/ray-editor';
+import '@rohanyeole/ray-editor/dist/ray-editor.css';
+
+const editor = new RayEditor(document.getElementById('editor'), {
+  toolbar: ['bold', 'italic', 'heading', 'markdownToggle', 'importMarkdown', 'exportMarkdown']
+});
+
+// Import existing Markdown content
+editor.importMarkdown('# Hello World
+
+This is **bold** and _italic_ text.
+
+- Item 1
+- Item 2');
+
+// Export back to Markdown
+const markdown = editor.exportMarkdown();
+console.log(markdown);</code></pre>
+
+  <h2>Markdown Keyboard Shortcuts in Rich Text Mode</h2>
+  <p>RayEditor supports Markdown shortcuts in rich text mode so power users can stay in the visual editor:</p>
+  <ul>
+    <li><code>**text**</code> &rarr; <strong>bold</strong></li>
+    <li><code>*text*</code> &rarr; <em>italic</em></li>
+    <li><code>## </code> at line start &rarr; Heading 2</li>
+    <li><code>&gt; </code> at line start &rarr; blockquote</li>
+    <li><code>- </code> at line start &rarr; unordered list</li>
+    <li><code>[ ] </code> at line start &rarr; task list item</li>
+    <li>Triple backtick &rarr; fenced code block</li>
+  </ul>
+
+  <h2>Use Cases</h2>
+  <ul>
+    <li><strong>Documentation tools</strong> &mdash; technical writers edit visually while developers work in Markdown.</li>
+    <li><strong>Blog editors</strong> &mdash; authors write in rich text, content is stored as Markdown in Git.</li>
+    <li><strong>Headless CMS</strong> &mdash; import Markdown, edit visually, save back as Markdown.</li>
+    <li><strong>Developer notes</strong> &mdash; quick Markdown entry with instant visual preview.</li>
+  </ul>
+
+  <h2>Conclusion</h2>
+  <p>RayEditor is the only free, MIT-licensed JavaScript WYSIWYG editor with true bidirectional Markdown support in 2026. TinyMCE charges for it. CKEditor requires a commercial license for many apps. Quill and Trix do not have it at all. RayEditor fills the gap with a zero-dependency solution that works out of the box.</p>
+</article>
+  <div class="cta-box">
+    <h2>Try RayEditor for free</h2>
+    <p>No sign-up. No credit card. MIT licensed. Works in React, Vue, Angular, and Svelte.</p>
+    <a href="/demos.html" class="cta-btn">See live demos</a>
+  </div>
+</div>
+<footer>
+  <nav style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin-bottom:14px;font-size:13px">
+    <strong style="color:var(--text)">Comparisons:</strong>
+    <a href="/blog/rayeditor-vs-tinymce.html">vs TinyMCE</a>
+    <a href="/blog/rayeditor-vs-ckeditor.html">vs CKEditor</a>
+    <a href="/blog/rayeditor-vs-quill.html">vs Quill</a>
+    <a href="/blog/rayeditor-vs-froala.html">vs Froala</a>
+    <a href="/blog/wysiwyg-editor-wordpress.html">vs WordPress</a>
+    <a href="/blog/best-free-wysiwyg-html-editor.html">Best Free WYSIWYG</a>
+    <a href="/blog/wysiwyg-editor-npm.html">npm Packages</a>
+    <span style="color:var(--border)">|</span>
+    <strong style="color:var(--text)">Guides:</strong>
+    <a href="/blog/react-rich-text-editor.html">React</a>
+    <a href="/blog/angular-wysiwyg-editor.html">Angular</a>
+    <a href="/blog/vue-wysiwyg-editor.html">Vue</a>
+    <a href="/blog/svelte-wysiwyg-editor.html">Svelte</a>
+    <a href="/blog/markdown-editor-javascript.html">Markdown</a>
+    <span style="color:var(--border)">|</span>
+    <strong style="color:var(--text)">Tutorials:</strong>
+    <a href="/blog/wysiwyg-editor-dark-mode.html">Dark Mode</a>
+    <a href="/blog/implement-markdown-mode.html">Markdown Mode</a>
+    <a href="/blog/slash-commands-wysiwyg-editor.html">Slash Commands</a>
+    <a href="/blog/react-blog-editor-markdown.html">React Blog Editor</a>
+    <a href="/blog/accessible-wysiwyg-editor.html">Accessibility</a>
+  </nav>
+  <p>RayEditor v2.0.10 &middot; MIT License &middot; <a href="https://github.com/yeole-rohan/ray-editor" target="_blank" rel="noopener">GitHub</a> &middot; <a href="https://www.npmjs.com/package/@rohanyeole/ray-editor" target="_blank" rel="noopener">npm</a> &middot; Built by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a></p>
+</footer>
+</body>
+</html>

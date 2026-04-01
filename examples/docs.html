@@ -5,27 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- ── SEO ──────────────────────────────────────────────────────────────── -->
-  <title>Documentation — RayEditor WYSIWYG Editor</title>
-  <meta name="description" content="Full documentation for RayEditor: installation, quick start, toolbar keys, all options, API methods, events, plugin API, slash commands, task lists, callouts, markdown mode, tables, images, theming, and keyboard shortcuts.">
+  <title>Documentation — RayEditor Free WYSIWYG Rich Text Editor</title>
+  <meta name="description" content="Full API docs for RayEditor: install the free WYSIWYG HTML editor, configure toolbar, use the plugin API, markdown mode, slash commands, task lists, tables, and more.">
+  <meta name="keywords" content="wysiwyg editor api, rich text editor javascript, react rich text editor npm, angular wysiwyg editor, vue wysiwyg editor, typescript wysiwyg, plugin api, markdown editor api, contenteditable, wysiwyg editor documentation">
   <meta name="author" content="Rohan Yeole">
   <link rel="canonical" href="https://ray-editor.rohanyeole.com/docs.html">
 
   <!-- ── Open Graph ────────────────────────────────────────────────────────── -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://ray-editor.rohanyeole.com/docs.html">
-  <meta property="og:title" content="Documentation — RayEditor WYSIWYG Editor">
-  <meta property="og:description" content="Everything you need to integrate and extend RayEditor — installation, API reference, plugin system, and feature guides.">
+  <meta property="og:site_name" content="RayEditor">
+  <meta property="og:title" content="Documentation — RayEditor Free WYSIWYG Rich Text Editor">
+  <meta property="og:description" content="Everything you need to integrate the free RayEditor WYSIWYG editor — installation, API reference, plugin system, markdown mode, and feature guides.">
   <meta property="og:image" content="https://ray-editor.rohanyeole.com/og-image.png">
 
   <!-- ── Twitter Card ──────────────────────────────────────────────────────── -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Documentation — RayEditor WYSIWYG Editor">
-  <meta name="twitter:description" content="Everything you need to integrate and extend RayEditor.">
+  <meta name="twitter:title" content="Documentation — RayEditor Free WYSIWYG Rich Text Editor">
+  <meta name="twitter:description" content="Install, configure, and extend RayEditor — the free, zero-dependency WYSIWYG HTML editor for JavaScript, React, Vue, and Angular.">
   <meta name="twitter:image" content="https://ray-editor.rohanyeole.com/og-image.png">
 
   <!-- ── Favicon ───────────────────────────────────────────────────────────── -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" href="favicon.svg">
+
+  <!-- ── Schema.org: TechArticle + BreadcrumbList ─────────────────────────── -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "RayEditor Documentation — Free WYSIWYG Rich Text Editor API Reference",
+    "description": "Full documentation for RayEditor: installation, API methods, plugin system, markdown mode, slash commands, task lists, tables, theming, and keyboard shortcuts.",
+    "url": "https://ray-editor.rohanyeole.com/docs.html",
+    "image": "https://ray-editor.rohanyeole.com/og-image.png",
+    "author": { "@type": "Person", "name": "Rohan Yeole", "url": "https://rohanyeole.com" },
+    "publisher": { "@type": "Person", "name": "Rohan Yeole" },
+    "dateModified": "2026-03-31",
+    "keywords": "wysiwyg editor, rich text editor, javascript api, plugin api, markdown mode, react wysiwyg, angular wysiwyg"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "RayEditor", "item": "https://ray-editor.rohanyeole.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Documentation", "item": "https://ray-editor.rohanyeole.com/docs.html" }
+    ]
+  }
+  </script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -254,9 +282,10 @@
     <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#F97316"/><text x="16" y="22.5" font-family="system-ui,Arial,sans-serif" font-weight="900" font-size="20" fill="#fff" text-anchor="middle">R</text></svg>
     RayEditor
   </a>
-  <span class="nav-version">v2.0.9</span>
+  <span class="nav-version">v2.0.10</span>
   <div class="nav-links">
     <a href="demos.html">Demos</a>
+    <a href="blog/">Blog</a>
     <a href="docs.html">Docs</a>
     <a href="index.html#features">Features</a>
     <a href="index.html#compare">Compare</a>
@@ -702,12 +731,31 @@ editor.<span class="fn">use</span>(myPlugin);</pre>
 
 <!-- ── Footer ────────────────────────────────────────────────────────────────── -->
 <footer>
-  <p>
-    RayEditor v2.0.9 · MIT License ·
-    <a href="https://github.com/yeole-rohan/ray-editor" target="_blank" rel="noopener">GitHub</a> ·
-    <a href="https://www.npmjs.com/package/@rohanyeole/ray-editor" target="_blank" rel="noopener">npm</a> ·
-    Built by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a>
-  </p>
+  <nav style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin-bottom:14px;font-size:13px">
+    <strong style="color:var(--text)">Comparisons:</strong>
+    <a href="blog/rayeditor-vs-tinymce.html">vs TinyMCE</a>
+    <a href="blog/rayeditor-vs-ckeditor.html">vs CKEditor</a>
+    <a href="blog/rayeditor-vs-quill.html">vs Quill</a>
+    <a href="blog/rayeditor-vs-froala.html">vs Froala</a>
+    <a href="blog/wysiwyg-editor-wordpress.html">vs WordPress</a>
+    <a href="blog/best-free-wysiwyg-html-editor.html">Best Free WYSIWYG</a>
+    <a href="blog/wysiwyg-editor-npm.html">npm Packages</a>
+    <span style="color:var(--border)">|</span>
+    <strong style="color:var(--text)">Guides:</strong>
+    <a href="blog/react-rich-text-editor.html">React</a>
+    <a href="blog/angular-wysiwyg-editor.html">Angular</a>
+    <a href="blog/vue-wysiwyg-editor.html">Vue</a>
+    <a href="blog/svelte-wysiwyg-editor.html">Svelte</a>
+    <a href="blog/markdown-editor-javascript.html">Markdown</a>
+    <span style="color:var(--border)">|</span>
+    <strong style="color:var(--text)">Tutorials:</strong>
+    <a href="blog/wysiwyg-editor-dark-mode.html">Dark Mode</a>
+    <a href="blog/implement-markdown-mode.html">Markdown Mode</a>
+    <a href="blog/slash-commands-wysiwyg-editor.html">Slash Commands</a>
+    <a href="blog/react-blog-editor-markdown.html">React Blog Editor</a>
+    <a href="blog/accessible-wysiwyg-editor.html">Accessibility</a>
+  </nav>
+  <p>RayEditor v2.0.10 &middot; MIT License &middot; <a href="https://github.com/yeole-rohan/ray-editor" target="_blank" rel="noopener">GitHub</a> &middot; <a href="https://www.npmjs.com/package/@rohanyeole/ray-editor" target="_blank" rel="noopener">npm</a> &middot; Built by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a></p>
 </footer>
 
 <script>

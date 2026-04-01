@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to Implement Markdown Mode in a WYSIWYG Editor (v2.0.10)</title>
+  <meta name="description" content="How to add bidirectional Markdown mode to a JavaScript WYSIWYG rich text editor using RayEditor v2.0.10. Toolbar toggle, importMarkdown(), exportMarkdown() API, and Markdown shortcuts." />
+  <meta name="keywords" content="markdown mode wysiwyg, wysiwyg markdown mode, bidirectional markdown editor, implement markdown editor, wysiwyg editor markdown" />
+  <meta name="author" content="Rohan Yeole" />
+  <link rel="canonical" href="https://ray-editor.rohanyeole.com/blog/implement-markdown-mode.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://ray-editor.rohanyeole.com/blog/implement-markdown-mode.html" />
+  <meta property="og:site_name" content="RayEditor" />
+  <meta property="og:title" content="How to Implement Markdown Mode in a WYSIWYG Editor (v2.0.10)" />
+  <meta property="og:description" content="How to add bidirectional Markdown mode to a JavaScript WYSIWYG rich text editor using RayEditor v2.0.10. Toolbar toggle, importMarkdown(), exportMarkdown() API, and Markdown shortcuts." />
+  <meta property="og:image" content="https://ray-editor.rohanyeole.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="How to Implement Markdown Mode in a WYSIWYG Editor (v2.0.10)" />
+  <meta name="twitter:description" content="How to add bidirectional Markdown mode to a JavaScript WYSIWYG rich text editor using RayEditor v2.0.10. Toolbar toggle, importMarkdown(), exportMarkdown() API, and Markdown shortcuts." />
+  <meta name="twitter:image" content="https://ray-editor.rohanyeole.com/og-image.png" />
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"How to Implement Markdown Mode in a WYSIWYG Editor (v2.0.10)","description":"How to add bidirectional Markdown mode to a JavaScript WYSIWYG rich text editor using RayEditor v2.0.10. Toolbar toggle, importMarkdown(), exportMarkdown() API, and Markdown shortcuts.","url":"https://ray-editor.rohanyeole.com/blog/implement-markdown-mode.html","image":"https://ray-editor.rohanyeole.com/og-image.png","datePublished":"2026-03-31","dateModified":"2026-03-31","author":{"@type":"Person","name":"Rohan Yeole","url":"https://rohanyeole.com"},"keywords":"markdown mode wysiwyg, wysiwyg markdown mode, bidirectional markdown editor, implement markdown editor, wysiwyg editor markdown"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"RayEditor","item":"https://ray-editor.rohanyeole.com/"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://ray-editor.rohanyeole.com/blog/"},{"@type":"ListItem","position":3,"name":"Implement Markdown Mode","item":"https://ray-editor.rohanyeole.com/blog/implement-markdown-mode.html"}]}</script>
+  <style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#FFF7ED;--surface:#FFFBF5;--surface2:#FEF3E2;--border:#FED7AA;--text:#451A03;--muted:#92400E;--accent:#F97316;--accent-dark:#D97706;--accent-light:#FFEDD5;--code-bg:#0d1117;--code-text:#e6edf3}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+  a{color:var(--accent)}
+  nav{position:sticky;top:0;z-index:200;backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 28px;height:54px;display:flex;align-items:center;gap:14px}
+  .nav-logo{font-weight:900;font-size:18px;color:var(--accent);text-decoration:none}
+  .nav-version{background:#D1FAE5;color:#065F46;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px}
+  .nav-links{display:flex;gap:2px;margin-left:auto}
+  .nav-links a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:6px}
+  .nav-links a:hover{background:var(--border);color:var(--text)}
+  .nav-links a.cta{background:var(--accent);color:#fff;padding:5px 14px}
+  .wrap{max-width:780px;margin:0 auto;padding:0 24px 72px}
+  .breadcrumb{font-size:13px;color:var(--muted);padding:16px 0 0}
+  .breadcrumb a{color:var(--muted);text-decoration:none}
+  .breadcrumb a:hover{color:var(--accent)}
+  .ah{padding:36px 0 28px;border-bottom:1px solid var(--border);margin-bottom:32px}
+  .tag{display:inline-block;background:var(--accent-light);color:var(--accent);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:3px 10px;border-radius:99px;margin-bottom:14px}
+  h1{font-size:clamp(24px,4vw,36px);font-weight:900;letter-spacing:-0.5px;line-height:1.15;margin-bottom:14px}
+  .byline{font-size:13px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+  .byline .ver-badge{background:var(--accent-light);color:var(--accent);font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px}
+  .sb{background:var(--surface2);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:8px;padding:18px 22px;margin-bottom:32px}
+  .sb h2{font-size:14px;font-weight:700;margin-bottom:8px;color:var(--accent)}
+  .sb ul{padding-left:18px;font-size:14px;color:var(--muted)}
+  .sb li{margin-bottom:4px}
+  article h2{font-size:22px;font-weight:800;margin:36px 0 12px}
+  article h3{font-size:17px;font-weight:700;margin:24px 0 8px}
+  article p{margin-bottom:16px;font-size:15.5px}
+  article ul,article ol{padding-left:22px;margin-bottom:16px;font-size:15.5px}
+  article li{margin-bottom:6px}
+  .tw{overflow-x:auto;margin-bottom:24px;border-radius:8px;border:1px solid var(--border)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+  th{background:var(--surface2);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted)}
+  tr:last-child td{border-bottom:none}
+  .yes{color:#16a34a;font-weight:700}.no{color:#dc2626}.paid{color:var(--muted);font-style:italic}.hl{color:var(--accent);font-weight:700}
+  pre{background:var(--code-bg);color:var(--code-text);padding:20px;border-radius:8px;overflow-x:auto;font-size:13.5px;line-height:1.6;margin-bottom:24px;font-family:"SFMono-Regular",Consolas,monospace}
+  code{font-family:"SFMono-Regular",Consolas,monospace;font-size:0.9em;background:var(--surface2);padding:2px 5px;border-radius:4px;border:1px solid var(--border)}
+  pre code{background:none;padding:0;border:none;font-size:inherit}
+  .step{display:flex;gap:16px;margin-bottom:24px}
+  .step-num{flex-shrink:0;width:32px;height:32px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+  .step-body h3{font-size:16px;font-weight:700;margin-bottom:6px}
+  .callout{background:var(--accent-light);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:8px;padding:14px 18px;margin-bottom:20px;font-size:14px}
+  .cta-box{background:var(--accent);color:#fff;border-radius:12px;padding:32px;text-align:center;margin:40px 0}
+  .cta-box h2{font-size:22px;font-weight:800;margin-bottom:10px;color:#fff}
+  .cta-box p{opacity:0.9;margin-bottom:20px;font-size:15px}
+  .cta-btn{display:inline-block;background:#fff;color:var(--accent);font-weight:700;font-size:14px;padding:10px 24px;border-radius:8px;text-decoration:none}
+  footer{border-top:1px solid var(--border);padding:28px 24px;text-align:center;font-size:13px;color:var(--muted)}
+  footer a{color:var(--muted);text-decoration:none}
+  footer a:hover{color:var(--accent)}</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="/">RayEditor</a>
+  <span class="nav-version">v2.0.10</span>
+  <div class="nav-links">
+    <a href="/demos.html">Demos</a>
+    <a href="/docs.html">Docs</a>
+    <a href="/blog/">Blog</a>
+    <a href="https://github.com/yeole-rohan/ray-editor" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://www.npmjs.com/package/@rohanyeole/ray-editor" target="_blank" rel="noopener" class="cta">npm</a>
+  </div>
+</nav>
+<div class="wrap">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a> &rsaquo; <a href="/blog/">Blog</a> &rsaquo; Implement Markdown Mode
+  </nav>
+  <header class="ah">
+    <div class="tag">Tutorial</div>
+    <h1>How to Implement Markdown Mode in a WYSIWYG Editor (v2.0.10)</h1>
+    <div class="byline">
+      <span>By <a href="https://rohanyeole.com" rel="author">Rohan Yeole</a></span>
+      <time datetime="2026-03-31">March 31, 2026</time>
+      <span class="ver-badge">v2.0.10</span>
+    </div>
+  </header>
+  <aside class="sb"><h2>Quick Summary</h2><ul>
+  <li>RayEditor supports bidirectional Markdown mode: switch between rich text and raw Markdown with one click.</li>
+  <li>Use <code>importMarkdown()</code> to load .md content and <code>exportMarkdown()</code> to retrieve it.</li>
+  <li>Add <code>markdownToggle</code>, <code>importMarkdown</code>, <code>exportMarkdown</code> to the toolbar array.</li>
+  <li>Markdown keyboard shortcuts work in rich text mode: <code>**bold**</code>, <code>## Heading</code>, <code>&gt; quote</code>.</li>
+  <li>Full round-trip fidelity for headings, lists, task lists, tables, code blocks, links, and images.</li>
+</ul></aside>
+<article>
+  <h2>What Is Bidirectional Markdown Mode?</h2>
+  <p>Bidirectional Markdown mode means the editor can convert content from rich HTML to Markdown and back &#8212; without losing any information. A user can write in visual rich text mode, switch to Markdown to see or edit the raw syntax, then switch back to rich text. The conversion is lossless for all supported element types.</p>
+  <p>This is different from editors that support only Markdown <em>input</em> (writing <code>**bold**</code> to get bold) &#8212; those do not let you see or edit raw Markdown at any point. True bidirectional mode requires a converter for both directions.</p>
+
+  <h2>Enabling Markdown Mode in RayEditor</h2>
+  <p>Add the three Markdown toolbar items to your options:</p>
+  <pre><code>import { RayEditor } from '@rohanyeole/ray-editor';
+import '@rohanyeole/ray-editor/dist/ray-editor.css';
+
+const editor = new RayEditor(document.getElementById('editor'), {
+  toolbar: [
+    'bold', 'italic', 'heading', 'orderedList', 'unorderedList',
+    'codeBlock', 'link', 'table',
+    '|',
+    'markdownToggle',   // click to toggle raw Markdown view
+    'importMarkdown',   // opens file picker for .md files
+    'exportMarkdown'    // downloads content as .md file
+  ]
+});</code></pre>
+
+  <h2>Using the JavaScript API</h2>
+  <pre><code>// Import Markdown string directly (e.g. from a CMS API)
+editor.importMarkdown(`
+# My Article
+
+This is a paragraph with **bold** and _italic_ text.
+
+## Features
+
+- Task lists
+- Tables
+- Code blocks
+
+```javascript
+console.log('Hello world');
+```
+`);
+
+// Export the current content as Markdown
+const markdown = editor.exportMarkdown();
+console.log(markdown); // returns clean Markdown string
+
+// Listen for content changes (fires in both modes)
+editor.on('content:change', ({ html }) => {
+  saveToServer(html);
+});</code></pre>
+
+  <h2>Supported Markdown Elements</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Element</th><th>Markdown Syntax</th><th>Round-trip</th></tr></thead>
+    <tbody>
+      <tr><td>Headings h1&#8211;h6</td><td><code># H1</code> to <code>###### H6</code></td><td class="yes">&#10003;</td></tr>
+      <tr><td>Bold</td><td><code>**text**</code></td><td class="yes">&#10003;</td></tr>
+      <tr><td>Italic</td><td><code>_text_</code></td><td class="yes">&#10003;</td></tr>
+      <tr><td>Unordered list</td><td><code>- item</code></td><td class="yes">&#10003;</td></tr>
+      <tr><td>Ordered list</td><td><code>1. item</code></td><td class="yes">&#10003;</td></tr>
+      <tr><td>Task list</td><td><code>- [ ] item</code></td><td class="yes">&#10003;</td></tr>
+      <tr><td>Blockquote</td><td><code>&gt; text</code></td><td class="yes">&#10003;</td></tr>
+      <tr><td>Inline code</td><td><code>`code`</code></td><td class="yes">&#10003;</td></tr>
+      <tr><td>Fenced code block</td><td>Triple backtick</td><td class="yes">&#10003;</td></tr>
+      <tr><td>Table</td><td>Pipe syntax</td><td class="yes">&#10003;</td></tr>
+      <tr><td>Link</td><td><code>[text](url)</code></td><td class="yes">&#10003;</td></tr>
+      <tr><td>Image</td><td><code>![alt](url)</code></td><td class="yes">&#10003;</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Keyboard Shortcuts in Rich Text Mode</h2>
+  <p>These Markdown shortcuts trigger in rich text mode on a blank line or at the start of text:</p>
+  <pre><code>**text**    → bold
+*text*      → italic
+## space    → Heading 2
+> space     → blockquote
+- space     → unordered list item
+[ ] space   → task list item
+``` Enter   → fenced code block</code></pre>
+
+  <h2>React Integration</h2>
+  <pre><code>&lt;RayEditor
+  value={html}
+  onChange={setHtml}
+  options={{
+    toolbar: ['bold','italic','markdownToggle','importMarkdown','exportMarkdown']
+  }}
+/&gt;</code></pre>
+
+  <h2>Conclusion</h2>
+  <p>RayEditor makes it straightforward to add bidirectional Markdown mode to any JavaScript project. Enable it by adding three toolbar items, then use <code>importMarkdown()</code> and <code>exportMarkdown()</code> for programmatic control. Full round-trip fidelity for all common Markdown elements is included in the free MIT-licensed package.</p>
+</article>
+  <div class="cta-box">
+    <h2>Try RayEditor for free</h2>
+    <p>No sign-up. No credit card. MIT licensed. Works in React, Vue, Angular, and Svelte.</p>
+    <a href="/demos.html" class="cta-btn">See live demos</a>
+  </div>
+</div>
+<footer>
+  <nav style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin-bottom:14px;font-size:13px">
+    <strong style="color:var(--text)">Comparisons:</strong>
+    <a href="/blog/rayeditor-vs-tinymce.html">vs TinyMCE</a>
+    <a href="/blog/rayeditor-vs-ckeditor.html">vs CKEditor</a>
+    <a href="/blog/rayeditor-vs-quill.html">vs Quill</a>
+    <a href="/blog/rayeditor-vs-froala.html">vs Froala</a>
+    <a href="/blog/wysiwyg-editor-wordpress.html">vs WordPress</a>
+    <a href="/blog/best-free-wysiwyg-html-editor.html">Best Free WYSIWYG</a>
+    <a href="/blog/wysiwyg-editor-npm.html">npm Packages</a>
+    <span style="color:var(--border)">|</span>
+    <strong style="color:var(--text)">Guides:</strong>
+    <a href="/blog/react-rich-text-editor.html">React</a>
+    <a href="/blog/angular-wysiwyg-editor.html">Angular</a>
+    <a href="/blog/vue-wysiwyg-editor.html">Vue</a>
+    <a href="/blog/svelte-wysiwyg-editor.html">Svelte</a>
+    <a href="/blog/markdown-editor-javascript.html">Markdown</a>
+    <span style="color:var(--border)">|</span>
+    <strong style="color:var(--text)">Tutorials:</strong>
+    <a href="/blog/wysiwyg-editor-dark-mode.html">Dark Mode</a>
+    <a href="/blog/implement-markdown-mode.html">Markdown Mode</a>
+    <a href="/blog/slash-commands-wysiwyg-editor.html">Slash Commands</a>
+    <a href="/blog/react-blog-editor-markdown.html">React Blog Editor</a>
+    <a href="/blog/accessible-wysiwyg-editor.html">Accessibility</a>
+  </nav>
+  <p>RayEditor v2.0.10 &middot; MIT License &middot; <a href="https://github.com/yeole-rohan/ray-editor" target="_blank" rel="noopener">GitHub</a> &middot; <a href="https://www.npmjs.com/package/@rohanyeole/ray-editor" target="_blank" rel="noopener">npm</a> &middot; Built by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a></p>
+</footer>
+</body>
+</html>

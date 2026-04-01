@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO -->
+  <title>RayEditor vs TinyMCE in 2026: Free Alternative With Zero Dependencies</title>
+  <meta name="description" content="RayEditor vs TinyMCE: compare licensing, features, bundle size, and pricing. Discover why RayEditor is the best free TinyMCE alternative with MIT license and zero dependencies." />
+  <meta name="keywords" content="tinymce alternative, tinymce free, tinymce pricing, free wysiwyg html editor, rayeditor vs tinymce, open source rich text editor" />
+  <meta name="author" content="Rohan Yeole" />
+  <link rel="canonical" href="https://ray-editor.rohanyeole.com/blog/rayeditor-vs-tinymce.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="RayEditor vs TinyMCE in 2026: Free Alternative With Zero Dependencies" />
+  <meta property="og:description" content="RayEditor vs TinyMCE: compare licensing, features, bundle size, and pricing. Discover why RayEditor is the best free TinyMCE alternative with MIT license and zero dependencies." />
+  <meta property="og:image" content="https://ray-editor.rohanyeole.com/og-image.png" />
+  <meta property="og:url" content="https://ray-editor.rohanyeole.com/blog/rayeditor-vs-tinymce.html" />
+  <meta property="og:site_name" content="RayEditor" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="RayEditor vs TinyMCE in 2026: Free Alternative With Zero Dependencies" />
+  <meta name="twitter:description" content="Compare RayEditor and TinyMCE on licensing, features, bundle size, and cost. MIT-licensed, zero-dependency alternative." />
+  <meta name="twitter:image" content="https://ray-editor.rohanyeole.com/og-image.png" />
+
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+
+  <!-- JSON-LD BlogPosting -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "RayEditor vs TinyMCE in 2026: Free Alternative With Zero Dependencies",
+    "description": "RayEditor vs TinyMCE: compare licensing, features, bundle size, and pricing. Discover why RayEditor is the best free TinyMCE alternative with MIT license and zero dependencies.",
+    "image": "https://ray-editor.rohanyeole.com/og-image.png",
+    "url": "https://ray-editor.rohanyeole.com/blog/rayeditor-vs-tinymce.html",
+    "datePublished": "2026-03-31",
+    "dateModified": "2026-03-31",
+    "author": {
+      "@type": "Person",
+      "name": "Rohan Yeole",
+      "url": "https://rohanyeole.com"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "RayEditor",
+      "url": "https://ray-editor.rohanyeole.com/"
+    },
+    "keywords": "tinymce alternative, tinymce free, tinymce pricing, free wysiwyg html editor"
+  }
+  </script>
+
+  <!-- JSON-LD BreadcrumbList -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://ray-editor.rohanyeole.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "https://ray-editor.rohanyeole.com/blog/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "RayEditor vs TinyMCE in 2026",
+        "item": "https://ray-editor.rohanyeole.com/blog/rayeditor-vs-tinymce.html"
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #FFF7ED;
+      --surface:      #FFFBF5;
+      --surface2:     #FEF3E2;
+      --border:       #FED7AA;
+      --text:         #451A03;
+      --muted:        #92400E;
+      --accent:       #F97316;
+      --accent-dark:  #D97706;
+      --accent-light: #FFEDD5;
+      --success:      #10B981;
+      --success-bg:   #D1FAE5;
+      --success-text: #065F46;
+      --danger:       #EF4444;
+      --code-bg:      #0d1117;
+      --code-text:    #e6edf3;
+      --shadow-sm:    0 1px 4px rgba(0,0,0,0.07);
+      --shadow-md:    0 4px 16px rgba(0,0,0,0.09);
+      --radius:       12px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    a { color: var(--accent); }
+    a:hover { color: var(--accent-dark); }
+
+    /* Nav */
+    nav {
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(255,251,245,0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px; height: 54px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .nav-logo {
+      font-weight: 900; font-size: 18px; color: var(--accent);
+      text-decoration: none; letter-spacing: -0.5px;
+    }
+    .nav-version {
+      background: var(--success-bg); color: var(--success-text);
+      font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 99px;
+    }
+    .nav-links { display: flex; gap: 2px; margin-left: auto; align-items: center; }
+    .nav-links a {
+      font-size: 13px; font-weight: 500; color: var(--muted);
+      text-decoration: none; padding: 5px 10px; border-radius: 6px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-links a:hover { background: var(--border); color: var(--text); }
+    .nav-links a.cta { background: var(--accent); color: #fff; padding: 5px 14px; }
+    .nav-links a.cta:hover { background: var(--accent-dark); }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      max-width: 780px; margin: 0 auto; padding: 16px 24px 0;
+      font-size: 13px; color: var(--muted);
+    }
+    .breadcrumb a { color: var(--muted); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--accent); }
+    .breadcrumb span { margin: 0 6px; }
+
+    /* Article layout */
+    .article-wrap { max-width: 780px; margin: 0 auto; padding: 32px 24px 80px; }
+
+    /* Article header */
+    .article-header { margin-bottom: 32px; }
+    .article-tag {
+      display: inline-block;
+      background: var(--accent-light); color: var(--accent);
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; padding: 3px 10px; border-radius: 99px;
+      margin-bottom: 14px;
+    }
+    .article-header h1 {
+      font-size: clamp(26px, 4vw, 40px); font-weight: 900;
+      letter-spacing: -1px; line-height: 1.15; margin-bottom: 14px;
+    }
+    .article-meta {
+      font-size: 13px; color: var(--muted);
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .article-meta strong { color: var(--text); }
+
+    /* Quick summary aside */
+    aside.quick-summary {
+      background: var(--surface2);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 20px 24px; margin: 28px 0;
+    }
+    aside.quick-summary h2 {
+      font-size: 14px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--accent); margin-bottom: 10px;
+    }
+    aside.quick-summary ul { padding-left: 18px; }
+    aside.quick-summary li { font-size: 14px; margin-bottom: 5px; color: var(--muted); }
+    aside.quick-summary li strong { color: var(--text); }
+
+    /* Article body */
+    article h2 {
+      font-size: 22px; font-weight: 800; letter-spacing: -0.3px;
+      margin: 40px 0 12px; color: var(--text);
+    }
+    article h3 {
+      font-size: 17px; font-weight: 700; margin: 28px 0 10px; color: var(--text);
+    }
+    article p { margin-bottom: 16px; color: var(--muted); }
+    article p strong { color: var(--text); }
+    article ul, article ol { padding-left: 22px; margin-bottom: 16px; color: var(--muted); }
+    article li { margin-bottom: 6px; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin: 24px 0; border-radius: var(--radius); box-shadow: var(--shadow-sm); }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); font-size: 14px; }
+    thead th {
+      background: var(--accent); color: #fff;
+      padding: 12px 16px; text-align: left; font-weight: 700;
+    }
+    tbody td { padding: 11px 16px; border-bottom: 1px solid var(--border); color: var(--muted); }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--surface2); }
+    .check { color: var(--success); font-weight: 700; }
+    .cross { color: var(--danger); font-weight: 700; }
+    .partial { color: var(--accent-dark); font-weight: 600; }
+
+    /* Code blocks */
+    .code-block {
+      background: var(--code-bg); color: var(--code-text);
+      border-radius: var(--radius); padding: 20px 24px;
+      overflow-x: auto; margin: 20px 0; font-size: 13.5px;
+      line-height: 1.6;
+    }
+    .code-block pre { margin: 0; }
+    .code-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px;
+    }
+
+    /* CTA section */
+    .cta-box {
+      background: var(--accent); color: #fff;
+      border-radius: var(--radius); padding: 36px 32px;
+      text-align: center; margin: 48px 0 0;
+    }
+    .cta-box h2 { font-size: 22px; font-weight: 900; margin-bottom: 10px; color: #fff; }
+    .cta-box p { font-size: 15px; margin-bottom: 22px; opacity: 0.9; color: #fff; }
+    .cta-btn {
+      display: inline-block; background: #fff; color: var(--accent);
+      font-weight: 800; font-size: 15px; padding: 12px 28px;
+      border-radius: 8px; text-decoration: none;
+      transition: transform 0.15s;
+    }
+    .cta-btn:hover { transform: translateY(-2px); color: var(--accent-dark); }
+    .cta-secondary {
+      display: inline-block; margin-left: 12px;
+      color: rgba(255,255,255,0.85); font-size: 14px;
+      text-decoration: underline;
+    }
+    .cta-secondary:hover { color: #fff; }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 24px; text-align: center;
+      font-size: 13px; color: var(--muted);
+    }
+    footer a { color: var(--muted); text-decoration: none; margin: 0 8px; }
+    footer a:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav>
+    <a href="https://ray-editor.rohanyeole.com/" class="nav-logo">&#9654; RayEditor</a>
+    <span class="nav-version">v2.0.10</span>
+    <div class="nav-links">
+      <a href="https://ray-editor.rohanyeole.com/docs.html">Docs</a>
+      <a href="https://ray-editor.rohanyeole.com/demos.html">Demos</a>
+      <a href="https://github.com/yeole-rohan/ray-editor" rel="noopener" target="_blank">GitHub</a>
+      <a href="https://ray-editor.rohanyeole.com/" class="cta">Get Started</a>
+    </div>
+  </nav>
+
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="https://ray-editor.rohanyeole.com/">Home</a>
+    <span>&#8250;</span>
+    <a href="https://ray-editor.rohanyeole.com/blog/">Blog</a>
+    <span>&#8250;</span>
+    RayEditor vs TinyMCE in 2026
+  </nav>
+
+  <div class="article-wrap">
+
+    <!-- Article header -->
+    <header class="article-header">
+      <span class="article-tag">Comparison</span>
+      <h1>RayEditor vs TinyMCE in 2026: Free Alternative With Zero Dependencies</h1>
+      <div class="article-meta">
+        <span>By <strong>Rohan Yeole</strong></span>
+        <span>&#183;</span>
+        <time datetime="2026-03-31">March 31, 2026</time>
+        <span>&#183;</span>
+        <span>8 min read</span>
+      </div>
+    </header>
+
+    <!-- Quick Summary -->
+    <aside class="quick-summary">
+      <h2>Quick Summary</h2>
+      <ul>
+        <li><strong>TinyMCE</strong> is the most popular WYSIWYG editor but charges for many features and weighs ~400 KB.</li>
+        <li><strong>RayEditor</strong> is MIT licensed, zero dependencies, ~65 KB minified, and ships every feature for free.</li>
+        <li>Slash commands, dark mode, markdown mode, task lists, and the plugin API are all free in RayEditor — paywalled in TinyMCE.</li>
+        <li>Both support React, Vue, and Angular, but RayEditor has official TypeScript types out of the box.</li>
+      </ul>
+    </aside>
+
+    <article>
+
+      <h2>What Is TinyMCE?</h2>
+      <p>
+        TinyMCE has been the go-to WYSIWYG rich text editor for well over a decade. It powers millions of
+        websites and ships with an enormous feature set. However, its business model has shifted significantly:
+        the <strong>free self-hosted tier</strong> is limited to basic editing features, while modern capabilities
+        such as advanced tables, real-time collaboration, and certain plugins require a paid Tiny Cloud subscription.
+        The licensing situation can be confusing — the core is GPLv2, but many premium plugins are proprietary.
+      </p>
+      <p>
+        If you are building a SaaS app, a CMS, or any product where your users need a capable editing experience
+        without surprising bills, you may have already hit TinyMCE's paywall. That is exactly the problem
+        RayEditor was built to solve.
+      </p>
+
+      <h2>What Is RayEditor?</h2>
+      <p>
+        RayEditor is a free, open-source WYSIWYG HTML editor written in TypeScript. It is published under the
+        <strong>MIT license</strong> with <strong>zero runtime dependencies</strong>, so there are no transitive
+        packages to audit, no supply-chain surprises, and no hidden costs. At roughly <strong>65 KB minified</strong>,
+        it loads fast even on slow connections. RayEditor v2.0.10 ships with slash commands, dark mode, markdown mode,
+        task lists, callout blocks, syntax-highlighted code blocks, find &amp; replace, a plugin API, and official
+        framework wrappers for React, Vue 3, Angular, and Svelte.
+      </p>
+
+      <h2>Licensing: MIT vs GPLv2 + Proprietary</h2>
+      <p>
+        TinyMCE's core editor is released under <strong>GPLv2</strong>. For commercial use this typically means
+        you must open-source your own application or buy a commercial license — something many SaaS founders
+        discover too late. Premium plugins (Advanced Tables, Mentions, AI Assistant, etc.) are under a separate
+        proprietary license that requires a Tiny Cloud account.
+      </p>
+      <p>
+        RayEditor is <strong>MIT licensed</strong> — the most permissive open-source license available. You can
+        use it in commercial products, modify it, redistribute it, and embed it in closed-source software without
+        any royalties or attribution requirements beyond preserving the copyright notice.
+      </p>
+
+      <h2>Feature Comparison</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>TinyMCE (free tier)</th>
+              <th>RayEditor (free, MIT)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>License</td><td class="partial">GPLv2 / proprietary plugins</td><td class="check">MIT &#10003;</td></tr>
+            <tr><td>Bundle size (min+gzip)</td><td class="partial">~400 KB</td><td class="check">~65 KB &#10003;</td></tr>
+            <tr><td>Zero dependencies</td><td class="cross">&#10007; No</td><td class="check">&#10003; Yes</td></tr>
+            <tr><td>TypeScript types</td><td class="partial">Partial</td><td class="check">&#10003; Full .d.ts</td></tr>
+            <tr><td>Dark mode</td><td class="cross">&#10007; Paid plugin</td><td class="check">&#10003; Built-in</td></tr>
+            <tr><td>Markdown mode</td><td class="cross">&#10007; Paid</td><td class="check">&#10003; Built-in</td></tr>
+            <tr><td>Slash commands</td><td class="cross">&#10007; Not available</td><td class="check">&#10003; Built-in</td></tr>
+            <tr><td>Task lists (checkboxes)</td><td class="cross">&#10007; Paid plugin</td><td class="check">&#10003; Built-in</td></tr>
+            <tr><td>Callout / alert blocks</td><td class="cross">&#10007; Not available</td><td class="check">&#10003; Built-in</td></tr>
+            <tr><td>Find &amp; Replace</td><td class="partial">Basic only (free)</td><td class="check">&#10003; Built-in</td></tr>
+            <tr><td>Plugin API</td><td class="partial">Limited (free)</td><td class="check">&#10003; Full API</td></tr>
+            <tr><td>Syntax highlighting</td><td class="cross">&#10007; Paid</td><td class="check">&#10003; Built-in</td></tr>
+            <tr><td>React / Vue / Angular wrappers</td><td class="check">&#10003; Yes</td><td class="check">&#10003; Yes</td></tr>
+            <tr><td>Real-time collaboration</td><td class="partial">Paid (Tiny Drive)</td><td class="cross">&#10007; Roadmap</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Features Locked Behind TinyMCE's Paywall</h2>
+      <p>
+        TinyMCE's free self-hosted tier gives you a workable editing experience, but the moment your users
+        expect anything modern, you hit a gate. Here are the capabilities you pay for in TinyMCE that come
+        standard in RayEditor at no cost:
+      </p>
+      <ul>
+        <li><strong>Dark mode</strong> — requires a paid skin or Tiny Cloud subscription.</li>
+        <li><strong>Advanced Tables</strong> — merge/split cells and column resize are a paid plugin.</li>
+        <li><strong>Mentions / @-mention</strong> — paid plugin.</li>
+        <li><strong>Markdown import/export</strong> — not available even in paid tiers.</li>
+        <li><strong>Slash command palette</strong> — not a native TinyMCE feature at any price.</li>
+        <li><strong>AI Assistant</strong> — paid add-on.</li>
+      </ul>
+
+      <h2>Bundle Size Comparison</h2>
+      <p>
+        Bundle size matters for Core Web Vitals and user experience, especially on mobile networks. TinyMCE
+        ships around <strong>400 KB</strong> minified (before plugins), and each additional plugin adds more
+        weight. RayEditor comes in at approximately <strong>65 KB minified</strong> — more than 6x smaller —
+        covering every feature without downloading extra chunks.
+      </p>
+
+      <h2>Installing RayEditor vs TinyMCE</h2>
+
+      <div class="code-label">Install RayEditor (npm)</div>
+      <div class="code-block">
+        <pre><code>npm install @rohanyeole/ray-editor</code></pre>
+      </div>
+
+      <div class="code-label">Basic usage — RayEditor</div>
+      <div class="code-block">
+        <pre><code>import { RayEditor } from '@rohanyeole/ray-editor';
+import '@rohanyeole/ray-editor/dist/ray-editor.css';
+
+const editor = new RayEditor('#editor', {
+  placeholder: 'Start typing...',
+  theme: 'light',
+});</code></pre>
+      </div>
+
+      <div class="code-label">Install TinyMCE (npm)</div>
+      <div class="code-block">
+        <pre><code>npm install tinymce @tinymce/tinymce-react
+# You also need to self-host or configure a CDN API key</code></pre>
+      </div>
+
+      <div class="code-label">Basic usage — TinyMCE (requires API key for cloud)</div>
+      <div class="code-block">
+        <pre><code>import { Editor } from '@tinymce/tinymce-react';
+
+&lt;Editor
+  apiKey="your-api-key-here"
+  init={{ plugins: 'lists link', toolbar: 'bold italic' }}
+/&gt;</code></pre>
+      </div>
+
+      <p>
+        With TinyMCE you must manage an API key even in development. RayEditor needs no registration,
+        no API key, and no network call to a third-party service — your editor works entirely offline.
+      </p>
+
+      <h2>When to Choose RayEditor</h2>
+      <ul>
+        <li>You need a <strong>free, MIT-licensed</strong> editor you can ship in a commercial product.</li>
+        <li>Bundle size and performance are priorities.</li>
+        <li>Your users want slash commands, dark mode, or markdown shortcuts.</li>
+        <li>You are building with React, Vue, Angular, or Svelte and want first-class TypeScript support.</li>
+        <li>You want a clean HTML output without proprietary delta formats or vendor lock-in.</li>
+      </ul>
+
+      <h2>When TinyMCE Might Still Make Sense</h2>
+      <ul>
+        <li>Your organization requires <strong>real-time collaborative editing</strong> (Tiny Drive) and is prepared to pay for it.</li>
+        <li>You have existing TinyMCE plugins deeply integrated and migration cost outweighs the licensing savings.</li>
+        <li>You need enterprise SLA and dedicated support contracts.</li>
+      </ul>
+
+      <h2>Conclusion</h2>
+      <p>
+        For the vast majority of web developers, RayEditor is the superior choice in 2026. It delivers a richer
+        feature set than TinyMCE's free tier, weighs a fraction of the size, and costs absolutely nothing — now
+        or later. The MIT license means you will never wake up to a surprise pricing change that breaks your
+        product's budget.
+      </p>
+      <p>
+        If you are currently paying for TinyMCE or planning to, it is worth giving RayEditor a 15-minute trial
+        before committing to another year of subscriptions.
+      </p>
+
+      <!-- CTA -->
+      <div class="cta-box">
+        <h2>Try RayEditor for Free</h2>
+        <p>No sign-up. No credit card. No API key. Just install and start building.</p>
+        <a href="https://ray-editor.rohanyeole.com/" class="cta-btn">Get Started Free</a>
+        <a href="https://github.com/yeole-rohan/ray-editor" rel="noopener" target="_blank" class="cta-secondary">View on GitHub</a>
+      </div>
+
+    </article>
+  </div>
+
+  <footer>
+  <nav style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin-bottom:14px;font-size:13px">
+    <strong style="color:var(--text)">Comparisons:</strong>
+    <a href="/blog/rayeditor-vs-tinymce.html">vs TinyMCE</a>
+    <a href="/blog/rayeditor-vs-ckeditor.html">vs CKEditor</a>
+    <a href="/blog/rayeditor-vs-quill.html">vs Quill</a>
+    <a href="/blog/rayeditor-vs-froala.html">vs Froala</a>
+    <a href="/blog/wysiwyg-editor-wordpress.html">vs WordPress</a>
+    <a href="/blog/best-free-wysiwyg-html-editor.html">Best Free WYSIWYG</a>
+    <a href="/blog/wysiwyg-editor-npm.html">npm Packages</a>
+    <span style="color:var(--border)">|</span>
+    <strong style="color:var(--text)">Guides:</strong>
+    <a href="/blog/react-rich-text-editor.html">React</a>
+    <a href="/blog/angular-wysiwyg-editor.html">Angular</a>
+    <a href="/blog/vue-wysiwyg-editor.html">Vue</a>
+    <a href="/blog/svelte-wysiwyg-editor.html">Svelte</a>
+    <a href="/blog/markdown-editor-javascript.html">Markdown</a>
+    <span style="color:var(--border)">|</span>
+    <strong style="color:var(--text)">Tutorials:</strong>
+    <a href="/blog/wysiwyg-editor-dark-mode.html">Dark Mode</a>
+    <a href="/blog/implement-markdown-mode.html">Markdown Mode</a>
+    <a href="/blog/slash-commands-wysiwyg-editor.html">Slash Commands</a>
+    <a href="/blog/react-blog-editor-markdown.html">React Blog Editor</a>
+    <a href="/blog/accessible-wysiwyg-editor.html">Accessibility</a>
+  </nav>
+  <p>RayEditor v2.0.10 &middot; MIT License &middot; <a href="https://github.com/yeole-rohan/ray-editor" target="_blank" rel="noopener">GitHub</a> &middot; <a href="https://www.npmjs.com/package/@rohanyeole/ray-editor" target="_blank" rel="noopener">npm</a> &middot; Built by <a href="https://rohanyeole.com" target="_blank" rel="noopener">Rohan Yeole</a></p>
+</footer>
+
+</body>
+</html>
