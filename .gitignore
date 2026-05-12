@@ -17,3 +17,6 @@ DEPLOYMENT.md
 /playwright-report/
 /test-results/
 /blob-report/
+clusters/
+*.csv
+examples/blog/_build.js
