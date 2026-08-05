@@ -1,6 +1,6 @@
 {
   "name": "@rohanyeole/ray-editor",
-  "version": "2.0.10",
+  "version": "2.0.11",
   "description": "Free, lightweight, dependency-free WYSIWYG rich text editor for JavaScript, TypeScript, React, Vue, Angular & Svelte. Slash commands, dark mode, markdown, task lists, callouts, tables, find & replace, plugin API, syntax highlighting. MIT licensed.",
   "main": "dist/ray-editor.cjs.js",
   "module": "dist/ray-editor.esm.js",
@@ -76,9 +76,9 @@
   "devDependencies": {
     "@playwright/test": "^1.44.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-terser": "^1.0.0",
     "@rollup/plugin-typescript": "^11.1.6",
-    "@vitest/ui": "^1.4.0",
+    "@vitest/ui": "^3.2.7",
     "jsdom": "^24.0.0",
     "postcss-import": "^16.1.1",
     "rimraf": "^5.0.5",
@@ -86,9 +86,12 @@
     "rollup-plugin-postcss": "^4.0.2",
     "tslib": "^2.6.2",
     "typescript": "^5.4.2",
-    "vitest": "^1.4.0"
+    "vitest": "^3.2.7"
   },
   "sideEffects": [
     "*.css"
-  ]
+  ],
+  "allowScripts": {
+    "esbuild@0.28.1": true
+  }
 }

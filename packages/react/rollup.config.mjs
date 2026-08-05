@@ -22,7 +22,7 @@ export default defineConfig([
   {
     input: 'src/index.tsx',
     output: {
-      file: 'dist/index.cjs.js',
+      file: 'dist/index.cjs',
       format: 'cjs',
       sourcemap: true,
       exports: 'named',

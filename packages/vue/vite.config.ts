@@ -6,9 +6,9 @@ export default defineConfig({
   plugins: [vue()],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: resolve(import.meta.dirname, 'src/index.ts'),
       name: 'RayEditorVue',
-      fileName: (format) => (format === 'es' ? 'index.esm.js' : 'index.cjs.js'),
+      fileName: (format) => (format === 'es' ? 'index.esm.js' : 'index.cjs'),
       formats: ['es', 'cjs'],
     },
     rollupOptions: {

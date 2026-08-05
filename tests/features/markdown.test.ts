@@ -95,6 +95,30 @@ describe('markdownToHtml', () => {
     expect(html).toContain('&lt;b&gt;');
   });
 
+  it('escapes raw HTML in plain text (not a recognized construct)', () => {
+    const html = markdownToHtml('Hello <img src=x onerror=alert(1)>');
+    expect(html).not.toContain('<img src=x onerror=alert(1)>');
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+  });
+
+  it('escapes raw HTML inside bold/italic/strikethrough content', () => {
+    expect(markdownToHtml('**<img src=x onerror=alert(1)>**')).not.toContain('<img src=x');
+    expect(markdownToHtml('*<img src=x onerror=alert(1)>*')).not.toContain('<img src=x');
+    expect(markdownToHtml('~~<img src=x onerror=alert(1)>~~')).not.toContain('<img src=x');
+  });
+
+  it('preserves "&" in link/image URLs without double-encoding', () => {
+    const html = markdownToHtml('[search](https://example.com/?a=1&b=2)');
+    expect(html).toContain('href="https://example.com/?a=1&amp;b=2"');
+    expect(html).not.toContain('&amp;amp;');
+  });
+
+  it('escapes the code-fence language token (attribute breakout)', () => {
+    const html = markdownToHtml('```"><img src=x onerror=alert(1)>\ncode\n```');
+    expect(html).not.toContain('<img src=x onerror=alert(1)>');
+    expect(html).toContain('data-lang="&quot;&gt;&lt;img src=x onerror=alert(1)&gt;"');
+  });
+
   // Tables
   it('converts markdown table', () => {
     const md = '| A | B |\n|---|---|\n| 1 | 2 |';
@@ -121,6 +145,12 @@ describe('markdownToHtml', () => {
   it('escapes angle brackets in link href', () => {
     const html = markdownToHtml('[x]("><script>bad()</script>)');
     expect(html).not.toContain('<script>');
+  });
+
+  it('escapes HTML in link label (not just href)', () => {
+    const html = markdownToHtml('[<img src=x onerror=alert(1)>](https://example.com)');
+    expect(html).not.toContain('<img src=x onerror=alert(1)>');
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
   });
 
   // Images

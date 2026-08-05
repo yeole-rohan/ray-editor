@@ -6,10 +6,10 @@ export default defineConfig({
   plugins: [svelte()],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: resolve(import.meta.dirname, 'src/index.ts'),
       name: 'RayEditorSvelte',
-      fileName: (format) => (format === 'es' ? 'index.esm.js' : 'index.cjs.js'),
-      formats: ['es', 'cjs'],
+      fileName: () => 'index.esm.js',
+      formats: ['es'],
     },
     rollupOptions: {
       external: [/^svelte/, '@rohanyeole/ray-editor'],

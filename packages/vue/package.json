@@ -1,14 +1,15 @@
 {
   "name": "@rohanyeole/ray-editor-vue",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Vue 3 wrapper for RayEditor — free, dependency-free WYSIWYG rich text editor",
-  "main": "dist/index.cjs.js",
+  "type": "module",
+  "main": "dist/index.cjs",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.esm.js",
-      "require": "./dist/index.cjs.js",
+      "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     }
   },
@@ -34,8 +35,8 @@
   },
   "devDependencies": {
     "@rohanyeole/ray-editor": "^2.0.10",
-    "@vitejs/plugin-vue": "^5.2.4",
-    "vite": "^5.4.21",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "vite": "^8.2.0",
     "vue": "^3.5.40",
     "vue-tsc": "^3.3.9"
   }

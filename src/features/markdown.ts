@@ -18,19 +18,36 @@ function escapeHtml(str: string): string {
     .replace(/"/g, '&quot;');
 }
 
+// Inverts escapeHtml — used to recover the original raw value of a capture group
+// after the enclosing line has already been escaped, so it can be re-sanitized
+// (e.g. sanitizeUrl) against the real input instead of an already-escaped one.
+function unescapeHtml(str: string): string {
+  return str
+    .replace(/&quot;/g, '"')
+    .replace(/&gt;/g, '>')
+    .replace(/&lt;/g, '<')
+    .replace(/&amp;/g, '&');
+}
+
 function processInline(text: string, codes: string[]): string {
+  // Escape all plain text up front so any characters not matched by a markdown
+  // construct below (the common case) can never inject HTML. None of the markdown
+  // delimiters (`*_~[]()`) contain & < > ", so escaping first doesn't break matching.
+  text = escapeHtml(text);
   // Restore protected inline code
   text = text.replace(/\x00IC(\d+)\x00/g, (_, i) =>
     `<code>${escapeHtml(codes[parseInt(i)])}</code>`
   );
-  // Images before links (overlapping syntax) — sanitize src to block javascript:/data:, escape alt
+  // Images before links (overlapping syntax) — sanitize src to block javascript:/data:, escape alt.
+  // Capture groups were escaped by the pass above, so unescape before re-sanitizing/re-escaping
+  // to avoid double-encoding (e.g. a literal "&" in a URL's query string).
   text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {
-    const safeSrc = escapeHtml(sanitizeUrl(src));
-    return `<img src="${safeSrc}" alt="${escapeHtml(alt)}">`;
+    const safeSrc = escapeHtml(sanitizeUrl(unescapeHtml(src)));
+    return `<img src="${safeSrc}" alt="${escapeHtml(unescapeHtml(alt))}">`;
   });
-  // Links — sanitize href to block javascript:/data:, escape for attribute safety
+  // Links — sanitize href to block javascript:/data:, escape label and href for attribute safety
   text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) => {
-    const safeHref = escapeHtml(sanitizeUrl(url));
+    const safeHref = escapeHtml(sanitizeUrl(unescapeHtml(url)));
     return `<a href="${safeHref}">${label}</a>`;
   });
   // Bold (** or __)
@@ -78,7 +95,7 @@ export function markdownToHtml(markdown: string): string {
       closePara();
       const { lang, code } = codeBlocks[parseInt(cbMatch[1])];
       // Output bare <pre data-lang> — setContent() rebuilds the full UI
-      out.push(`<pre class="ray-code-content" data-lang="${lang}"><code>${escapeHtml(code)}</code></pre>`);
+      out.push(`<pre class="ray-code-content" data-lang="${escapeHtml(lang)}"><code>${escapeHtml(code)}</code></pre>`);
       i++; continue;
     }
 

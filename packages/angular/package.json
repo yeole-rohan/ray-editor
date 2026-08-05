@@ -1,7 +1,8 @@
 {
   "name": "@rohanyeole/ray-editor-angular",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Angular wrapper for RayEditor — free, dependency-free WYSIWYG rich text editor",
+  "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,7 +17,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "ngc -p tsconfig.json"
+    "build": "ngc -p tsconfig.json && node scripts/fix-esm-extensions.mjs"
   },
   "keywords": ["ray-editor", "angular", "wysiwyg", "rich-text-editor"],
   "author": "Rohan Yeole",
@@ -34,11 +35,11 @@
     "@rohanyeole/ray-editor": "^2.0.0"
   },
   "devDependencies": {
-    "@angular/common": "^17.3.0",
-    "@angular/compiler": "^17.3.0",
-    "@angular/compiler-cli": "^17.3.0",
-    "@angular/core": "^17.3.0",
-    "@angular/forms": "^17.3.0",
+    "@angular/common": "^22.1.0",
+    "@angular/compiler": "^22.1.0",
+    "@angular/compiler-cli": "^22.1.0",
+    "@angular/core": "^22.1.0",
+    "@angular/forms": "^22.1.0",
     "@rohanyeole/ray-editor": "^2.0.10",
     "rxjs": "^7.8.2"
   }
