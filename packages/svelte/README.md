@@ -12,7 +12,7 @@ npm install @rohanyeole/ray-editor @rohanyeole/ray-editor-svelte
 
 ```svelte
 <script lang="ts">
-  import RayEditor from '@rohanyeole/ray-editor-svelte/src/RayEditor.svelte';
+  import RayEditor from '@rohanyeole/ray-editor-svelte';
   import '@rohanyeole/ray-editor/css';
 
   let content = '<p>Hello world</p>';

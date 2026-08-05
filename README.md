@@ -101,20 +101,62 @@ editor.destroy();
 
 ## Framework Wrappers
 
-Dedicated packages for React, Vue 3, Angular, and Svelte are available in the
-[`packages/`](packages/) directory and on npm under `@rohanyeole/ray-editor-*`.
+Official, published wrapper packages for React, Vue 3, Angular, and Svelte — source lives
+in [`packages/`](packages/), each with its own README covering full usage.
 
-See the [docs site](https://ray-editor.rohanyeole.com) for framework-specific examples.
+**React**
+```bash
+npm install @rohanyeole/ray-editor @rohanyeole/ray-editor-react
+```
+```tsx
+import RayEditor from '@rohanyeole/ray-editor-react';
+
+<RayEditor value={html} onChange={setHtml} options={{ theme: 'light' }} />
+```
+
+**Vue 3**
+```bash
+npm install @rohanyeole/ray-editor @rohanyeole/ray-editor-vue
+```
+```vue
+<RayEditorVue v-model="content" :options="{ theme: 'light' }" />
+```
+
+**Angular** (standalone component, Angular 15+)
+```bash
+npm install @rohanyeole/ray-editor @rohanyeole/ray-editor-angular
+```
+```html
+<ray-editor [(ngModel)]="content" [options]="editorOptions"></ray-editor>
+```
+
+**Svelte**
+```bash
+npm install @rohanyeole/ray-editor @rohanyeole/ray-editor-svelte
+```
+```svelte
+<RayEditor bind:value={content} options={{ theme: 'light' }} />
+```
+
+See each package's README ([react](packages/react/README.md) · [vue](packages/vue/README.md) ·
+[angular](packages/angular/README.md) · [svelte](packages/svelte/README.md)) for the full API,
+including reactive-forms/two-way-binding patterns and accessing the underlying editor instance.
 
 ---
 
 ## Contributing
 
+Requires **Node ≥ 20** (the `packages/*` framework wrappers build against current
+Angular/Vite toolchains that need it — the core package alone is more lenient, but the
+repo is set up as one npm workspace covering both).
+
 ```bash
 git clone https://github.com/yeole-rohan/ray-editor
-npm install
-npm run dev    # watch build
-npm test       # run tests (vitest + jsdom)
+npm install          # installs the core package + all packages/* workspaces
+npm run dev           # watch build (core)
+npm test               # run tests (vitest + jsdom)
+npm run test:e2e:chrome  # Playwright e2e
+npm run build --workspace=packages/react   # build a specific wrapper (react/vue/angular/svelte)
 ```
 
 Open an issue before starting work on large features so we can align on the design.
