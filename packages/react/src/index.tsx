@@ -4,7 +4,7 @@ import React, {
   forwardRef,
   useImperativeHandle,
 } from 'react';
-import type { RayEditorOptions, RayEditorInstance } from 'ray-editor';
+import type { RayEditorOptions, RayEditorInstance } from '@rohanyeole/ray-editor';
 
 export interface RayEditorProps {
   /** Initial HTML content */
@@ -33,8 +33,8 @@ export interface RayEditorRef {
  *
  * @example
  * ```tsx
- * import { RayEditorComponent } from '@ray-editor/react';
- * import 'ray-editor/css';
+ * import { RayEditorComponent } from '@rohanyeole/ray-editor-react';
+ * import '@rohanyeole/ray-editor/css';
  *
  * function App() {
  *   const [html, setHtml] = React.useState('');
@@ -51,7 +51,7 @@ export interface RayEditorRef {
 export const RayEditorComponent = forwardRef<RayEditorRef, RayEditorProps>(
   ({ value, onChange, options = {}, className, style }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const editorRef = useRef<import('ray-editor').RayEditor | null>(null);
+    const editorRef = useRef<import('@rohanyeole/ray-editor').RayEditor | null>(null);
     // Keep a stable reference to onChange to avoid re-creating editor
     const onChangeRef = useRef(onChange);
     useEffect(() => {
@@ -73,7 +73,7 @@ export const RayEditorComponent = forwardRef<RayEditorRef, RayEditorProps>(
       // Dynamically import to avoid SSR issues
       let cancelled = false;
 
-      import('ray-editor').then(({ RayEditor }) => {
+      import('@rohanyeole/ray-editor').then(({ RayEditor }) => {
         if (cancelled || !containerRef.current) return;
 
         // Create a unique ID for the container

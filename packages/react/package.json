@@ -1,7 +1,7 @@
 {
-  "name": "@ray-editor/react",
+  "name": "@rohanyeole/ray-editor-react",
   "version": "2.0.0",
-  "description": "React wrapper for RayEditor",
+  "description": "React wrapper for RayEditor — free, dependency-free WYSIWYG rich text editor",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
@@ -12,20 +12,32 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist", "src"],
-  "scripts": {
-    "build": "tsc && rollup -c"
+  "files": ["dist", "README.md"],
+  "publishConfig": {
+    "access": "public"
   },
-  "keywords": ["ray-editor", "react", "wysiwyg", "rich-text-editor"],
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "keywords": ["ray-editor", "react", "react-editor", "wysiwyg", "rich-text-editor"],
   "author": "Rohan Yeole",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yeole-rohan/ray-editor",
+    "directory": "packages/react"
+  },
+  "homepage": "https://ray-editor.rohanyeole.com",
   "peerDependencies": {
     "react": ">=17.0.0",
     "react-dom": ">=17.0.0",
-    "ray-editor": "^2.0.0"
+    "@rohanyeole/ray-editor": "^2.0.0"
   },
   "devDependencies": {
-    "@types/react": ">=17.0.0",
-    "typescript": "^6.0.2"
+    "@rohanyeole/ray-editor": "^2.0.10",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   }
 }

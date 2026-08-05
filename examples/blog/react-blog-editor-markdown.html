@@ -106,7 +106,7 @@
 </ul></aside>
 <article>
   <h2>What We Are Building</h2>
-  <p>A React blog post editor with four panels: a rich text WYSIWYG editor, a Markdown view toggle, a live HTML preview, and a publish action. Content is stored as both HTML (for display on the frontend) and Markdown (for storage in a headless CMS or Git repository).</p>
+  <p>A React blog post editor with four panels: a rich text WYSIWYG editor, a Markdown view toggle, a live HTML preview, and a publish action. Content is stored as HTML (for display on the frontend), with a one-click Markdown export for archiving a post to a Git repository.</p>
 
   <h2>Step 1: Install Dependencies</h2>
   <pre><code>npm install @rohanyeole/ray-editor-react @rohanyeole/ray-editor</code></pre>
@@ -114,7 +114,7 @@
   <h2>Step 2: Create the Editor Component</h2>
   <pre><code>// components/BlogEditor.jsx
 import React, { useRef, useState } from 'react';
-import { RayEditor } from '@rohanyeole/ray-editor-react';
+import RayEditor from '@rohanyeole/ray-editor-react';
 import '@rohanyeole/ray-editor/dist/ray-editor.css';
 
 const TOOLBAR = [
@@ -131,10 +131,10 @@ export default function BlogEditor({ initialContent = '', onSave }) {
   const [html, setHtml] = useState(initialContent);
   const editorRef = useRef(null);
 
-  const handleSave = () => {
-    const markdown = editorRef.current?.exportMarkdown() ?? '';
-    onSave({ html, markdown });
-  };
+  const handleSave = () => onSave({ html });
+
+  // Downloads the current content as a .md file via the toolbar's own export logic
+  const handleExportMarkdown = () => editorRef.current?.editor?.execCommand('exportMarkdown');
 
   return (
     &lt;div className="blog-editor"&gt;
@@ -151,6 +151,7 @@ export default function BlogEditor({ initialContent = '', onSave }) {
       /&gt;
       &lt;div className="editor-actions"&gt;
         &lt;button onClick={handleSave}&gt;Save Post&lt;/button&gt;
+        &lt;button onClick={handleExportMarkdown}&gt;Download as Markdown&lt;/button&gt;
       &lt;/div&gt;
     &lt;/div&gt;
   );
@@ -180,15 +181,15 @@ import { useState } from 'react';
 const BlogEditor = dynamic(() =&gt; import('../components/BlogEditor'), { ssr: false });
 
 export default function NewPostPage() {
-  const [content, setContent] = useState({ html: '', markdown: '' });
+  const [content, setContent] = useState({ html: '' });
 
-  const handleSave = async ({ html, markdown }) => {
-    setContent({ html, markdown });
+  const handleSave = async ({ html }) => {
+    setContent({ html });
     // POST to your CMS or API
     await fetch('/api/posts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ html, markdown })
+      body: JSON.stringify({ html })
     });
   };
 

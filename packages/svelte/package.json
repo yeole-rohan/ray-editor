@@ -1,7 +1,7 @@
 {
-  "name": "@ray-editor/svelte",
+  "name": "@rohanyeole/ray-editor-svelte",
   "version": "2.0.0",
-  "description": "Svelte wrapper for RayEditor",
+  "description": "Svelte wrapper for RayEditor — free, dependency-free WYSIWYG rich text editor",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
@@ -14,16 +14,30 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist", "src"],
+  "files": ["dist", "src", "README.md"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vite build && node -e \"require('fs').copyFileSync('types/index.d.ts','dist/index.d.ts')\""
+  },
   "keywords": ["ray-editor", "svelte", "wysiwyg", "rich-text-editor"],
   "author": "Rohan Yeole",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yeole-rohan/ray-editor",
+    "directory": "packages/svelte"
+  },
+  "homepage": "https://ray-editor.rohanyeole.com",
   "peerDependencies": {
     "svelte": ">=4.0.0",
-    "ray-editor": "^2.0.0"
+    "@rohanyeole/ray-editor": "^2.0.0"
   },
   "devDependencies": {
-    "svelte": ">=4.0.0",
-    "typescript": "^6.0.2"
+    "@rohanyeole/ray-editor": "^2.0.10",
+    "@sveltejs/vite-plugin-svelte": "^4.0.4",
+    "svelte": "^5.56.8",
+    "vite": "^5.4.21"
   }
 }

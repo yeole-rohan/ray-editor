@@ -119,7 +119,7 @@
 
   <h2>Basic React Component</h2>
   <pre><code>import React from 'react';
-import { RayEditor } from '@rohanyeole/ray-editor-react';
+import RayEditor from '@rohanyeole/ray-editor-react';
 import '@rohanyeole/ray-editor/dist/ray-editor.css';
 
 export default function App() {
@@ -140,7 +140,7 @@ export default function App() {
   <p>RayEditor is browser-only. Use dynamic import to avoid SSR errors in Next.js:</p>
   <pre><code>import dynamic from 'next/dynamic';
 const RayEditor = dynamic(
-  () =&gt; import('@rohanyeole/ray-editor-react').then(m =&gt; m.RayEditor),
+  () =&gt; import('@rohanyeole/ray-editor-react').then(m =&gt; m.default),
   { ssr: false }
 );</code></pre>
 

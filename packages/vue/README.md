@@ -1,11 +1,11 @@
-# @ray-editor/vue
+# @rohanyeole/ray-editor-vue
 
 Vue 3 wrapper for [RayEditor](https://github.com/yeole-rohan/ray-editor) — lightweight, dependency-free WYSIWYG editor.
 
 ## Install
 
 ```bash
-npm install ray-editor @ray-editor/vue
+npm install @rohanyeole/ray-editor @rohanyeole/ray-editor-vue
 ```
 
 ## Usage
@@ -13,8 +13,8 @@ npm install ray-editor @ray-editor/vue
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue';
-import { RayEditorVue } from '@ray-editor/vue';
-import 'ray-editor/css';
+import { RayEditorVue } from '@rohanyeole/ray-editor-vue';
+import '@rohanyeole/ray-editor/css';
 
 const content = ref('<p>Hello world</p>');
 </script>
@@ -41,7 +41,7 @@ const content = ref('<p>Hello world</p>');
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue';
-import { RayEditorVue } from '@ray-editor/vue';
+import { RayEditorVue } from '@rohanyeole/ray-editor-vue';
 
 const editorRef = ref();
 

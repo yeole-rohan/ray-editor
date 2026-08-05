@@ -124,7 +124,7 @@
   <p>Quill stores content as Delta. Displaying it elsewhere requires loading the Quill runtime or converting with a library. RayEditor stores plain HTML &mdash; store in any string column, display with <code>innerHTML</code>, no editor runtime needed to display saved content.</p>
   <h2>React Integration</h2>
   <p>Quill has no official React wrapper. <code>react-quill</code> has React 18 Strict Mode compatibility issues. RayEditor ships an official controlled component:</p>
-  <pre><code>import { RayEditor } from '@rohanyeole/ray-editor-react';
+  <pre><code>import RayEditor from '@rohanyeole/ray-editor-react';
 import '@rohanyeole/ray-editor/dist/ray-editor.css';
 
 export default function App() {

@@ -1,19 +1,19 @@
-# @ray-editor/svelte
+# @rohanyeole/ray-editor-svelte
 
 Svelte wrapper for [RayEditor](https://github.com/yeole-rohan/ray-editor) — lightweight, dependency-free WYSIWYG editor.
 
 ## Install
 
 ```bash
-npm install ray-editor @ray-editor/svelte
+npm install @rohanyeole/ray-editor @rohanyeole/ray-editor-svelte
 ```
 
 ## Usage
 
 ```svelte
 <script lang="ts">
-  import RayEditor from '@ray-editor/svelte/src/RayEditor.svelte';
-  import 'ray-editor/css';
+  import RayEditor from '@rohanyeole/ray-editor-svelte/src/RayEditor.svelte';
+  import '@rohanyeole/ray-editor/css';
 
   let content = '<p>Hello world</p>';
 </script>

@@ -116,14 +116,30 @@
   <h2>Installation</h2>
   <pre><code>npm install @rohanyeole/ray-editor-angular @rohanyeole/ray-editor</code></pre>
 
-  <h2>Module Setup</h2>
+  <h2>Component Setup</h2>
+  <p><code>RayEditorAngularComponent</code> is a standalone component (Angular 15+) &#8212; there is no separate NgModule to import. In a standalone-component app, import it directly into the consuming component:</p>
+  <pre><code>// my-page.component.ts
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { RayEditorAngularComponent } from '@rohanyeole/ray-editor-angular';
+
+@Component({
+  selector: 'app-my-page',
+  standalone: true,
+  imports: [FormsModule, RayEditorAngularComponent],
+  template: `&lt;ray-editor [(ngModel)]="content" [options]="{ placeholder: 'Start writing...' }"&gt;&lt;/ray-editor&gt;`
+})
+export class MyPageComponent {
+  content = '&lt;p&gt;Hello Angular!&lt;/p&gt;';
+}</code></pre>
+  <p>In an NgModule-based app, standalone components can be listed directly in an <code>NgModule</code>'s <code>imports</code> array &#8212; no wrapper module needed:</p>
   <pre><code>// app.module.ts
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RayEditorModule } from '@rohanyeole/ray-editor-angular';
+import { RayEditorAngularComponent } from '@rohanyeole/ray-editor-angular';
 
 @NgModule({
-  imports: [FormsModule, ReactiveFormsModule, RayEditorModule]
+  imports: [FormsModule, ReactiveFormsModule, RayEditorAngularComponent]
 })
 export class AppModule {}</code></pre>
 

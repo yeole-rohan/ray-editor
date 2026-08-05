@@ -122,13 +122,13 @@
   <pre><code>npm install @rohanyeole/ray-editor-svelte @rohanyeole/ray-editor</code></pre>
   <h2>Basic Svelte Component</h2>
   <pre><code>&lt;script&gt;
-  import { RayEditorSvelte } from '@rohanyeole/ray-editor-svelte';
+  import RayEditor from '@rohanyeole/ray-editor-svelte';
   import '@rohanyeole/ray-editor/dist/ray-editor.css';
 
   let content = '&lt;p&gt;Hello Svelte!&lt;/p&gt;';
 &lt;/script&gt;
 
-&lt;RayEditorSvelte
+&lt;RayEditor
   bind:value={content}
   options={{ placeholder: 'Start writing...', darkMode: 'auto' }}
 /&gt;
@@ -146,7 +146,7 @@
   onMount(async () => {
     if (browser) {
       const mod = await import('@rohanyeole/ray-editor-svelte');
-      EditorComponent = mod.RayEditorSvelte;
+      EditorComponent = mod.default;
     }
   });
 &lt;/script&gt;
@@ -157,12 +157,12 @@
   <h2>Svelte Store Integration</h2>
   <pre><code>&lt;script&gt;
   import { writable } from 'svelte/store';
-  import { RayEditorSvelte } from '@rohanyeole/ray-editor-svelte';
+  import RayEditor from '@rohanyeole/ray-editor-svelte';
 
   const content = writable('&lt;p&gt;Initial&lt;/p&gt;');
 &lt;/script&gt;
 
-&lt;RayEditorSvelte bind:value={$content} /&gt;</code></pre>
+&lt;RayEditor bind:value={$content} /&gt;</code></pre>
   <h2>Conclusion</h2>
   <p>RayEditor is the only major WYSIWYG rich text editor with official, maintained Svelte support in 2026. MIT licensed, zero dependencies, <code>bind:value</code> reactive binding, and a full feature set including dark mode, markdown mode, slash commands, and task lists. If you are building a Svelte or SvelteKit project that needs rich text editing, RayEditor is the right choice.</p>
 </article>

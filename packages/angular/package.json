@@ -1,8 +1,9 @@
 {
-  "name": "@ray-editor/angular",
+  "name": "@rohanyeole/ray-editor-angular",
   "version": "2.0.0",
-  "description": "Angular wrapper for RayEditor",
+  "description": "Angular wrapper for RayEditor — free, dependency-free WYSIWYG rich text editor",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -10,17 +11,35 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist", "src"],
+  "files": ["dist", "README.md"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "ngc -p tsconfig.json"
+  },
   "keywords": ["ray-editor", "angular", "wysiwyg", "rich-text-editor"],
   "author": "Rohan Yeole",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yeole-rohan/ray-editor",
+    "directory": "packages/angular"
+  },
+  "homepage": "https://ray-editor.rohanyeole.com",
   "peerDependencies": {
     "@angular/core": ">=15.0.0",
     "@angular/common": ">=15.0.0",
     "@angular/forms": ">=15.0.0",
-    "ray-editor": "^2.0.0"
+    "@rohanyeole/ray-editor": "^2.0.0"
   },
   "devDependencies": {
-    "typescript": "^6.0.2"
+    "@angular/common": "^17.3.0",
+    "@angular/compiler": "^17.3.0",
+    "@angular/compiler-cli": "^17.3.0",
+    "@angular/core": "^17.3.0",
+    "@angular/forms": "^17.3.0",
+    "@rohanyeole/ray-editor": "^2.0.10",
+    "rxjs": "^7.8.2"
   }
 }

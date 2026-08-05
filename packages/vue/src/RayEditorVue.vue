@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, defineExpose } from 'vue';
-import type { RayEditorOptions } from 'ray-editor';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
+import type { RayEditorOptions } from '@rohanyeole/ray-editor';
 
 const props = withDefaults(
   defineProps<{
@@ -19,12 +19,12 @@ const emit = defineEmits<{
 }>();
 
 const containerRef = ref<HTMLDivElement>();
-let editor: import('ray-editor').RayEditor | null = null;
+let editor: import('@rohanyeole/ray-editor').RayEditor | null = null;
 
 onMounted(async () => {
   if (!containerRef.value) return;
 
-  const { RayEditor } = await import('ray-editor');
+  const { RayEditor } = await import('@rohanyeole/ray-editor');
 
   const id = `ray-vue-${Math.random().toString(36).slice(2)}`;
   containerRef.value.id = id;

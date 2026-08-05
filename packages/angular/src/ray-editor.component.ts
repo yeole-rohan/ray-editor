@@ -12,7 +12,7 @@ import {
   forwardRef,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import type { RayEditorOptions } from 'ray-editor';
+import type { RayEditorOptions } from '@rohanyeole/ray-editor';
 
 /**
  * Angular component for RayEditor.
@@ -52,7 +52,7 @@ export class RayEditorAngularComponent
   private pendingValue: string | null = null;
 
   async ngOnInit(): Promise<void> {
-    const { RayEditor } = await import('ray-editor');
+    const { RayEditor } = await import('@rohanyeole/ray-editor');
 
     const id = `ray-angular-${Math.random().toString(36).slice(2)}`;
     this.containerRef.nativeElement.id = id;

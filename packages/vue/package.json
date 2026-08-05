@@ -1,7 +1,7 @@
 {
-  "name": "@ray-editor/vue",
+  "name": "@rohanyeole/ray-editor-vue",
   "version": "2.0.0",
-  "description": "Vue 3 wrapper for RayEditor",
+  "description": "Vue 3 wrapper for RayEditor — free, dependency-free WYSIWYG rich text editor",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
@@ -12,16 +12,31 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist", "src"],
+  "files": ["dist", "README.md"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vite build && vue-tsc -p tsconfig.json --emitDeclarationOnly"
+  },
   "keywords": ["ray-editor", "vue", "vue3", "wysiwyg", "rich-text-editor"],
   "author": "Rohan Yeole",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yeole-rohan/ray-editor",
+    "directory": "packages/vue"
+  },
+  "homepage": "https://ray-editor.rohanyeole.com",
   "peerDependencies": {
     "vue": ">=3.0.0",
-    "ray-editor": "^2.0.0"
+    "@rohanyeole/ray-editor": "^2.0.0"
   },
   "devDependencies": {
-    "typescript": "^6.0.2",
-    "vue": ">=3.0.0"
+    "@rohanyeole/ray-editor": "^2.0.10",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "vite": "^5.4.21",
+    "vue": "^3.5.40",
+    "vue-tsc": "^3.3.9"
   }
 }

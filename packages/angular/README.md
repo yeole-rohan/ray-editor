@@ -1,11 +1,11 @@
-# @ray-editor/angular
+# @rohanyeole/ray-editor-angular
 
 Angular wrapper for [RayEditor](https://github.com/yeole-rohan/ray-editor) — lightweight, dependency-free WYSIWYG editor.
 
 ## Install
 
 ```bash
-npm install ray-editor @ray-editor/angular
+npm install @rohanyeole/ray-editor @rohanyeole/ray-editor-angular
 ```
 
 ## Usage
@@ -14,7 +14,7 @@ npm install ray-editor @ray-editor/angular
 
 ```typescript
 import { Component } from '@angular/core';
-import { RayEditorAngularComponent } from '@ray-editor/angular';
+import { RayEditorAngularComponent } from '@rohanyeole/ray-editor-angular';
 
 @Component({
   selector: 'app-root',

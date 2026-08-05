@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import type { RayEditorOptions } from 'ray-editor';
+  import type { RayEditorOptions } from '@rohanyeole/ray-editor';
 
   /** Bound HTML content — use bind:value for two-way binding */
   export let value: string = '';
@@ -12,11 +12,11 @@
   export let className: string = '';
 
   let container: HTMLDivElement;
-  let editor: import('ray-editor').RayEditor | null = null;
+  let editor: import('@rohanyeole/ray-editor').RayEditor | null = null;
   let internalUpdate = false;
 
   onMount(async () => {
-    const { RayEditor } = await import('ray-editor');
+    const { RayEditor } = await import('@rohanyeole/ray-editor');
 
     const id = `ray-svelte-${Math.random().toString(36).slice(2)}`;
     container.id = id;
@@ -53,4 +53,4 @@
   }
 </script>
 
-<div bind:this={container} class={className} />
+<div bind:this={container} class={className}></div>

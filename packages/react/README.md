@@ -1,18 +1,18 @@
-# @ray-editor/react
+# @rohanyeole/ray-editor-react
 
 React wrapper for [RayEditor](https://github.com/yeole-rohan/ray-editor) — lightweight, dependency-free WYSIWYG editor.
 
 ## Install
 
 ```bash
-npm install ray-editor @ray-editor/react
+npm install @rohanyeole/ray-editor @rohanyeole/ray-editor-react
 ```
 
 ## Usage
 
 ```tsx
-import { RayEditorComponent } from '@ray-editor/react';
-import 'ray-editor/css';
+import { RayEditorComponent } from '@rohanyeole/ray-editor-react';
+import '@rohanyeole/ray-editor/css';
 
 function App() {
   const [html, setHtml] = React.useState('');
@@ -39,7 +39,7 @@ function App() {
 
 ```tsx
 import { useRef } from 'react';
-import { RayEditorComponent, RayEditorRef } from '@ray-editor/react';
+import { RayEditorComponent, RayEditorRef } from '@rohanyeole/ray-editor-react';
 
 function App() {
   const editorRef = useRef<RayEditorRef>(null);
